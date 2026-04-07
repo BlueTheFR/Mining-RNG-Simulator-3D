@@ -28,24 +28,24 @@ canvas.free{cursor:default}
 #hud{position:absolute;inset:0;pointer-events:none;z-index:10}
 
 /* ── Panels ── */
-#left-col{position:absolute;top:28px;left:10px;display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 20px);overflow:hidden}
+#left-col{position:absolute;top:32px;left:10px;display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 20px);overflow:hidden}
 .panel{background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;color:var(--hud-text);flex-shrink:0;backdrop-filter:blur(2px)}
-.panel h3{font-size:6px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55}
-#inv-panel{min-width:175px;max-width:210px;pointer-events:all;max-height:240px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
-.ore-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:7px;color:var(--hud-text);cursor:pointer;padding:2px 3px;border-radius:2px;transition:background .1s}
+.panel h3{font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55}
+#inv-panel{min-width:200px;max-width:240px;pointer-events:all;max-height:280px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.ore-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:9px;color:var(--hud-text);cursor:pointer;padding:2px 3px;border-radius:2px;transition:background .1s}
 .ore-row:hover{background:var(--hud-hover)}
 .ore-row.sel{background:var(--hud-sel-bg);outline:1px solid var(--hud-sel-out)}
 .ore-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.ore-qty{margin-left:auto;color:var(--hud-text-dim);font-size:6px;flex-shrink:0}
+.ore-qty{margin-left:auto;color:var(--hud-text-dim);font-size:8px;flex-shrink:0}
 
 /* ── Index panel ── */
 #idx-panel{min-width:175px;max-width:210px;pointer-events:all;max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
-.idx-row{display:flex;align-items:center;gap:5px;margin-bottom:2px;font-size:6px;padding:1px 3px}
+.idx-row{display:flex;align-items:center;gap:5px;margin-bottom:2px;font-size:8px;padding:1px 3px}
 .idx-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0}
 .idx-exact{margin-left:auto;font-size:5px;opacity:.5;flex-shrink:0}
 
 /* ── Stats ── */
-.stat-row{display:flex;justify-content:space-between;gap:14px;font-size:6px;margin-bottom:5px;color:var(--hud-text-label)}
+.stat-row{display:flex;justify-content:space-between;gap:14px;font-size:8px;margin-bottom:5px;color:var(--hud-text-label)}
 .stat-v{color:var(--hud-accent)}
 
 /* ── Crosshair ── */
@@ -55,7 +55,7 @@ canvas.free{cursor:default}
 #xhair::after{width:12px;height:1px;left:-6px;top:-0.5px}
 
 /* ── Tooltip ── */
-#tooltip{position:absolute;bottom:76px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:5px 10px;color:var(--hud-text);font-size:6px;pointer-events:none;max-width:220px;line-height:2}
+#tooltip{position:absolute;bottom:76px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:5px 10px;color:var(--hud-text);font-size:8px;pointer-events:none;max-width:280px;line-height:2}
 
 /* ── Hint ── */
 #hint{position:absolute;bottom:76px;left:10px;background:var(--hud-bg);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:6px 10px;color:rgba(255,255,255,0.2);font-size:5px;line-height:2.2;pointer-events:none;display:flex;flex-direction:column;gap:1px}
@@ -64,12 +64,12 @@ canvas.free{cursor:default}
 #pick-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);pointer-events:all}
 .pick-slot{background:var(--hud-bg);border:1px solid var(--hud-border-hi);border-radius:5px;padding:7px 14px;display:flex;align-items:center;gap:9px}
 .slot-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
-.slot-tier{font-size:7px;color:var(--hud-accent)}
-.slot-label{font-size:5px;color:var(--hud-text-dim)}
+.slot-tier{font-size:9px;color:var(--hud-accent)}
+.slot-label{font-size:7px;color:var(--hud-text-dim)}
 
 /* ── Spawn messages ── */
 #spawn-msg{position:absolute;top:18px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:30;display:flex;flex-direction:column;align-items:center;gap:5px}
-.smsg{border-radius:4px;padding:7px 20px;font-size:8px;animation:smsgAnim 5s forwards;white-space:nowrap;text-align:center;border:1px solid rgba(255,255,255,0.1);background:rgba(4,4,8,0.91)}
+.smsg{border-radius:4px;padding:9px 24px;font-size:10px;animation:smsgAnim 5s forwards;white-space:nowrap;text-align:center;border:1px solid rgba(255,255,255,0.1);background:rgba(4,4,8,0.91)}
 @keyframes smsgAnim{0%{opacity:0;transform:translateY(-8px)}8%{opacity:1;transform:translateY(0)}75%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
 
 /* ── Ore hover tooltip ── */
@@ -132,20 +132,20 @@ canvas.free{cursor:default}
 
 /* ── Ability panel ── */
 #ability-panel{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:5px;padding:10px 16px;pointer-events:none;text-align:left;display:none;min-width:320px;max-width:500px}
-#ability-title{font-size:6px;color:var(--hud-accent);margin-bottom:7px;letter-spacing:2px;text-align:center;opacity:.55}
+#ability-title{font-size:8px;color:var(--hud-accent);margin-bottom:7px;letter-spacing:2px;text-align:center;opacity:.55}
 .ability-row{font-size:7px;color:var(--hud-text);margin-bottom:1px;display:flex;align-items:center;gap:7px}
 .ability-desc{font-size:9px;color:var(--hud-text-dim);margin-left:17px;font-family:sans-serif;margin-bottom:6px;line-height:1.7}
 .ability-icon{width:11px;height:11px;border-radius:2px;flex-shrink:0}
 
 /* ── Mine top bar ── */
-#mine-top{position:absolute;top:0;left:0;right:0;height:18px;background:rgba(4,4,8,0.85);display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace}
+#mine-top{position:absolute;top:0;left:0;right:0;height:22px;background:rgba(4,4,8,0.85);display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace}
 #mine-top-track{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
 #mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
-#mine-top-txt{font-size:5px;color:rgba(255,255,255,0.35);white-space:nowrap}
-#mine-top-cd{font-size:5px;color:#ff4444;display:none;white-space:nowrap}
+#mine-top-txt{font-size:7px;color:rgba(255,255,255,0.35);white-space:nowrap}
+#mine-top-cd{font-size:7px;color:#ff4444;display:none;white-space:nowrap}
 
 /* ── Top-right buttons ── */
-#shop-btn{position:absolute;top:28px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:var(--hud-accent);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
+#shop-btn{position:absolute;top:32px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:var(--hud-accent);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
 #shop-btn:hover{opacity:1;border-color:var(--hud-border-hi)}
 #save-ind{position:absolute;top:28px;right:230px;font-size:5px;color:rgba(160,220,160,0.7);pointer-events:none;transition:opacity .5s;opacity:0}
 #save-ind.show{opacity:1}
@@ -253,7 +253,7 @@ canvas.free{cursor:default}
   <div id="free-ind" id="free-ind"></div>
 </div>
 <button id="shop-btn" id="shop-btn">BOUTIQUE [E]</button>
-<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:28px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE [I/E]</button>
+<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE [I/E]</button>
 <div id="save-ind" id="save-ind">SAVE</div>
 
 <!-- Import/Export Modal -->
@@ -303,7 +303,7 @@ canvas.free{cursor:default}
 <script>
 const MAX_ORE_EXACT=5000000000;
 // ═══════════ I18N ═══════════
-const lang=(navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en';
+const lang='fr'; // Toujours en français
 const T={
   fr:{inv:'INVENTAIRE',idx:'INDEX',stats:'STATS',mined:'Blocs mines',pick:'Pioche',luck:'Luck',
       atelier:'ATELIER DES PIOCHES',craftsub:'Craftez, equipez ou desequipez vos outils',
@@ -683,17 +683,17 @@ const PICKAXES=[
    recipe:{Sapphire:30,Diamond:8,Void:3,Iron:20},
    abilities:[{name:'Dark Pulse',desc:'Anneau rouge mine tout autour. Tous les 6 anneaux: mega-anneau rayon 5',chance:'1/12',color:'#334455'}]},
   {id:'t4',tier:'T4',label:"Nostalgic Axe",color:'#cc8820',scanMin:250000,owned:false,equipped:false,
-   desc:"3 anneaux dorés (1/25) qui minent en s'élargissant. Scanner ores Exotic+. x2 Luck.",fx:'Golden Pulse 3 anneaux (1/25). Scanner. x2 Luck.',
+   desc:"Golden Pulse 3 anneaux (1/25). Luck Boost x2 pendant 5s (1/20). Scanner. x2 Luck.",fx:'Golden Pulse (1/25). Luck Boost x2 5s (1/20). Scanner. x2 Luck.',
    recipe:{Gold:40,Ruby:10,Diamond:12,Void:8},
-   abilities:[{name:'Golden Pulse',desc:'3 anneaux dorés expansifs, minent tout sur leur passage',chance:'1/25',color:'#cc8820'},{name:'Pin Tracking',desc:'Minerais de recette localisés en temps réel',chance:'Passif',color:'#cc8820'}]},
+   abilities:[{name:'Golden Pulse',desc:'3 anneaux dorés expansifs, minent tout sur leur passage',chance:'1/25',color:'#cc8820'},{name:'Luck Boost x2',desc:'Boost de luck x2 pendant 5 secondes',chance:'1/20',color:'#ffcc44'}]},
   {id:'t5',tier:'T5',label:"Crystallized Pick",color:'#22aacc',scanMin:250000,owned:false,equipped:false,
    desc:"Crystal Shot (1/20), Crystal Growth 8 paliers (1/35), Shard Rain 20 éclats (1/45). Scanner. x3 Luck.",fx:'Crystal Shot/Growth/Rain. Scanner. x3 Luck.',
    recipe:{Diamond:30,Emerald:20,UltraMega:2,Ruby:15},
    abilities:[{name:'Crystal Shot',desc:'Cristal rapide qui traverse les blocs et mine tout sur 5 blocs',chance:'1/20',color:'#22aacc'},{name:'Crystal Growth',desc:'Cristal qui grandit et mine en cercle sur 8 paliers',chance:'1/35',color:'#22aacc'},{name:'Shard Rain',desc:'20 éclats tombent dans un carré 8x8 et minent à l\'impact',chance:'1/45',color:'#22aacc'}]},
   {id:'t6',tier:'T6',label:"NilAxe",color:'#4444aa',scanMin:250000,owned:false,equipped:false,
-   desc:"Octorb (1/50): 8 orbes en étoile qui minent à l'impact. Ore Clearing (1/50): nettoie rayon 1 (blocs communs). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear rayon 1 (1/50). x4 Luck.',
+   desc:"Octorb (1/50): 8 orbes en étoile. Ore Clearing (1/50): rayon 1. Luck Boost x5 pendant 10s (1/40). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear (1/50). Luck Boost x5 10s (1/40). Scanner. x4 Luck.',
    recipe:{Void:25,Giga:10,Smiley:5,Peta:1},
-   abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon de 4',chance:'1/7',color:'#4444aa'},{name:'Rare Tracking',desc:'Les minerais Exotic+ sont tracés sur le scanner',chance:'Passif',color:'#4444aa'}]},
+   abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon 1 autour du bloc ciblé',chance:'1/50',color:'#4444aa'},{name:'Luck Boost x5',desc:'Boost de luck x5 pendant 10 secondes',chance:'1/40',color:'#aa44ff'}]},
   {id:'t7',tier:'T7',label:"Moon Scepter",color:'#aabbff',scanMin:250000,owned:false,equipped:false,
    desc:"3 lames lunaires orbitent rayon 1.5 (1/40), Moonburst rayon 10 (1/150), Moonbeam colonne -8 (1/80). x5 Luck.",fx:'Crescent Blades (1/40). MoonBurst (1/150). Moonbeam (1/80). x5 Luck.',
    recipe:{PetaPlus2:1,Smiley:12,PetaPlus1:3,Diamond:50},
@@ -719,6 +719,7 @@ let oreIdx=new Uint8Array(W*H*D); // index into ORES (0=Stone default)
 let oreRevealed=new Uint8Array(W*H*D); // 0=pierre seule (non tiré), 1=minerai affiché
 let inventory={};
 let mined=0,luck=1.0,currentPickId='t0';
+let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilities
 let lastResetMined=0; // tracks when last mine reset fired
 let shopOpen=false,shopTab='all';
 let isFreeMouse=false;
@@ -884,7 +885,8 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,luck);
+    const _lk=luck*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
     // Play sound + show message when a rare ore spawns into view
@@ -973,7 +975,7 @@ function updateMineTopBar(){
   const txt=document.getElementById('mine-top-txt');
   const cd=document.getElementById('mine-top-cd');
   if(!bar)return;
-  const progress=mined%MINE_RESET_AT;
+  const progress=mined-lastResetMined;
   const pct=progress/MINE_RESET_AT;
   bar.style.width=(pct*100)+'%';
   bar.style.background=pct>=0.75?`rgba(255,${Math.round(255*(1-(pct-0.75)/0.25))},0,0.8)`:'rgba(255,255,255,0.3)';
@@ -1090,12 +1092,11 @@ function mountAnimImageInDom(img){
     h.setAttribute('aria-hidden','true');
     // Position at exact screen edge — fully rendered by compositor but not visible to user.
     // Using transform to push it off-screen while keeping paint alive.
-    // Keep in viewport at 1x1px, fully painted. clip-path prevents user from seeing it.
-    // will-change:transform forces GPU compositing — browser MUST animate GIF/WEBP.
-    h.style.cssText='position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:0;will-change:transform;';
+    // Images must be rendered by compositor to animate. Keep in viewport, tiny, painted.
+    h.style.cssText='position:fixed;right:0;bottom:0;width:2px;height:2px;overflow:hidden;pointer-events:none;z-index:-1;';
     document.body.appendChild(h);
   }
-  img.style.cssText='position:absolute;left:0;bottom:0;width:128px;height:128px;display:block;';
+  img.style.cssText='position:absolute;right:0;bottom:0;width:128px;height:128px;display:block;';
   h.appendChild(img);
 }
 
@@ -1548,12 +1549,12 @@ function doMine(){
   triggerPickAbility(x,y,z);
   if(!phantomBlock){
     _blocksSinceCave++;
-    // Luck increases cave spawn chance; max 1500 blocks forces a cave
-    const caveChance=Math.min(1000, (luck*0.002) + (_blocksSinceCave/5000));
-    if(Math.random()<caveChance){
-      _blocksSinceCave=0;
-      spawnCave(x,y,z);
-    }
+    // Cave: earliest at 1000/luck blocks, forced at 5000
+    const _cMin=Math.max(100,Math.round(1000/Math.max(1,luck)));
+    const _cMax=5000;
+    if(_blocksSinceCave>=_cMax||(
+      _blocksSinceCave>=_cMin&&Math.random()<(_blocksSinceCave-_cMin)/Math.max(1,_cMax-_cMin)
+    )){_blocksSinceCave=0;spawnCave(x,y,z);}
   }
   markMeshDirty();
   // Instant reset at 5000 — no countdown
@@ -2002,7 +2003,8 @@ function updateHUD(){
   if(el_luck){
     const pickLuck=getPickLuck();
     // Luck is BASE luck (from mining) × pickaxe multiplier — don't stack multiplicatively wrong
-    const totalLuck=luck*pickLuck;
+    const now2=Date.now();const activeMult=now2<_luckBoostUntil?_luckBoostMult:1;
+    const totalLuck=luck*pickLuck*activeMult;
     el_luck.textContent='x'+totalLuck.toFixed(2);
     el_luck.style.color=totalLuck>=10?'#df03fc':totalLuck>=5?'#ffeb3b':totalLuck>=2?'#00ff88':'#dddddd';
   }
@@ -2173,10 +2175,11 @@ function tryAbilityT3(mx,my,mz){
   if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
 }
 
-// ── T4: Golden Pulse ──
-let t4Counter=0;
+// ── T4: Golden Pulse + Luck Boost ──
+let t4Counter=0,t4LuckC=0;
 function tryAbilityT4(mx,my,mz){
-  t4Counter++;
+  t4Counter++;t4LuckC++;
+  if(t4LuckC%20===0){_luckBoostMult=2;_luckBoostUntil=Date.now()+5000;showSpawn('⚡ Luck Boost x2 — 5s!','#ffcc44',false);}
   if(t4Counter%25!==0)return;
   for(let r=0;r<3;r++){
     const radius=1.5+r*1.8;
@@ -2205,10 +2208,11 @@ function tryAbilityT5(mx,my,mz){
   if(t5RainC%45===0){spawnFX_ShardRain(mx,my,mz);}
 }
 
-// ── T6: Octorb + Ore Clearing ──
-let t6OrbC=0,t6ClrC=0;
+// ── T6: Octorb + Ore Clearing + Luck Boost ──
+let t6OrbC=0,t6ClrC=0,t6LuckC=0;
 function tryAbilityT6(mx,my,mz){
-  t6OrbC++;t6ClrC++;
+  t6OrbC++;t6ClrC++;t6LuckC++;
+  if(t6LuckC%40===0){_luckBoostMult=5;_luckBoostUntil=Date.now()+10000;showSpawn('⚡ Luck Boost x5 — 10s!','#aa44ff',false);}
   if(t6OrbC%50===0){
     const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
     dirs.forEach(([dx,dz])=>{
@@ -2327,20 +2331,22 @@ function spawnFX_Ring(wx,wy,wz,radius,color,thick){
 }
 
 function spawnFX_CrystalGrowth(mx,my,mz){
-  let hit=false;
   for(let t=0;t<8;t++){
-    setTimeout(()=>{
-      const r=t+1;
+    setTimeout((tier)=>{
+      const r=tier+1;
+      let hit=false;
       for(let a=0;a<Math.PI*2;a+=Math.PI/4){
         const rx=Math.round(mx+Math.cos(a)*r);
         const rz=Math.round(mz+Math.sin(a)*r);
         if(abilityMine(rx,my,rz))hit=true;
+        if(abilityMine(rx,my+1,rz))hit=true;
+        if(abilityMine(rx,my-1,rz))hit=true;
         FX_PARTICLES.push({type:'crystal_shard',color:'#22aacc',
           px:rx+0.5,py:my+0.5,pz:rz+0.5,
           vx:0,vy:Math.random()*3+1,vz:0,life:0.8,maxLife:0.8,trailPts:[]});
       }
       if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
-    },t*60);
+    },t*60,t);
   }
 }
 
@@ -2703,7 +2709,7 @@ function tickFX(dt){
           const wy2=p.py+v;
           const wz2=wallZ+p.right.z*u;
           // Mine block at wall position
-          if(Math.random()<0.15){abilityMine(Math.round(wx2),Math.round(wy2),Math.round(wz2));markMeshDirty();markInvDirty();updateHudStatsOnly();}
+          if(blocks[idx(Math.round(wx2),Math.round(wy2),Math.round(wz2))]){abilityMine(Math.round(wx2),Math.round(wy2),Math.round(wz2));markMeshDirty();markInvDirty();}
           const s=worldToScreen(wx2,wy2,wz2);if(!s)continue;
           fx2d.fillStyle='#ff2222'+(Math.round(alpha*180).toString(16).padStart(2,'0'));
           fx2d.fillRect(s.x-3,s.y-3,6,6);
