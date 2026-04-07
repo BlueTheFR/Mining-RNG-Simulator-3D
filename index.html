@@ -1549,7 +1549,7 @@ function doMine(){
   if(!phantomBlock){
     _blocksSinceCave++;
     // Luck increases cave spawn chance; max 1500 blocks forces a cave
-    const caveChance=Math.min(1, (luck*0.002) + (_blocksSinceCave/1500));
+    const caveChance=Math.min(250, (luck*0.002) + (_blocksSinceCave/1500));
     if(Math.random()<caveChance){
       _blocksSinceCave=0;
       spawnCave(x,y,z);
