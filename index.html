@@ -1,0 +1,2789 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mining RNG Simulator 3D</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+/* ── Design tokens: monochrome HUD ── */
+:root{
+  --hud-bg:rgba(4,4,8,0.92);
+  --hud-border:rgba(255,255,255,0.12);
+  --hud-border-hi:rgba(255,255,255,0.32);
+  --hud-text:rgba(220,220,220,0.85);
+  --hud-text-dim:rgba(160,160,160,0.45);
+  --hud-text-label:rgba(180,180,180,0.55);
+  --hud-accent:#ffffff;
+  --hud-sel-bg:rgba(255,255,255,0.08);
+  --hud-sel-out:rgba(255,255,255,0.22);
+  --hud-hover:rgba(255,255,255,0.05);
+  --shop-bg:#06060d;
+  --shop-border:rgba(255,255,255,0.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;overflow:hidden;font-family:'Press Start 2P',monospace;user-select:none}
+#app{width:100vw;height:100vh;position:relative}
+canvas{display:block;width:100%!important;height:100%!important;cursor:crosshair}
+canvas.free{cursor:default}
+#hud{position:absolute;inset:0;pointer-events:none;z-index:10}
+
+/* ── Panels ── */
+#left-col{position:absolute;top:28px;left:10px;display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 20px);overflow:hidden}
+.panel{background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;color:var(--hud-text);flex-shrink:0;backdrop-filter:blur(2px)}
+.panel h3{font-size:6px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55}
+#inv-panel{min-width:175px;max-width:210px;pointer-events:all;max-height:240px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.ore-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:7px;color:var(--hud-text);cursor:pointer;padding:2px 3px;border-radius:2px;transition:background .1s}
+.ore-row:hover{background:var(--hud-hover)}
+.ore-row.sel{background:var(--hud-sel-bg);outline:1px solid var(--hud-sel-out)}
+.ore-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ore-qty{margin-left:auto;color:var(--hud-text-dim);font-size:6px;flex-shrink:0}
+
+/* ── Index panel ── */
+#idx-panel{min-width:175px;max-width:210px;pointer-events:all;max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.idx-row{display:flex;align-items:center;gap:5px;margin-bottom:2px;font-size:6px;padding:1px 3px}
+.idx-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0}
+.idx-exact{margin-left:auto;font-size:5px;opacity:.5;flex-shrink:0}
+
+/* ── Stats ── */
+.stat-row{display:flex;justify-content:space-between;gap:14px;font-size:6px;margin-bottom:5px;color:var(--hud-text-label)}
+.stat-v{color:var(--hud-accent)}
+
+/* ── Crosshair ── */
+#xhair{position:absolute;top:50%;left:50%;pointer-events:none}
+#xhair::before,#xhair::after{content:'';position:absolute;background:rgba(255,255,255,0.75)}
+#xhair::before{width:1px;height:12px;left:-0.5px;top:-6px}
+#xhair::after{width:12px;height:1px;left:-6px;top:-0.5px}
+
+/* ── Tooltip ── */
+#tooltip{position:absolute;bottom:76px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:5px 10px;color:var(--hud-text);font-size:6px;pointer-events:none;max-width:220px;line-height:2}
+
+/* ── Hint ── */
+#hint{position:absolute;bottom:76px;left:10px;background:var(--hud-bg);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:6px 10px;color:rgba(255,255,255,0.2);font-size:5px;line-height:2.2;pointer-events:none;display:flex;flex-direction:column;gap:1px}
+
+/* ── Hotbar ── */
+#pick-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);pointer-events:all}
+.pick-slot{background:var(--hud-bg);border:1px solid var(--hud-border-hi);border-radius:5px;padding:7px 14px;display:flex;align-items:center;gap:9px}
+.slot-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.slot-tier{font-size:7px;color:var(--hud-accent)}
+.slot-label{font-size:5px;color:var(--hud-text-dim)}
+
+/* ── Spawn messages ── */
+#spawn-msg{position:absolute;top:18px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:30;display:flex;flex-direction:column;align-items:center;gap:5px}
+.smsg{border-radius:4px;padding:7px 20px;font-size:8px;animation:smsgAnim 5s forwards;white-space:nowrap;text-align:center;border:1px solid rgba(255,255,255,0.1);background:rgba(4,4,8,0.91)}
+@keyframes smsgAnim{0%{opacity:0;transform:translateY(-8px)}8%{opacity:1;transform:translateY(0)}75%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
+
+/* ── Ore hover tooltip ── */
+#ore-tip{position:fixed;background:rgba(4,4,8,0.97);border:1px solid var(--hud-border-hi);border-radius:3px;padding:7px 11px;pointer-events:none;z-index:60;display:none;min-width:155px}
+.ot-name{font-size:7px;color:var(--hud-accent);margin-bottom:3px}
+.ot-rare{font-size:6px;margin-bottom:2px}
+.ot-exact{font-size:5px;color:var(--hud-text-dim)}
+
+/* ── Scanner overlay — floats in world, size based on distance ── */
+#scanner{display:none}
+#scn-overlay{
+  position:absolute;
+  pointer-events:none;
+  text-align:center;
+  z-index:25;
+  display:none;
+  transform:translate(-50%,-50%);
+  transition:opacity 0.15s ease;
+}
+#scn-block{
+  border-radius:6px;
+  margin:0 auto 4px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:visible;
+  position:relative;
+}
+#scn-block svg{filter:drop-shadow(0 0 8px currentColor);}
+#scn-block canvas,#scn-block img{display:block;width:100%;height:100%;image-rendering:pixelated}
+#scn-name{display:none!important;}
+#scn-exact{font-size:5px;color:rgba(255,255,255,0.55);margin-top:2px;white-space:nowrap}
+#scn-rarity-badge{
+  font-size:5px;
+  border-radius:3px;
+  padding:1px 5px;
+  margin:2px auto 0;
+  display:inline-block;
+  border:1px solid currentColor;
+  opacity:0.85;
+}
+
+/* ── Rarity glow effects (unchanged — these are world fx, not HUD) ── */
+@keyframes exoticPulse{0%,100%{box-shadow:0 0 8px 2px #ffeb3b}50%{box-shadow:0 0 18px 6px #ffeb3b}}
+@keyframes transcPulse{0%,100%{box-shadow:0 0 8px 2px #2196f3}50%{box-shadow:0 0 18px 6px #2196f3}}
+@keyframes enigPulse{0%,100%{box-shadow:0 0 8px 2px #fff176}50%{box-shadow:0 0 22px 8px #fff176}}
+@keyframes unfathPulse{0%,100%{box-shadow:0 0 10px 3px #0d47a1}50%{box-shadow:0 0 26px 10px #0d47a1}}
+@keyframes otherwPulse{0%,100%{box-shadow:0 0 12px 4px #8b0000}50%{box-shadow:0 0 30px 12px #8b0000}}
+@keyframes imagPulse{0%,100%{box-shadow:0 0 14px 5px #ffffe0}50%{box-shadow:0 0 36px 14px #ffffe0}}
+@keyframes zenithPulse{0%,100%{box-shadow:0 0 16px 6px #df03fc}50%{box-shadow:0 0 42px 16px #df03fc}}
+@keyframes eternalRainbow{0%{box-shadow:0 0 18px 7px #ff0000}14%{box-shadow:0 0 18px 7px #ff8800}28%{box-shadow:0 0 18px 7px #ffff00}42%{box-shadow:0 0 18px 7px #00ff00}57%{box-shadow:0 0 18px 7px #0088ff}71%{box-shadow:0 0 18px 7px #8800ff}85%{box-shadow:0 0 18px 7px #ff00ff}100%{box-shadow:0 0 18px 7px #ff0000}}
+@keyframes spaffPulse{0%,100%{box-shadow:0 0 20px 8px #ff9900}50%{box-shadow:0 0 50px 20px #ff9900}}
+.smsg.exotic{animation:smsgAnim 5s forwards,exoticPulse 1s infinite}
+.smsg.transcendent{animation:smsgAnim 5s forwards,transcPulse 1s infinite}
+.smsg.enigmatic{animation:smsgAnim 5s forwards,enigPulse 1s infinite}
+.smsg.unfathomable{animation:smsgAnim 5s forwards,unfathPulse 1s infinite}
+.smsg.otherworldly{animation:smsgAnim 5s forwards,otherwPulse 1s infinite}
+.smsg.imaginary{animation:smsgAnim 5s forwards,imagPulse 1s infinite}
+.smsg.zenith{animation:smsgAnim 5s forwards,zenithPulse 0.8s infinite}
+.smsg.eternal{animation:smsgAnim 5s forwards,eternalRainbow 0.6s infinite}
+.smsg.spaff{animation:smsgAnim 5s forwards,spaffPulse 0.4s infinite}
+
+/* ── Ability panel ── */
+#ability-panel{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:5px;padding:10px 16px;pointer-events:none;text-align:left;display:none;min-width:320px;max-width:500px}
+#ability-title{font-size:6px;color:var(--hud-accent);margin-bottom:7px;letter-spacing:2px;text-align:center;opacity:.55}
+.ability-row{font-size:7px;color:var(--hud-text);margin-bottom:1px;display:flex;align-items:center;gap:7px}
+.ability-desc{font-size:9px;color:var(--hud-text-dim);margin-left:17px;font-family:sans-serif;margin-bottom:6px;line-height:1.7}
+.ability-icon{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+
+/* ── Mine top bar ── */
+#mine-top{position:absolute;top:0;left:0;right:0;height:18px;background:rgba(4,4,8,0.85);display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace}
+#mine-top-track{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+#mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
+#mine-top-txt{font-size:5px;color:rgba(255,255,255,0.35);white-space:nowrap}
+#mine-top-cd{font-size:5px;color:#ff4444;display:none;white-space:nowrap}
+
+/* ── Top-right buttons ── */
+#shop-btn{position:absolute;top:28px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:var(--hud-accent);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
+#shop-btn:hover{opacity:1;border-color:var(--hud-border-hi)}
+#save-ind{position:absolute;top:28px;right:230px;font-size:5px;color:rgba(160,220,160,0.7);pointer-events:none;transition:opacity .5s;opacity:0}
+#save-ind.show{opacity:1}
+#free-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7px;color:rgba(255,255,255,0.5);pointer-events:none;display:none;text-align:center;line-height:2}
+#placing-ind{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:5px;color:var(--hud-accent);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:4px 10px;display:none;pointer-events:none}
+
+/* ── Shop ── */
+#shop-ov{position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:50;align-items:center;justify-content:center;pointer-events:all}
+#shop-ov.open{display:flex}
+#shop-box{background:var(--shop-bg);border:1px solid var(--shop-border);border-radius:6px;width:780px;max-height:90vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+#shop-box h2{font-size:9px;color:var(--hud-accent);margin-bottom:2px;letter-spacing:3px;opacity:.8}
+.shop-sub{font-size:6px;color:rgba(200,200,200,0.25);margin-bottom:16px;font-family:sans-serif}
+#shop-tabs{display:flex;gap:4px;margin-bottom:14px}
+.tab-btn{font-family:'Press Start 2P',monospace;font-size:5px;padding:6px 11px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:2px;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .12s}
+.tab-btn.on,.tab-btn:hover{border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04)}
+.pick-card{background:#080810;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:13px;margin-bottom:9px;display:grid;grid-template-columns:50px 1fr 105px;gap:11px;align-items:start}
+.pick-card.owned{border-color:rgba(120,200,120,0.2)}
+.pick-card.equipped{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.02)}
+.c-badge{width:44px;height:44px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px}
+.c-info h4{font-size:6px;color:rgba(255,255,255,0.8);margin-bottom:4px}
+.c-desc{font-size:10px;color:rgba(200,200,200,0.35);line-height:1.8;margin-bottom:5px;font-family:sans-serif}
+.c-fx{font-size:10px;color:rgba(200,200,200,0.25);margin-bottom:5px;font-family:sans-serif}
+.rw{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:3px}
+.rp{font-size:9px;border:1px solid rgba(255,255,255,0.1);border-radius:2px;padding:1px 6px;color:rgba(200,200,200,0.4);font-family:sans-serif}
+.rp.ok{border-color:rgba(100,200,100,0.3);color:rgba(120,200,120,0.8)}
+.rp.no{border-color:rgba(200,80,60,0.3);color:rgba(200,100,80,0.8)}
+.c-act{display:flex;flex-direction:column;gap:4px}
+.abt{font-family:'Press Start 2P',monospace;font-size:5px;padding:7px 5px;border-radius:2px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.6);cursor:pointer;text-align:center;transition:all .12s;width:100%}
+.abt:hover:not(:disabled){background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.35);color:#fff}
+.abt:disabled{opacity:.2;cursor:default}
+.abt.g{border-color:rgba(100,200,100,0.3);color:rgba(120,200,120,0.8)}
+.abt.g:hover:not(:disabled){background:rgba(100,200,100,0.06);border-color:rgba(120,200,120,0.5)}
+.abt.r{border-color:rgba(200,80,60,0.3);color:rgba(200,100,80,0.8)}
+.abt.r:hover:not(:disabled){background:rgba(200,80,60,0.06)}
+.shop-close{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:5px;transition:all .12s}
+.shop-close:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.25)}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="c"></canvas>
+<!-- Spawn sounds -->
+<audio id="Achillgoesdownyourspine" src="Achillgoesdownyourspine.mp3" preload="auto"></audio>
+<audio id="Yourheartskipsabeat" src="Yourheartskipsabeat.mp3" preload="auto"></audio>
+<audio id="Transcendent" src="Transcendent.mp3" preload="auto"></audio>
+<audio id="Enigmatic" src="Enigmatic.mp3" preload="auto"></audio>
+<audio id="Unfathomable" src="Unfathomable.mp3" preload="auto"></audio>
+<audio id="Otherworldly" src="Otherworldly.mp3" preload="auto"></audio>
+<audio id="Imaginary" src="Imaginary.mp3" preload="auto"></audio>
+<audio id="Zenith" src="Zenith.mp3" preload="auto"></audio>
+<audio id="Eternal" src="Eternal.mp3" preload="auto"></audio>
+  <audio id="EpineAudio" src="EpineAudio.mp3" preload="auto" loop></audio>
+
+<div id="hud">
+  <div id="mine-top">
+    <span id="mine-top-txt">0 / 5000</span>
+    <div id="mine-top-track"><div id="mine-top-bar"></div></div>
+    <span id="mine-top-cd"></span>
+  </div>
+  <div id="left-col">
+    <div class="panel" id="inv-panel">
+      <h3 id="lbl-inv">INVENTAIRE</h3>
+      <div id="inv-list"></div>
+    </div>
+    <div class="panel" id="idx-panel">
+      <h3 id="lbl-idx">INDEX</h3>
+      <div id="idx-list"></div>
+    </div>
+    <div class="panel">
+      <h3 id="lbl-stats">STATS</h3>
+      <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
+      <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
+      <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
+      <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
+        <span style="color:#df03fc;font-size:5px">100M+ TROUVES</span>
+        <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
+      </div>
+    </div>
+  </div>
+  <div id="scanner" style="display:none"></div>
+  <div id="scn-overlay">
+    <div id="scn-block"></div>
+    <div id="scn-name"></div>
+    <div id="scn-rarity-badge"></div>
+    <div id="scn-exact"></div>
+  </div>
+  <div id="ability-panel">
+    <div id="ability-title">CAPACITES</div>
+    <div id="ability-list"></div>
+  </div>
+  <div id="ore-tip"><div class="ot-name" id="ot-name"></div><div class="ot-rare" id="ot-rare"></div><div class="ot-exact" id="ot-exact"></div></div>
+  <canvas id="ability-fx-canvas"></canvas>
+  <div id="xhair"></div>
+  <div id="spawn-msg"></div>
+  <div id="tooltip"></div>
+  <div id="hint">
+    <span>ZQSD : avancer</span>
+    <span>Souris : regarder</span>
+    <span>Clic G maintenu : miner</span>
+    <span>Ctrl : liberer souris</span>
+    <span>E : boutique</span>
+  </div>
+  <div id="pick-bar"></div>
+  <div id="placing-ind"></div>
+  <div id="free-ind" id="free-ind"></div>
+</div>
+<button id="shop-btn" id="shop-btn">BOUTIQUE [E]</button>
+<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:28px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE [I/E]</button>
+<div id="save-ind" id="save-ind">SAVE</div>
+
+<!-- Import/Export Modal -->
+<div id="savemod-ov" style="position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:60;align-items:center;justify-content:center;pointer-events:all">
+  <div style="background:#06060d;border:1px solid rgba(255,255,255,0.14);border-radius:6px;width:520px;padding:24px;font-family:'Press Start 2P',monospace">
+    <h2 style="font-size:8px;color:rgba(255,255,255,0.85);margin-bottom:4px;letter-spacing:3px">SAUVEGARDE</h2>
+    <div style="font-size:10px;color:rgba(200,200,200,0.25);margin-bottom:16px;font-family:sans-serif">Exportez ou importez votre progression</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div style="font-size:6px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:1px">EXPORTER</div>
+        <div style="font-size:9px;color:rgba(200,200,200,0.3);margin-bottom:8px;font-family:sans-serif">Copie vos données dans le presse-papier, ou télécharge un fichier .json</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="exportSaveClipboard()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.6)'">COPIER</button>
+          <button onclick="exportSaveFile()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.6)'">TÉLÉCHARGER</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
+        <div style="font-size:6px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:1px">IMPORTER</div>
+        <div style="font-size:9px;color:rgba(200,200,200,0.3);margin-bottom:8px;font-family:sans-serif">Collez vos données ci-dessous ou chargez un fichier .json</div>
+        <textarea id="import-ta" placeholder="Collez le JSON ici..." style="width:100%;height:80px;background:#03030a;border:1px solid rgba(255,255,255,0.1);border-radius:2px;color:rgba(220,220,220,0.8);font-family:monospace;font-size:9px;padding:6px;resize:vertical;box-sizing:border-box;outline:none"></textarea>
+        <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+          <button onclick="importSaveText()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(100,200,100,0.3);border-radius:2px;color:rgba(120,200,120,0.8);cursor:pointer">CHARGER TEXTE</button>
+          <label style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(100,200,100,0.3);border-radius:2px;color:rgba(120,200,120,0.8);cursor:pointer">CHARGER FICHIER<input type="file" accept=".json,application/json" onchange="importSaveFile(event)" style="display:none"></label>
+          <span id="import-msg" style="font-size:9px;font-family:sans-serif;color:rgba(120,200,120,0.9);display:none"></span>
+        </div>
+      </div>
+    </div>
+    <button onclick="closeSaveMenu()" style="font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:14px;transition:all .12s" onmouseover="this.style.color='rgba(255,255,255,0.7)';this.style.borderColor='rgba(255,255,255,0.25)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">FERMER</button>
+  </div>
+</div>
+
+<div id="shop-ov">
+  <div id="shop-box">
+    <h2 id="lbl-atelier">ATELIER DES PIOCHES</h2>
+    <div class="shop-sub" id="lbl-craft-sub">Craftez, equipez ou desequipez vos outils</div>
+    <div id="shop-tabs">
+      <button class="tab-btn on" onclick="setTab('all',this)" id="tab-all-btn">Toutes</button>
+      <button class="tab-btn" onclick="setTab('mine',this)" id="tab-mine-btn">Mes pioches</button>
+    </div>
+    <div id="shop-content"></div>
+    <button class="shop-close" onclick="closeShop()" id="lbl-close">FERMER [E]</button>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const MAX_ORE_EXACT=5000000000;
+// ═══════════ I18N ═══════════
+const lang=(navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en';
+const T={
+  fr:{inv:'INVENTAIRE',idx:'INDEX',stats:'STATS',mined:'Blocs mines',pick:'Pioche',luck:'Luck',
+      atelier:'ATELIER DES PIOCHES',craftsub:'Craftez, equipez ou desequipez vos outils',
+      all:'Toutes',mine:'Mes pioches',close:'FERMER [E]',shop:'BOUTIQUE [E]',
+      hint:'ZQSD : avancer\nSouris : regarder\nClic G maintenu : miner\nCtrl : liberer souris\nE : boutique',
+      free:'MODE LIBRE\nCtrl pour reverrouiller',placing:'Mode pose : ',
+      nospace:'Materiaux insuffisants',crafted:'craftee !',equipped:'Equipee',
+      equip:'EQUIPER',unequip:'DESEQUIPER',craft:'CRAFTER',nomat:'Manque mat.',
+      def:'Disponible par defaut',scanner:'SCANNER ACTIF',clickplay:'Clic pour jouer',
+      freemouse:'Mode libre — Ctrl pour reverrouiller',shopopen:'Boutique ouverte',
+      aimat:'Visez un bloc',saved:'SAUVEGARDE',rare1:'en 1/'},
+  en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
+      atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
+      all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
+      hint:'WASD : move\nMouse : look\nHold LMB : mine\nCtrl : free mouse\nE : shop',
+      free:'FREE MODE\nCtrl to re-lock',placing:'Place mode: ',
+      nospace:'Not enough materials',crafted:'crafted!',equipped:'Equipped',
+      equip:'EQUIP',unequip:'UNEQUIP',craft:'CRAFT',nomat:'Missing mat.',
+      def:'Available by default',scanner:'SCANNER ACTIVE',clickplay:'Click to play',
+      freemouse:'Free mode — Ctrl to re-lock',shopopen:'Shop open',
+      aimat:'Aim at a block',saved:'SAVED',rare1:'1 in '}
+}[lang];
+
+function applyI18N(){
+  document.getElementById('lbl-inv').textContent=T.inv;
+  document.getElementById('lbl-idx').textContent=T.idx;
+  document.getElementById('lbl-stats').textContent=T.stats;
+  document.getElementById('lbl-mined').textContent=T.mined;
+  document.getElementById('lbl-pick').textContent=T.pick;
+  document.getElementById('lbl-atelier').textContent=T.atelier;
+  document.getElementById('lbl-craft-sub').textContent=T.craftsub;
+  document.getElementById('tab-all-btn').textContent=T.all;
+  document.getElementById('tab-mine-btn').textContent=T.mine;
+  document.getElementById('lbl-close').textContent=T.close;
+  document.getElementById('shop-btn').textContent=T.shop;
+  // hint is now column spans, skip overwrite
+  document.getElementById('tooltip').textContent=T.clickplay;
+  document.getElementById('free-ind').textContent=T.free;
+  document.getElementById('save-ind').textContent=T.saved;
+}
+
+// ═══════════ RARITY COLORS ═══════════
+const RC={
+  Common:'#aaaaaa',Uncommon:'#55ff55','Rare':'#5555ff',Epic:'#aa00ff',
+  Legendary:'#ffaa00','Legendary+':'#ffcc33',Mythic:'#ff5577',Mythical:'#df03fc',
+  Exotic:'#ffeb3b',Exquisite:'#00ff00',Transcendent:'#2196f3',Enigmatic:'#fff176',
+  Unfathomable:'#0d47a1',Otherworldly:'#8b0000',Imaginary:'#ffffe0',
+  Zenith:'#df03fc',Eternal:'#00fbff',SPAFF:'#ff9900',Divine:'#ff0000',
+  // Cave-exclusive
+  'IceCaveExclusive':'#88eeff',
+  'IceCaveExclusive-Exotic':'#ffeb3b',
+  'IceCaveExclusive-Eternal':'#00fbff',
+  'EnergyCaveExclusive':'#a327f5',
+  'EnergyCaveExclusive-Exquisite':'#00ff00',
+  'EnergyCaveExclusive-Zenith':'#df03fc',
+  'NuclearCaveExclusive':'#46f527',
+  'NuclearCaveExclusive-Transcendent':'#2196f3',
+  'ShadowCaveExclusive':'#313831',
+  'ShadowCaveExclusive-Enigmatic':'#fff176',
+  'ShadowCaveExclusive-Imaginary':'#ffffe0',
+  'AbyssCaveExclusive':'#0b0e61',
+  'AbyssCaveExclusive-Unfathomable':'#0d47a1',
+  'AbyssCaveExclusive-Zenith':'#df03fc',
+  'LavaCaveExclusive':'#66584a',
+  'LavaCaveExclusive-Otherworldly':'#8b0000',
+  'LavaCaveExclusive-Eternal':'#00fbff',
+  'CaveExclusive-Mythical':'#df03fc',
+  'CaveExclusive-Eternal':'#00fbff',
+};
+
+// ═══════════ ORES (from paste + base) ═══════════
+// Textures 6 faces : imgSrc (png/webp/gif), et/ou symbol (+ symbolColor) généré sur canvas.
+const ORES=[
+  // Base blocks (no spawn msg, very common)
+  {name:'Stone',     rarity:'Common',      exact:3,       color:'#777777',spawnMsg:null},
+  {name:'Coal',      rarity:'Common',      exact:10,      color:'#444444',spawnMsg:null},
+  {name:'Iron',      rarity:'Uncommon',    exact:20,      color:'#aaaaaa',spawnMsg:null},
+  {name:'Emerald',   rarity:'Rare',        exact:35,      color:'#2ecc71',spawnMsg:null},
+  {name:'Ruby',      rarity:'Epic',        exact:50,      color:'#e91e63',spawnMsg:null},
+  {name:'Sapphire',  rarity:'Legendary',   exact:75,      color:'#2196f3',spawnMsg:null},
+  {name:'Topaz',     rarity:'Legendary',   exact:100,     color:'#ff9800',spawnMsg:null},
+  {name:'Diamond',   rarity:'Legendary',   exact:150,     color:'#00ffff',spawnMsg:null},
+  {name:'Void',      rarity:'Legendary',   exact:250,     color:'#9c27b0',spawnMsg:null},
+  {name:'Gold',      rarity:'Legendary+',  exact:1000,    color:'#ffd700',spawnMsg:null},
+  {name:'Mega',      rarity:'Legendary+',  exact:10000,   color:'#ff9800',spawnMsg:null},
+  {name:'UltraMega', rarity:'Mythic',      exact:25000,   color:'#ff5722',spawnMsg:null},
+  {name:'HyperMega', rarity:'Mythic',      exact:50000,   color:'#e91e63',spawnMsg:null},
+  {name:'VoidShard', rarity:'Mythical',    exact:75000,   color:'#00e5ff',spawnMsg:null},
+  {name:'Giga',      rarity:'Mythical',    exact:100000,  color:'#2196f3',spawnMsg:null},
+  // Exotic+ (spawn sounds)
+  {name:'Smiley',    rarity:'Exotic',      exact:250000,  color:'#ffeb3b',spawnMsg:'A chill goes down your spine!'},
+  {name:'FrostWraith',rarity:'Exotic',     exact:750000,  color:'#00b0ff',spawnMsg:'A chill goes down your spine!'},
+  {name:'Tera',      rarity:'Exotic',      exact:500000,  color:'#9c27b0',spawnMsg:'A chill goes down your spine!'},
+  {name:'TeraPlus',  rarity:'Exotic',      exact:1000000, color:'#ff4081',spawnMsg:'A chill goes down your spine!'},
+  {name:'SoulGlacier',rarity:'Exotic',     exact:2000000, color:'#9c27b0',spawnMsg:'A chill goes down your spine!'},
+  {name:'EmberPhantom',rarity:'Exotic',    exact:3000000, color:'#ff9800',spawnMsg:'A chill goes down your spine!'},
+  {name:'CrimsonEclipse',rarity:'Exotic',  exact:4000000, color:'#f44336',spawnMsg:'A chill goes down your spine!'},
+  {name:'Peta',      rarity:'Exotic',      exact:5000000, color:'#00bcd4',spawnMsg:'A chill goes down your spine!'},
+  {name:'PetaPlus1', rarity:'Exquisite',   exact:10000000,color:'#ff4081',spawnMsg:'Your heart skips a beat!'},
+  {name:'CelestiteNova',rarity:'Exquisite',exact:12100000,color:'#ff80ab',spawnMsg:'Your heart skips a beat!'},
+  {name:'NovaShard', rarity:'Exquisite',   exact:12000000,color:'#ff6ec7',spawnMsg:'Your heart skips a beat!'},
+  {name:'AuroriteShard',rarity:'Exquisite',exact:13500000,color:'#80d8ff',spawnMsg:'Your heart skips a beat!'},
+  {name:'Celestium', rarity:'Exquisite',   exact:15000000,color:'#7c4dff',spawnMsg:'Your heart skips a beat!'},
+  {name:'LuminaraGem',rarity:'Exquisite',  exact:15500000,color:'#ffd740',spawnMsg:'Your heart skips a beat!'},
+  {name:'Astralite', rarity:'Exquisite',   exact:18000000,color:'#00e5ff',spawnMsg:'Your heart skips a beat!'},
+  {name:'EclipseraCore',rarity:'Exquisite',exact:17000000,color:'#ff1744',spawnMsg:'Your heart skips a beat!'},
+  {name:'Luminite',  rarity:'Exquisite',   exact:21000000,color:'#ffd740',spawnMsg:'Your heart skips a beat!'},
+  {name:'EclipseCore',rarity:'Exquisite',  exact:24000000,color:'#ff1744',spawnMsg:'Your heart skips a beat!'},
+  {name:'PetaPlus2', rarity:'Transcendent',exact:25000000,color:'#cddc39',spawnMsg:'You hear a ringing!'},
+  {name:'Nebulium',  rarity:'Transcendent',exact:26000000,color:'#76ff03',spawnMsg:'You hear a ringing!'},
+  {name:'Stellarium',rarity:'Transcendent',exact:28000000,color:'#00bcd4',spawnMsg:'You hear a ringing!'},
+  {name:'Lunarium',  rarity:'Transcendent',exact:30000000,color:'#ffeb3b',spawnMsg:'You hear a ringing!'},
+  {name:'Solarium',  rarity:'Transcendent',exact:32000000,color:'#ff9800',spawnMsg:'You hear a ringing!'},
+  {name:'Aetherium', rarity:'Transcendent',exact:35000000,color:'#8bc34a',spawnMsg:'You hear a ringing!'},
+  {name:'Chronium',  rarity:'Transcendent',exact:38000000,color:'#00ffff',spawnMsg:'You hear a ringing!'},
+  {name:'Quantumite',rarity:'Transcendent',exact:40000000,color:'#2196f3',spawnMsg:'You hear a ringing!'},
+  {name:'Hyperion',  rarity:'Transcendent',exact:45000000,color:'#ff4081',spawnMsg:'You hear a ringing!'},
+  {name:'PetaPlus3', rarity:'Transcendent',exact:51000000,color:'#ff5722',spawnMsg:'You hear a ringing!'},
+  {name:'Vortexium', rarity:'Transcendent',exact:52500000,color:'#9c27b0',spawnMsg:'You hear a ringing!'},
+  {name:'Ecliptium', rarity:'Transcendent',exact:55000000,color:'#ff5722',spawnMsg:'You hear a ringing!'},
+  {name:'EclipseShard',rarity:'Enigmatic', exact:60000000,color:'#1c1c1c',spawnMsg:'Your vision begins to blur!'},
+  {name:'ShadowFragment',rarity:'Enigmatic',exact:61230000,color:'#2f2f2f',spawnMsg:'Your vision begins to blur!'},
+  {name:'TwilightGem',rarity:'Enigmatic',  exact:63000000,color:'#512da8',spawnMsg:'Your vision begins to blur!'},
+  {name:'PetaPlus4', rarity:'Enigmatic',   exact:75000000,color:'#00bcd4',spawnMsg:'Your vision begins to blur!'},
+  {name:'OblivionStone',rarity:'Enigmatic',exact:70000000,color:'#263238',spawnMsg:'Your vision begins to blur!'},
+  {name:'NightCore', rarity:'Enigmatic',   exact:77000000,color:'#ff1744',spawnMsg:'Your vision begins to blur!'},
+  {name:'SpecterGem',rarity:'Enigmatic',   exact:81000000,color:'#37474f',spawnMsg:'Your vision begins to blur!'},
+  {name:'OblivionShard',rarity:'Enigmatic',exact:85000000,color:'#263238',spawnMsg:'Your vision begins to blur!'},
+  {name:'PhantomCrystal',rarity:'Enigmatic',exact:95000000,color:'#37474f',spawnMsg:'Your vision begins to blur!'},
+  {name:'OblivionCore',rarity:'Enigmatic', exact:90000000,color:'#37474f',spawnMsg:'Your vision begins to blur!'},
+  {name:'AbyssGem',  rarity:'Enigmatic',   exact:99000000,color:'#4a148c',spawnMsg:'Your vision begins to blur!'},
+  {name:'ZergHunter',rarity:'Unfathomable',exact:100000000,color:'#ff1300',spawnMsg:'Survive... or become meat'},
+  {name:'FrostShard',rarity:'Unfathomable',exact:120000000,color:'#00dfff',spawnMsg:'A shard of eternal frost crystallizes before your eyes!'},
+  {name:'GlacierHeart',rarity:'Unfathomable',exact:140000000,color:'#00aaff',spawnMsg:'The heart of a glacier pulses, freezing everything around it!'},
+  {name:'AbyssalCore',rarity:'Unfathomable',exact:150000000,color:'#4a148c',spawnMsg:'A bottomless abyss opens beneath your feet...'},
+  {name:'IceboundCore',rarity:'Unfathomable',exact:180000000,color:'#88eeff',spawnMsg:'IceboundCore emerges, encasing reality in glacial chains!'},
+  {name:'AbyssalSingularity',rarity:'Unfathomable',exact:200000000,color:'#000000',spawnMsg:'Reality distorts around you...'},
+  {name:'DarkMatter',rarity:'Unfathomable',exact:220000000,color:'#1a237e',spawnMsg:'Gravity distorts violently around the Dark Matter!'},
+  {name:'AbyssHeart',rarity:'Unfathomable',exact:230000000,color:'#5e0f6f',spawnMsg:'A bottomless heart opens beneath you...'},
+  {name:'VoidTitan', rarity:'Unfathomable',exact:240000000,color:'#4b0082',spawnMsg:'The VoidTitan awakens from the depths!'},
+  {name:'VoidPlus',  rarity:'Unfathomable',exact:250000000,color:'#8e24aa',spawnMsg:'A ripple runs through the cosmos as you uncover the VoidPlus!'},
+  {name:'Atomarion', rarity:'Unfathomable',exact:265000000,color:'#00ff66',spawnMsg:'A surge of atomic energy radiates as Atomarion manifests!'},
+  {name:'Infernium', rarity:'Unfathomable',exact:285000000,color:'#ff3300',spawnMsg:'Molten fury erupts from Infernium, scorching all nearby!'},
+  {name:'AstralCataclysm',rarity:'Otherworldly',exact:300000000,color:'#1a237e',spawnMsg:'The sky fractures with alien light!'},
+  {name:'VoidRequiem',rarity:'Otherworldly',exact:400000000,color:'#4a148c',spawnMsg:'A silent hymn echoes from beyond existence...'},
+  {name:'VoidUltra', rarity:'Otherworldly',exact:500000000,color:'#000000',spawnMsg:"The universe trembles! You've discovered the legendary VoidUltra!"},
+  {name:'Abyssion',  rarity:'Otherworldly',exact:525000000,color:'#8b0000',spawnMsg:'The world trembles as Abyssion emerges!'},
+  {name:'Eternium',  rarity:'Otherworldly',exact:550000000,color:'#ff1744',spawnMsg:'Eternium pulses with unimaginable energy!'},
+  {name:'Voidessence',rarity:'Otherworldly',exact:600000000,color:'#6a1b9a',spawnMsg:'Voidessence warps the very fabric of existence!'},
+  {name:'Cosmosite', rarity:'Otherworldly',exact:650000000,color:'#ff6867',spawnMsg:'The cosmos quivers as Cosmosite forms!'},
+  {name:'Singulite', rarity:'Otherworldly',exact:700000000,color:'#00ffff',spawnMsg:'Singulite bends space and time around you!'},
+  {name:'CosmicRelic',rarity:'Otherworldly',exact:750000000,color:'#ff6867',spawnMsg:'The fabric of existence tears apart!'},
+  {name:'EternalParadox',rarity:'Otherworldly',exact:800000000,color:'#b71c1c',spawnMsg:'Time collapses. Something impossible has awakened.'},
+  {name:'Lugubre',   rarity:'Otherworldly',exact:850000000,color:'#ffc7f8',spawnMsg:'INCROYABLE luck!!!'},
+  {name:'Infinity',  rarity:'Imaginary',   exact:1000000000,color:'#000000',spawnMsg:'You feel the universe itself watching you!'},
+  {name:'EventideStar',rarity:'Imaginary', exact:1200000000,color:'#0a0a0a',spawnMsg:'A ripple of eternity whispers through the void as EventideStar appears!'},
+  {name:'QuantumCore',rarity:'Imaginary',  exact:1300000000,color:'#00ffcc',spawnMsg:'Digital circuits hum as QuantumCore boots the system!'},
+  {name:'CosmoNova', rarity:'Imaginary',   exact:1400000000,color:'#141414',spawnMsg:'Stars ignite and collapse in a cosmic dance around CosmoNova!'},
+  {name:'VoidEclipse',rarity:'Imaginary',  exact:1500000000,color:'#0d0d0d',spawnMsg:'Darkness stretches infinitely as VoidEclipse emerges from the void!'},
+  {name:'Singularity',rarity:'Imaginary',  exact:2000000000,color:'#000000',spawnMsg:'Time stops. Space collapses. You found the impossible.'},
+  {name:'AlterDemon',rarity:'Divine',     exact:1000000,   color:'#000000',spawnMsg:'Alters demon is here to catch you'},
+  {name:'Veritcal',  rarity:'Imaginary',   exact:4444444444, color:'#90d5ff',spawnMsg:"You shouldn't dig straight down"},
+  {name:'Zanacharium',rarity:'Zenith',     exact:68750000000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...'},
+  {name:'Nucleonix', rarity:'Zenith',      exact:60000000000,color:'#00ff00',spawnMsg:'Radiation hums as Nucleonix pulses with atomic energy!'},
+  {name:'Chronovexium',rarity:'Zenith',    exact:125000000000,color:'#00f0ff',spawnMsg:'Time fractures as Chronovexium emerges from the continuum...'},
+  {name:'Aqualith',  rarity:'Zenith',      exact:300000000000,color:'#00bfff',spawnMsg:'Ocean currents converge as Aqualith emerges from the deep!'},
+  {name:'Aetherion', rarity:'Zenith',      exact:350000000000,color:'#ffd700',spawnMsg:'The heavens shimmer as Aetherion descends into existence...'},
+  {name:'Pyrocore',  rarity:'Zenith',      exact:500000000000,color:'#ff4500',spawnMsg:'Flames swirl violently as Pyrocore erupts from the magma!'},
+  {name:'Circuitium',rarity:'Zenith',      exact:750000000000,color:'#cccccc',spawnMsg:'Digital sparks fly as Circuitium materializes from the grid!'},
+  {name:'Paradoxium',rarity:'Eternal',     exact:1500000000000,color:'#6a00ff',spawnMsg:'Reality twists into an impossible shape as Paradoxium manifests...'},
+  {name:'Genesis',   rarity:'Eternal',     exact:5000000000000,color:'#000000',spawnMsg:'Twisting circuitry explodes in a ferocious outburst of electric energy...'},
+  {name:'Divinitium',rarity:'Eternal',     exact:7000000000000,color:'#bfcadb',spawnMsg:'A blinding radiance heralds the arrival of Divinitium!'},
+  {name:'Pyronis',   rarity:'Eternal',     exact:4000000000000,color:'#ff6600',spawnMsg:'Flames twist violently as Pyronis bursts forth from molten rock!'},
+  {name:'BlueTheFR', rarity:'Eternal',     exact:100000000000000,color:'#00fbff',spawnMsg:'You meet the creator...'},
+  {name:'SPAFF',     rarity:'SPAFF',       exact:1e17,           color:'#ff9900',spawnMsg:'Le SPAFF est la!!'},
+  // ── Cave base blocks ──
+  {name:'Ice',           rarity:'IceCaveExclusive',             exact:1,           color:'#88eeff',spawnMsg:null,caveBase:true},
+  {name:'Energy',        rarity:'EnergyCaveExclusive',          exact:1,           color:'#a327f5',spawnMsg:null,caveBase:true},
+  {name:'NuclearWaste',  rarity:'NuclearCaveExclusive',         exact:1,           color:'#46f527',spawnMsg:null,caveBase:true},
+  {name:'ShadowMatter',  rarity:'ShadowCaveExclusive',          exact:1,           color:'#313831',spawnMsg:null,caveBase:true},
+  {name:'AbyssSand',     rarity:'AbyssCaveExclusive',           exact:1,           color:'#0b0e61',spawnMsg:null,caveBase:true},
+  {name:'LavaRock',      rarity:'LavaCaveExclusive',            exact:1,           color:'#66584a',spawnMsg:null,caveBase:true},
+  // ── Cave exclusive rare ores ──
+  {name:'CrystalFrost',     rarity:'IceCaveExclusive-Exotic',          exact:500000,       color:'#00ffff',spawnMsg:'A shard of CrystalFrost glimmers in the icy cave!'},
+  {name:'GlowingNova',      rarity:'EnergyCaveExclusive-Exquisite',    exact:1000000,      color:'#ff00ff',spawnMsg:'GlowingNova illuminates the cavern with a soft pulse!'},
+  {name:'ZenithShard',      rarity:'EnergyCaveExclusive-Zenith',       exact:60000000,     color:'#df03fc',spawnMsg:'ZenithShard glows with impossible energy!'},
+  {name:'RadiantCore',      rarity:'NuclearCaveExclusive-Transcendent',exact:3000000,      color:'#ffd700',spawnMsg:'RadiantCore radiates blinding light across the cave!'},
+  {name:'ShadowGem',        rarity:'ShadowCaveExclusive-Enigmatic',    exact:5000000,      color:'#4b0082',spawnMsg:'ShadowGem distorts the shadows in the cavern!'},
+  {name:'VoidOrb',          rarity:'ShadowCaveExclusive-Imaginary',    exact:45000000,     color:'#000000',spawnMsg:'VoidOrb bends reality in the cavern!'},
+  {name:'AbyssCrystal',     rarity:'AbyssCaveExclusive-Unfathomable',  exact:20000000,     color:'#0d47a1',spawnMsg:'AbyssCrystal pulses with a bottomless energy!'},
+  {name:'AbyssFish',        rarity:'AbyssCaveExclusive-Zenith',        exact:69019008,     color:'#003fa3',spawnMsg:'Fish!'},
+  {name:'LavaRelic',        rarity:'LavaCaveExclusive-Otherworldly',   exact:38000000,     color:'#ff4500',spawnMsg:'LavaRelic radiates heat from molten rock!'},
+  {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!'},
+  {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...'},
+  {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:999000000,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true},
+];
+const ORE_EXTRA={
+Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#000000',imgSrc:'Zanarchium.webp'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,imgSrc:'GENESIS.webp'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.gif'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,imgSrc:'MonolithofOrigin.webp'},Epinephrine:{value:192,symbol:'EP',imgSrc:'Epinephrine.webp'},
+};
+ORES.forEach(o=>{const e=ORE_EXTRA[o.name];if(e)Object.assign(o,e);});
+// Sort descending by exact for index display (uses raw exact values from ORES data)
+const ORES_SORTED=[...ORES].sort((a,b)=>b.exact-a.exact);
+
+function isCaveExclusiveOre(ore){
+  if(!ore||ore.caveBase)return true;
+  const r=ore.rarity||'';
+  if(r.includes('CaveExclusive'))return true;
+  if(r.includes('IceCave')||r.includes('EnergyCave')||r.includes('NuclearCave')||r.includes('ShadowCave')||r.includes('AbyssCave')||r.includes('LavaCave'))return true;
+  return false;
+}
+
+// ═══════════ CAVE TYPES ═══════════
+const CAVE_TYPES=[
+  {type:'NormalCave',  blocks:['Stone','Coal','Iron'],
+   exclusives:['EternalCrystal','MonolithofOrigin'],rareChance:0.5,
+   color:'#888888',freq:0.35},
+  {type:'IceCave',     blocks:['Ice'],
+   exclusives:['CrystalFrost'],rareChance:1/800,
+   color:'#88eeff',freq:0.15},
+  {type:'EnergyCave',  blocks:['Energy'],
+   exclusives:['GlowingNova','ZenithShard'],rareChance:1/12,
+   color:'#a327f5',freq:0.13},
+  {type:'NuclearCave', blocks:['NuclearWaste'],
+   exclusives:['RadiantCore'],rareChance:1/25,
+   color:'#46f527',freq:0.10},
+  {type:'ShadowCave',  blocks:['ShadowMatter'],
+   exclusives:['ShadowGem','VoidOrb'],rareChance:1/35,
+   color:'#313831',freq:0.10},
+  {type:'AbyssCave',   blocks:['AbyssSand'],
+   exclusives:['AbyssCrystal','AbyssFish'],rareChance:1/50,
+   color:'#0b0e61',freq:0.10},
+  {type:'LavaCave',    blocks:['LavaRock'],
+   exclusives:['LavaRelic','Epinephrine'],rareChance:1/75,
+   color:'#66584a',freq:0.07},
+];
+
+// Cave-exclusive rarity → sound mapping
+const CAVE_RARITY_SOUNDS={
+  'IceCaveExclusive-Exotic':'Achillgoesdownyourspine',
+  'EnergyCaveExclusive-Exquisite':'Yourheartskipsabeat',
+  'EnergyCaveExclusive-Zenith':'Zenith',
+  'NuclearCaveExclusive-Transcendent':'Transcendent',
+  'ShadowCaveExclusive-Enigmatic':'Enigmatic',
+  'ShadowCaveExclusive-Imaginary':'Imaginary',
+  'AbyssCaveExclusive-Unfathomable':'Unfathomable',
+  'AbyssCaveExclusive-Zenith':'Zenith',
+  'LavaCaveExclusive-Otherworldly':'Otherworldly',
+  'CaveExclusive-Mythical':'Otherworldly',
+  'CaveExclusive-Eternal':'Eternal',
+  'IceCaveExclusive-Eternal':'Eternal',
+  'LavaCaveExclusive-Eternal':'EpineAudio',
+};
+
+// ── Epinephrine spatial audio ──
+let epineAudioCtx=null,epineSource=null,epinePanner=null,epineGain=null;
+let epineBlockPos=null; // {x,y,z} world position of placed Epinephrine block
+
+function startEpineAudio(wx,wy,wz){
+  stopEpineAudio();
+  epineBlockPos={x:wx,y:wy,z:wz};
+  try{
+    if(!epineAudioCtx)epineAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const audioEl=document.getElementById('EpineAudio');
+    if(!audioEl)return;
+    epineSource=epineAudioCtx.createMediaElementSource(audioEl);
+    epinePanner=epineAudioCtx.createPanner();
+    epineGain=epineAudioCtx.createGain();
+    epinePanner.panningModel='HRTF';
+    epinePanner.distanceModel='inverse';
+    epinePanner.refDistance=2;
+    epinePanner.maxDistance=30;
+    epinePanner.rolloffFactor=2;
+    epineSource.connect(epinePanner);
+    epinePanner.connect(epineGain);
+    epineGain.connect(epineAudioCtx.destination);
+    epineGain.gain.value=1.0;
+    audioEl.loop=true;
+    audioEl.currentTime=0;
+    audioEl.play().catch(()=>{});
+  }catch(e){console.warn('EpineAudio error',e);}
+}
+
+function stopEpineAudio(){
+  epineBlockPos=null;
+  try{
+    const audioEl=document.getElementById('EpineAudio');
+    if(audioEl){audioEl.pause();audioEl.currentTime=0;}
+    if(epineSource){try{epineSource.disconnect();}catch(e){}}
+    epineSource=null;epinePanner=null;epineGain=null;
+  }catch(e){}
+}
+
+function updateEpineAudio(){
+  if(!epineBlockPos||!epineAudioCtx||!epinePanner)return;
+  const p=camera.position;
+  const dx=epineBlockPos.x+0.5-p.x;
+  const dy=epineBlockPos.y+0.5-p.y;
+  const dz=epineBlockPos.z+0.5-p.z;
+  // Update panner position
+  if(epinePanner.positionX){
+    epinePanner.positionX.value=epineBlockPos.x+0.5;
+    epinePanner.positionY.value=epineBlockPos.y+0.5;
+    epinePanner.positionZ.value=epineBlockPos.z+0.5;
+  }else{
+    epinePanner.setPosition(epineBlockPos.x+0.5,epineBlockPos.y+0.5,epineBlockPos.z+0.5);
+  }
+  // Listener position
+  if(epineAudioCtx.listener.positionX){
+    epineAudioCtx.listener.positionX.value=p.x;
+    epineAudioCtx.listener.positionY.value=p.y;
+    epineAudioCtx.listener.positionZ.value=p.z;
+    const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+    epineAudioCtx.listener.forwardX.value=fwd.x;
+    epineAudioCtx.listener.forwardY.value=fwd.y;
+    epineAudioCtx.listener.forwardZ.value=fwd.z;
+  }else{
+    const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+    epineAudioCtx.listener.setPosition(p.x,p.y,p.z);
+    epineAudioCtx.listener.setOrientation(fwd.x,fwd.y,fwd.z,0,1,0);
+  }
+}
+
+function getCaveSoundId(rarity,ore){
+  return CAVE_RARITY_SOUNDS[rarity]||getAudioId(ore);
+}
+
+function playCaveSound(rarity,ore){
+  const id=CAVE_RARITY_SOUNDS[rarity]||getAudioId(ore);
+  if(!id)return;
+  if(id==='EpineAudio')return;
+  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().catch(()=>{});}}catch(e){}
+}
+
+function fmtExact(n){
+  if(n>=1e15)return(n/1e15).toFixed(1)+'Q';
+  if(n>=1e12)return(n/1e12).toFixed(1)+'T';
+  if(n>=1e9)return(n/1e9).toFixed(1)+'B';
+  if(n>=1e6)return(n/1e6).toFixed(1)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(0)+'K';
+  return n.toString();
+}
+
+function getAudioId(ore){
+  const ex=(ore&&ore.exact)||0;
+  if(ex<250000)return null;
+  if(ex<1000000)return'Achillgoesdownyourspine';
+  if(ex<10000000)return'Yourheartskipsabeat';
+  if(ex<25000000)return'Transcendent';
+  if(ex<60000000)return'Enigmatic';
+  if(ex<100000000)return'Unfathomable';
+  if(ex<300000000)return'Otherworldly';
+  if(ex<1000000000)return'Imaginary';
+  if(ex<5000000000)return'Zenith';
+  return'Eternal';
+}
+function playSound(ore){
+  const id=getAudioId(ore);
+  if(!id)return;
+  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().catch(()=>{});}}catch(e){}
+}
+
+// ═══════════ PICKAXES T0-T10 ═══════════
+const PICKAXES=[
+  {id:'t0',tier:'T0',label:'Pioche Defaut',color:'#6a5530',scanMin:0,owned:true,equipped:true,
+   desc:'Pioche par défaut. x1 Luck. Aucune capacité.',fx:'Aucun effet spécial.',recipe:{},
+   abilities:[]},
+  {id:'t1',tier:'T1',label:"Miner's Mallet",color:'#8a8070',scanMin:0,owned:false,equipped:false,
+   desc:"Cube 3x3 autour du bloc toutes les 20 mines. x1.1 Luck.",fx:'Cube Mine 3x3 (1/20). x1.1 Luck.',
+   recipe:{Stone:30,Coal:10,Iron:5},
+   abilities:[{name:'Cube Mine',desc:'Mine un cube 3x3 autour du bloc cible',chance:'1/20',color:'#aaaaaa'}]},
+  {id:'t2',tier:'T2',label:"Spirit Pickaxe",color:'#7777cc',scanMin:0,owned:false,equipped:false,
+   desc:"Crystal Shot toutes les 4 mines: cristal qui traverse les blocs sur sa trajectoire. x1.25 Luck.",fx:'Crystal Shot (1/4). x1.25 Luck.',
+   recipe:{Iron:20,Emerald:5,Ruby:3,Stone:15},
+   abilities:[{name:'Crystal Shot',desc:'Cristal traversant qui mine sur sa trajectoire pendant 3s',chance:'1/4',color:'#7777cc'}]},
+  {id:'t3',tier:'T3',label:"Darkstone Pick",color:'#334455',scanMin:0,owned:false,equipped:false,
+   desc:"Dark Pulse (1/12): anneau rayon 1 mine tout autour. Chaque 6e anneau: rayon 3 méga-pulse. x1.5 Luck.",fx:'Dark Pulse (1/12). Méga-pulse (1/72). x1.5 Luck.',
+   recipe:{Sapphire:30,Diamond:8,Void:3,Iron:20},
+   abilities:[{name:'Dark Pulse',desc:'Anneau rouge mine tout autour. Tous les 6 anneaux: mega-anneau rayon 5',chance:'1/12',color:'#334455'}]},
+  {id:'t4',tier:'T4',label:"Nostalgic Axe",color:'#cc8820',scanMin:5000000,owned:false,equipped:false,
+   desc:"3 anneaux dorés (1/25) qui minent en s'élargissant. Scanner ores Exotic+. x2 Luck.",fx:'Golden Pulse 3 anneaux (1/25). Scanner. x2 Luck.',
+   recipe:{Gold:40,Ruby:10,Diamond:12,Void:8},
+   abilities:[{name:'Golden Pulse',desc:'3 anneaux dorés expansifs, minent tout sur leur passage',chance:'1/25',color:'#cc8820'},{name:'Pin Tracking',desc:'Minerais de recette localisés en temps réel',chance:'Passif',color:'#cc8820'}]},
+  {id:'t5',tier:'T5',label:"Crystallized Pick",color:'#22aacc',scanMin:5000000,owned:false,equipped:false,
+   desc:"Crystal Shot (1/20), Crystal Growth 8 paliers (1/35), Shard Rain 20 éclats (1/45). Scanner. x3 Luck.",fx:'Crystal Shot/Growth/Rain. Scanner. x3 Luck.',
+   recipe:{Diamond:30,Emerald:20,Smiley:2,Ruby:15},
+   abilities:[{name:'Crystal Shot',desc:'Cristal rapide qui traverse les blocs et mine tout sur 5 blocs',chance:'1/20',color:'#22aacc'},{name:'Crystal Growth',desc:'Cristal qui grandit et mine en cercle sur 8 paliers',chance:'1/35',color:'#22aacc'},{name:'Shard Rain',desc:'20 éclats tombent dans un carré 8x8 et minent à l\'impact',chance:'1/45',color:'#22aacc'}]},
+  {id:'t6',tier:'T6',label:"NilAxe",color:'#4444aa',scanMin:5000000,owned:false,equipped:false,
+   desc:"Octorb (1/50): 8 orbes en étoile qui minent à l'impact. Ore Clearing (1/50): nettoie rayon 1 (blocs communs). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear rayon 1 (1/50). x4 Luck.',
+   recipe:{Void:25,Giga:10,Smiley:5,PetaPlus1:1},
+   abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon de 4',chance:'1/7',color:'#4444aa'},{name:'Rare Tracking',desc:'Les minerais Exotic+ sont tracés sur le scanner',chance:'Passif',color:'#4444aa'}]},
+  {id:'t7',tier:'T7',label:"Moon Scepter",color:'#aabbff',scanMin:5000000,owned:false,equipped:false,
+   desc:"3 lames lunaires orbitent rayon 1.5 (1/40), Moonburst rayon 10 (1/150), Moonbeam colonne -8 (1/80). x5 Luck.",fx:'Crescent Blades (1/40). MoonBurst (1/150). Moonbeam (1/80). x5 Luck.',
+   recipe:{PetaPlus2:1,Smiley:12,PetaPlus1:3,Diamond:50},
+   abilities:[{name:'Crescent Blades',desc:'3 lames lunaires orbitent 5s, minent tout dans rayon 3',chance:'1/40',color:'#aabbff'},{name:'Moonlight Burst',desc:'Rayon de 10 blocs vers la cible avec explosion finale rayon 3',chance:'1/150',color:'#aabbff'},{name:'Moonbeam',desc:'Colonne vers le bas depuis le joueur, mine 8 blocs',chance:'1/80',color:'#aabbff'}]},
+  {id:'t8',tier:'T8',label:"Soul Scythe",color:'#55ff88',scanMin:5000000,owned:false,equipped:false,
+   desc:"3 Wisps orbitent (1/60) et minent chaque bloc sur leur passage. Soul Slash demi-sphère r4 (1/50). Azure Vortex (1/180). x6 Luck.",fx:'Wisps orbite (1/60). Soul Slash (1/50). Vortex (1/180). x6 Luck.',
+   recipe:{PetaPlus3:1,PetaPlus2:3,Smiley:20,Emerald:60},
+   abilities:[{name:'Guiding Wisps',desc:'3 wisps orbitent 5s et minent les minerais Exotic+ à portée',chance:'1/60',color:'#55ff88'},{name:'Soul Slash',desc:'Demi-sphère de rayon 4 devant le joueur, mine tout',chance:'1/50',color:'#55ff88'},{name:'Azure Vortex',desc:'Vortex qui mine en spirale 3x3 sur 6 blocs',chance:'1/180',color:'#55ff88'}]},
+  {id:'t9',tier:'T9',label:"MURD-ERROR",color:'#ff2222',scanMin:5000000,owned:false,equipped:false,
+   desc:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (chaque 400). x8 Luck.",fx:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
+   recipe:{VoidPlus:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
+   abilities:[{name:'HACK-HANDS',desc:'4 mains glitchées actives en permanence autour du joueur, minent aléatoirement',chance:'Passif',color:'#ff2222'},{name:'SPAM',desc:'35 bits corrompus explosent dans un rayon de 8, minent tout',chance:'1/10',color:'#ff4444'},{name:'FIREWALL',desc:'Mur 5×5 avance sur 8 blocs en minant tout sur son passage',chance:'1/200',color:'#ff2222'},{name:'LIMIT BREAK',desc:'Accumule du potentiel. À 400 blocs: pilier colossal de hauteur 10',chance:'Spécial/400',color:'#ff0000'}]},
+  {id:'t10',tier:'T10',label:"Prism of Chaos",color:'#ffaaff',scanMin:5000000,owned:false,equipped:false,
+   desc:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization: vitesse x2, 75% mine 6 bonus. x15 Luck.",fx:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',
+   recipe:{Zanacharium:1,Nucleonix:1,VoidPlus:2,PetaPlus4:2},
+   abilities:[{name:'Light Refraction',desc:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',chance:'1/5',color:'#ffaaff'},{name:'Color Shotgun',desc:'16 éclats de couleurs, chaque 8e: rafale de 32 éclats en éventail',chance:'1/30',color:'#ffaaff'},{name:'Prism Burst',desc:'12 orbes géants en étoile avec traînée qui mine sur toute la trajectoire',chance:'1/30',color:'#ffaaff'},{name:'Chaotization',desc:'Permanent: vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix+haut+bas',chance:'Passif',color:'#dd88ff'}]},
+];
+
+// ═══════════ STATE ═══════════
+const W=48,H=32,D=48;
+let blocks=new Uint8Array(W*H*D);
+let oreIdx=new Uint8Array(W*H*D); // index into ORES (0=Stone default)
+let oreRevealed=new Uint8Array(W*H*D); // 0=pierre seule (non tiré), 1=minerai affiché
+let inventory={};
+let mined=0,luck=1.0,currentPickId='t0';
+let lastResetMined=0; // tracks when last mine reset fired
+let shopOpen=false,shopTab='all';
+let isFreeMouse=false;
+let selectedInv=null;
+let phantomBlock=null;
+let phantomMesh=null;
+let miningHeld=false;
+let _blocksSinceCave=0; // tracks mines since last cave gen
+let mineCd=0;
+const MINE_INTERVAL=0.07;
+let _invDirty=true;
+let _lastHudUpdate=0;
+let _meshDirty=false; // set true when blocks change, rebuilt once per frame in loop
+function markMeshDirty(){_meshDirty=true;}
+function markInvDirty(){_invDirty=true;}
+function buildWorldMesh(){_meshDirty=true;} // lazy: actual rebuild happens in main loop
+
+// ═══════════ SAVE/LOAD ═══════════
+function saveGame(){
+  try{
+    localStorage.setItem('mrng3d_v6',JSON.stringify({
+      inventory,mined,luck,currentPickId,
+      picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped}))
+    }));
+    const el=document.getElementById('save-ind');
+    el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);
+  }catch(e){}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem('mrng3d_v6');if(!raw)return false;
+    const d=JSON.parse(raw);
+    inventory=d.inventory||{};mined=d.mined||0;luck=d.luck||1.0;currentPickId=d.currentPickId||'t0';
+    if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
+    // World is never saved — always freshly generated on each load
+    return true;
+  }catch(e){return false;}
+}
+setInterval(saveGame,30000);
+
+// ═══════════ IMPORT / EXPORT ═══════════
+function getSaveData(){
+  return JSON.stringify({
+    inventory,mined,luck,currentPickId,
+    picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped}))
+  },null,2);
+}
+function applySaveData(d){
+  inventory=d.inventory||{};
+  mined=d.mined||0;
+  luck=d.luck||1.0;
+  currentPickId=d.currentPickId||'t0';
+  if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
+}
+window.openSaveMenu=function(){
+  document.getElementById('savemod-ov').style.display='flex';
+  document.getElementById('import-ta').value='';
+  document.getElementById('import-msg').style.display='none';
+};
+window.closeSaveMenu=function(){
+  document.getElementById('savemod-ov').style.display='none';
+};
+window.exportSaveClipboard=function(){
+  try{
+    navigator.clipboard.writeText(getSaveData()).then(()=>{
+      showImportMsg('Copié!','#60b060');
+    });
+  }catch(e){
+    document.getElementById('import-ta').value=getSaveData();
+    showImportMsg('Sélectionnez et copiez le texte','#ffcc44');
+  }
+};
+window.exportSaveFile=function(){
+  const blob=new Blob([getSaveData()],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='mining_rng_save.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+window.importSaveText=function(){
+  const raw=document.getElementById('import-ta').value.trim();
+  if(!raw){showImportMsg('Rien à importer','#cc3322');return;}
+  try{
+    const d=JSON.parse(raw);
+    applySaveData(d);
+    saveGame();
+    updateHUD();buildPickBar();
+    showImportMsg('Importé avec succès!','#60b060');
+    showSpawn('Sauvegarde importée','#60b060',false);
+  }catch(e){showImportMsg('JSON invalide','#cc3322');}
+};
+window.importSaveFile=function(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      applySaveData(d);
+      saveGame();
+      updateHUD();buildPickBar();
+      showImportMsg('Fichier importé!','#60b060');
+      showSpawn('Sauvegarde importée','#60b060',false);
+    }catch(err){showImportMsg('Fichier invalide','#cc3322');}
+  };
+  reader.readAsText(file);
+};
+function showImportMsg(txt,color){
+  const el=document.getElementById('import-msg');
+  el.textContent=txt;el.style.color=color;el.style.display='inline';
+  setTimeout(()=>el.style.display='none',3000);
+}
+
+// ═══════════ WORLD GEN ═══════════
+function idx(x,y,z){return x*H*D+y*D+z}
+
+function getCellOreForUI(x,y,z){
+  const i=idx(x,y,z);
+  if(!blocks[i])return null;
+  return oreRevealed[i]?ORES[oreIdx[i]||0]:ORES[0];
+}
+
+function h3(x,y,z,seed){
+  let v=((x*374761393^y*1234567891^z*668265263^seed*2246822519)>>>0);
+  v^=v>>13;v=(v*1274126177)>>>0;v^=v>>16;
+  return(v&0xffff)/0xffff;
+}
+
+// Monde plein : blocs y=0..TOP_SOLID_Y ; deux couches d'air en haut (respiration + spawn fiable).
+const TOP_SOLID_Y=H-3;
+
+const N6=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+
+function getPickLuck(){
+  const pick=PICKAXES.find(p=>p.id===currentPickId);
+  if(!pick)return 1;
+  // Balanced luck progression — T10 strongest
+  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:8,t10:15};
+  return luckMap[pick.id]||1;
+}
+
+function rollOreNormal(roll,depthFrac,lk){
+  let tot=0;
+  const parts=[];
+  for(let i=0;i<ORES.length;i++){
+    if(isCaveExclusiveOre(ORES[i]))continue;
+    let w=lk/ORES[i].exact;
+    if(ORES[i].exact>1000)w*=(0.05+depthFrac*0.95);
+    else w*=(1-depthFrac*0.5);
+    parts.push({i,w});
+    tot+=w;
+  }
+  let r=roll*tot;
+  for(const {i,w} of parts){r-=w;if(r<=0)return i;}
+  return 0;
+}
+
+function revealAdjacentSolid(ax,ay,az,seedSalt){
+  const depthDen=Math.max(1,TOP_SOLID_Y);
+  for(const [dx,dy,dz] of N6){
+    const nx=ax+dx,ny=ay+dy,nz=az+dz;
+    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
+    const j=idx(nx,ny,nz);
+    if(!blocks[j]||oreRevealed[j])continue;
+    const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
+    const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,luck);
+    oreIdx[j]=oI;
+    oreRevealed[j]=1;
+    // Play sound + show message when a rare ore spawns into view
+    const ore=ORES[oI];
+    if(ore&&ore.exact>=250000&&ore.spawnMsg){
+      if(CAVE_RARITY_SOUNDS[ore.rarity])playCaveSound(ore.rarity,ore);
+      else playSound(ore);
+      const col=RC[ore.rarity]||ore.color||'#ffffff';
+      showSpawn(ore.spawnMsg+'\n'+ore.name+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
+      // Force scanner to update immediately when a qualifying ore appears
+      if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;
+    }
+  }
+}
+
+const SPAWN_SHAFT_DEPTH=6;
+
+function carveSpawnShaft(){
+  const cx=Math.floor(W/2),cz=Math.floor(D/2);
+  let salt=0;
+  for(let dy=0;dy<SPAWN_SHAFT_DEPTH;dy++){
+    const y=TOP_SOLID_Y-dy;
+    if(y<0)break;
+    for(let ox=-1;ox<=1;ox++)for(let oz=-1;oz<=1;oz++){
+      const x=cx+ox,z=cz+oz;
+      if(x<0||x>=W||z<0||z>=D)continue;
+      blocks[idx(x,y,z)]=0;
+    }
+  }
+  for(let dy=0;dy<SPAWN_SHAFT_DEPTH;dy++){
+    const y=TOP_SOLID_Y-dy;
+    if(y<0)break;
+    for(let ox=-1;ox<=1;ox++)for(let oz=-1;oz<=1;oz++){
+      const x=cx+ox,z=cz+oz;
+      if(x>=0&&x<W&&z>=0&&z<D)revealAdjacentSolid(x,y,z,salt++);
+    }
+  }
+}
+
+function genWorld(){
+  blocks.fill(0);
+  oreIdx.fill(0);
+  oreRevealed.fill(0);
+  for(let x=0;x<W;x++)for(let z=0;z<D;z++){
+    for(let y=0;y<=TOP_SOLID_Y;y++){
+      blocks[idx(x,y,z)]=1;
+    }
+  }
+  carveSpawnShaft();
+}
+
+// ═══════════ MINE COUNTER (top bar, resets every 10 000 mines) ═══════════
+const MINE_RESET_AT=5000;
+let mineCountdownActive=false;
+let mineCountdownSec=10;
+let mineCountdownInterval=null;
+
+function startMineCountdown(){
+  // Kept for compatibility — instant reset, no countdown
+  resetMine();
+}
+
+function resetMine(){
+  _blocksSinceCave=0;
+  mineCountdownActive=false;
+  if(mineCountdownInterval){clearInterval(mineCountdownInterval);mineCountdownInterval=null;}
+  // Play ding sound
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.exponentialRampToValueAtTime(1760,ac.currentTime+0.1);g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);o.start();o.stop(ac.currentTime+0.6);}catch(e){}
+  genWorld();
+  // Real rebuild — call actual buildWorldMesh (defined below)
+  _buildWorldMeshReal();
+  spawnPlayer();
+  _scanCachedBestOre=null;
+  _meshDirty=false;
+  updateMineTopBar();
+  showSpawn(lang==='fr'?"⛏ Mine regeneree! Teleporte au spawn!":"⛏ Mine reset! Teleported to spawn!",'#60b060',false);
+}
+
+function checkMineCapacity(){
+  // Triggered every 200 mines — but actual reset is every 10k via doMine
+  updateMineTopBar();
+}
+
+function updateMineTopBar(){
+  const bar=document.getElementById('mine-top-bar');
+  const txt=document.getElementById('mine-top-txt');
+  const cd=document.getElementById('mine-top-cd');
+  if(!bar)return;
+  const progress=mined%MINE_RESET_AT;
+  const pct=progress/MINE_RESET_AT;
+  bar.style.width=(pct*100)+'%';
+  bar.style.background=pct>=0.75?`rgba(255,${Math.round(255*(1-(pct-0.75)/0.25))},0,0.8)`:'rgba(255,255,255,0.3)';
+  if(txt)txt.textContent=progress+' / '+MINE_RESET_AT;
+  if(cd){
+    if(mineCountdownActive){cd.textContent='RESET: '+mineCountdownSec+'s';cd.style.display='inline';}
+    else cd.style.display='none';
+  }
+}
+
+// Legacy alias used in scan invalidation
+function updateMineHUD(){updateMineTopBar();}
+
+// ═══════════ THREE.JS ═══════════
+let scene,camera,renderer,raycaster,selMesh,worldMesh;
+// Texture cache for imgSrc ores
+const TEX_CACHE={};
+let _BOX_GEO=null; // shared BoxGeometry for all blocks (InstancedMesh)
+const SYM_TEX_CACHE={};
+const GIF_TEX_ENTRIES=[]; // {tex,img,canvas,ctx} — mis à jour chaque frame
+const IMG_MESHES=[]; // separate meshes for textured blocks
+
+function oreUsesTexturedCube(ore){
+  if(ore.imgSrc)return true;
+  const s=ore.symbol;
+  return s!=null&&String(s).trim()!=='';
+}
+
+function getOrCreateSymbolTexture(ore){
+  const key=ore.name+'|'+(ore.color||'')+'|'+(ore.symbol||'')+'|'+(ore.symbolColor||'');
+  if(SYM_TEX_CACHE[key])return SYM_TEX_CACHE[key];
+  const sz=128;
+  const c=document.createElement('canvas');
+  c.width=c.height=sz;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle=ore.color||'#888888';
+  ctx.fillRect(0,0,sz,sz);
+  const sym=String(ore.symbol||'').trim();
+  if(sym){
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle=ore.symbolColor||'#ffffff';
+    let fs=sym.length<=2?56:sym.length<=4?40:sym.length<=8?28:22;
+    ctx.font='bold '+fs+'px Arial,"Segoe UI Emoji","Apple Color Emoji",sans-serif';
+    ctx.fillText(sym,sz/2,sz/2);
+  }
+  const tex=new THREE.CanvasTexture(c);
+  tex.flipY=false;
+  tex.needsUpdate=true;
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  SYM_TEX_CACHE[key]=tex;
+  return tex;
+}
+
+function getOrCreateCompositeTexture(ore){
+  const key='__cmp__'+ore.name+'|'+ore.imgSrc+'|'+(ore.symbol||'')+'|'+(ore.symbolColor||'');
+  if(TEX_CACHE[key])return TEX_CACHE[key];
+  const canvas=document.createElement('canvas');
+  canvas.width=canvas.height=128;
+  const ctx=canvas.getContext('2d');
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.flipY=false;
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  TEX_CACHE[key]=tex;
+  const img=new Image();
+  if(/^https?:\/\//i.test(ore.imgSrc))img.crossOrigin='anonymous';
+  img.onload=()=>{
+    try{
+      ctx.drawImage(img,0,0,128,128);
+      const sym=String(ore.symbol||'').trim();
+      if(sym){
+        ctx.textAlign='center';
+        ctx.textBaseline='bottom';
+        ctx.font='bold 22px Arial,"Segoe UI Emoji",sans-serif';
+        ctx.strokeStyle='rgba(0,0,0,0.75)';
+        ctx.lineWidth=4;
+        ctx.strokeText(sym,64,122);
+        ctx.fillStyle=ore.symbolColor||'#ffffff';
+        ctx.fillText(sym,64,122);
+      }
+      tex.needsUpdate=true;
+    }catch(e){ctx.fillStyle=ore.color||'#888';ctx.fillRect(0,0,128,128);tex.needsUpdate=true;}
+  };
+  img.onerror=()=>{
+    ctx.fillStyle=ore.color||'#888';
+    ctx.fillRect(0,0,128,128);
+    const sym=String(ore.symbol||'').trim();
+    if(sym){
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillStyle=ore.symbolColor||'#ffffff';
+      ctx.font='bold 36px Arial,"Segoe UI Emoji",sans-serif';
+      ctx.fillText(sym,64,64);
+    }
+    tex.needsUpdate=true;
+  };
+  img.src=ore.imgSrc;
+  return tex;
+}
+
+function needsAnimCanvasPath(src){
+  // Treat ALL image files as animated canvas textures.
+  // GIFs animate natively via the img element; WEBPs (Epinephrine, Genesis, Zanarchium, etc.)
+  // are loaded into an img element too and drawn each frame — ensures correct display + future anim support.
+  return /\.(gif|webp|png|jpg|jpeg)(\?|#|$)/i.test(src||'');
+}
+
+function mountAnimImageInDom(img){
+  if(img.parentNode)return;
+  let h=document.getElementById('anim-tex-mount');
+  if(!h){
+    h=document.createElement('div');
+    h.id='anim-tex-mount';
+    h.setAttribute('aria-hidden','true');
+    // Position at exact screen edge — fully rendered by compositor but not visible to user.
+    // Using transform to push it off-screen while keeping paint alive.
+    // Keep in viewport at 1x1px, fully painted. clip-path prevents user from seeing it.
+    // will-change:transform forces GPU compositing — browser MUST animate GIF/WEBP.
+    h.style.cssText='position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:0;will-change:transform;';
+    document.body.appendChild(h);
+  }
+  img.style.cssText='position:absolute;left:0;bottom:0;width:128px;height:128px;display:block;';
+  h.appendChild(img);
+}
+
+function drawAnimOverlay(ctx,cw,ch,ore){
+  if(!ore)return;
+  const sym=String(ore.symbol||'').trim();
+  if(!sym)return;
+  const sx=cw/2,sy=ch-8;
+  ctx.textAlign='center';
+  ctx.textBaseline='bottom';
+  const fs=Math.min(22,Math.max(14,cw/6));
+  ctx.font='bold '+fs+'px Arial,"Segoe UI Emoji",sans-serif';
+  ctx.strokeStyle='rgba(0,0,0,0.8)';
+  ctx.lineWidth=Math.max(2,fs/8);
+  ctx.strokeText(sym,sx,sy);
+  ctx.fillStyle=ore.symbolColor||'#ffffff';
+  ctx.fillText(sym,sx,sy);
+}
+
+function getOreFaceTexture(ore){
+  const hasImg=!!ore.imgSrc;
+  const hasSym=ore.symbol!=null&&String(ore.symbol).trim()!=='';
+  // For image ores: never add text overlay — it corrupts animation and clutters the block
+  if(hasImg)return getOrCreateTexture(ore.imgSrc,null);
+  if(hasSym)return getOrCreateSymbolTexture(ore);
+  return null;
+}
+
+function getOrCreateTexture(imgSrc,overlayOre){
+  const cacheKey=overlayOre?imgSrc+'\x00'+overlayOre.name:imgSrc;
+  if(TEX_CACHE[cacheKey])return TEX_CACHE[cacheKey];
+
+  const canvas=document.createElement('canvas');
+  canvas.width=128;canvas.height=128;
+  const ctx=canvas.getContext('2d');
+
+  // Fill with ore color immediately so block isn't transparent while loading
+  ctx.fillStyle=overlayOre?overlayOre.color||'#888888':'#888888';
+  ctx.fillRect(0,0,128,128);
+
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.flipY=false;
+  tex.wrapS=THREE.RepeatWrapping;
+  tex.wrapT=THREE.RepeatWrapping;
+  tex.needsUpdate=true;
+  TEX_CACHE[cacheKey]=tex;
+
+  const img=new Image();
+  if(/^https?:\/\//i.test(imgSrc))img.crossOrigin='anonymous';
+
+  img.onload=()=>{
+    mountAnimImageInDom(img);
+    try{
+      ctx.clearRect(0,0,128,128);
+      ctx.drawImage(img,0,0,128,128);
+      // No text overlay on image textures — keeps animation clean
+      tex.needsUpdate=true;
+    }catch(e){
+      ctx.fillStyle=overlayOre?overlayOre.color||'#888':'#888';
+      ctx.fillRect(0,0,128,128);
+      tex.needsUpdate=true;
+    }
+  };
+  img.onerror=()=>{
+    ctx.fillStyle=overlayOre?overlayOre.color||'#663311':'#663311';
+    ctx.fillRect(0,0,128,128);
+    tex.needsUpdate=true;
+  };
+  img.src=imgSrc;
+
+  // Register for per-frame redraw (animates GIFs; updates webp/png correctly)
+  GIF_TEX_ENTRIES.push({tex,img,canvas,ctx,overlay:overlayOre||null});
+  return tex;
+}
+
+function updateGifTextures(){
+  for(const e of GIF_TEX_ENTRIES){
+    if(!e.img||!e.img.complete||e.img.naturalWidth<1)continue;
+    try{
+      // Ensure canvas is sized
+      if(e.canvas.width!==128||e.canvas.height!==128){
+        e.canvas.width=128;e.canvas.height=128;
+      }
+      e.ctx.clearRect(0,0,128,128);
+      e.ctx.drawImage(e.img,0,0,128,128);
+      // No text overlay — image animates cleanly
+      // Force GPU upload every frame for animated content
+      e.tex.needsUpdate=true;
+    }catch(err){}
+  }
+}
+let euler=new THREE.Euler(0,0,0,'YXZ');
+let isLocked=false,keys={},velY=0,onGround=false;
+const GRAVITY=-26,JUMP=9.5,PSPEED=8.5,CAM_H=0.92,PW=0.2,PLAYER_H=1.0;
+// Hitbox = 0.92 blocs de haut — caméra au sommet de l'hitbox
+const PLAYER_PHYSICS_H=0.92;
+
+function solid(x,y,z){
+  const bx=Math.floor(x),by=Math.floor(y),bz=Math.floor(z);
+  if(bx<0||bx>=W||bz<0||bz>=D)return false;
+  if(by<0)return true;if(by>=H)return false;
+  return blocks[idx(bx,by,bz)]!==0;
+}
+
+function moveAABB(ox,oy,oz,dx,dy,dz){
+  let x=ox,y=oy,z=oz;
+  // Y — pieds dans la cellule d'air au-dessus du sol : tester légèrement sous les pieds
+  y+=dy;
+  if(dy<=0){
+    const feetY=y-CAM_H;
+    const probeY=feetY-0.12;
+    let hit=false;
+    for(const[cx,cz]of[[x-PW,z-PW],[x+PW,z-PW],[x-PW,z+PW],[x+PW,z+PW]])
+      if(solid(cx,probeY,cz)){hit=true;break;}
+    if(hit){
+      const groundTop=Math.floor(probeY)+1;
+      y=groundTop+CAM_H+0.02;
+      velY=0;onGround=true;
+    }else onGround=false;
+  }else{
+    const feetUp=y-CAM_H;
+    const cy=feetUp+PLAYER_PHYSICS_H+0.03;
+    let hit=false;
+    for(const[cx,cz]of[[x-PW,z-PW],[x+PW,z-PW],[x-PW,z+PW],[x+PW,z+PW]])
+      if(solid(cx,cy,cz)){hit=true;break;}
+    if(hit){y=Math.floor(cy)-PLAYER_PHYSICS_H-0.03+CAM_H;velY=0;}
+    onGround=false;
+  }
+  if(y<CAM_H+0.01){y=CAM_H+0.01;velY=0;onGround=true;}
+  const feetH=y-CAM_H;
+  const y0=feetH+0.1,y1=feetH+PLAYER_PHYSICS_H-0.1;
+  // X
+  x+=dx;
+  if(dx!==0){
+    const bxn=dx>0?x+PW:x-PW;
+    let hit=false;
+    for(const cz of[z-PW,z+PW])if(solid(bxn,y0,cz)||solid(bxn,y1,cz)){hit=true;break;}
+    if(hit)x=ox;
+  }
+  // Z
+  z+=dz;
+  if(dz!==0){
+    const bzn=dz>0?z+PW:z-PW;
+    let hit=false;
+    for(const cx of[x-PW,x+PW])if(solid(cx,y0,bzn)||solid(cx,y1,bzn)){hit=true;break;}
+    if(hit)z=oz;
+  }
+  x=Math.max(PW+0.01,Math.min(W-PW-0.01,x));
+  z=Math.max(PW+0.01,Math.min(D-PW-0.01,z));
+  return{x,y,z};
+}
+
+function samplePlayerSolid(px,py,pz){
+  const feet=py-CAM_H;
+  const y0=feet+0.1,y1=feet+PLAYER_PHYSICS_H-0.08;
+  if(solid(px,py,pz))return true;
+  if(solid(px,feet,pz)||solid(px,y0,pz)||solid(px,y1,pz))return true;
+  for(const[cx,cz]of[[px-PW,pz-PW],[px+PW,pz-PW],[px-PW,pz+PW],[px+PW,pz+PW]])
+    if(solid(cx,feet,cz)||solid(cx,y0,cz)||solid(cx,y1,cz))return true;
+  return false;
+}
+
+function minCeilingAbove(px,feetWorldY,pz){
+  let c=H;
+  for(const[cx,cz]of[[px-PW,pz-PW],[px+PW,pz-PW],[px-PW,pz+PW],[px+PW,pz+PW]]){
+    for(let iy=Math.floor(feetWorldY)+1;iy<H;iy++){
+      if(solid(cx,iy+0.001,cz)){c=Math.min(c,iy);break;}
+    }
+  }
+  return c;
+}
+
+function spawnPlayer(){
+  const sx=Math.floor(W/2),sz=Math.floor(D/2);
+  // Find the highest solid block at spawn column, place player on top of it
+  let solidTop=0;
+  for(let y=TOP_SOLID_Y;y>=0;y--){
+    if(blocks[idx(sx,y,sz)]){solidTop=y;break;}
+  }
+  // Stand on top of the highest solid block: feet at solidTop+1, camera at eye height
+  const feetY=solidTop+1.02;
+  camera.position.set(sx+0.5,feetY+CAM_H,sz+0.5);
+  velY=0;onGround=true;
+  euler.set(-0.15,Math.PI,0);
+  camera.quaternion.setFromEuler(euler);
+}
+
+// _buildWorldMeshReal: immediate synchronous rebuild (used by resetMine and init3D)
+function _buildWorldMeshReal(){
+  if(worldMesh){scene.remove(worldMesh);worldMesh.geometry.dispose();worldMesh.material.dispose();worldMesh=null;}
+  IMG_MESHES.forEach(m=>{
+    scene.remove(m);
+    // Do NOT dispose _BOX_GEO — it's shared/reused
+    // Do NOT dispose textures — they live in TEX_CACHE/GIF_TEX_ENTRIES
+    if(m.material){
+      if(Array.isArray(m.material))m.material.forEach(mat=>{if(mat){mat.map=null;mat.dispose();}});
+      else{m.material.map=null;m.material.dispose();}
+    }
+  });
+  IMG_MESHES.length=0;
+
+  // (colored blocks use BoxGeometry directly, no vertex bucket needed)
+
+  const FACES=[
+    {n:[0,0,-1],vs:[[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5],[0.5,0.5,-0.5],[-0.5,0.5,-0.5]],sh:0.78},
+    {n:[0,0,1], vs:[[0.5,-0.5,0.5],[-0.5,-0.5,0.5],[-0.5,0.5,0.5],[0.5,0.5,0.5]],sh:0.78},
+    {n:[-1,0,0],vs:[[-0.5,-0.5,0.5],[-0.5,-0.5,-0.5],[-0.5,0.5,-0.5],[-0.5,0.5,0.5]],sh:0.68},
+    {n:[1,0,0], vs:[[0.5,-0.5,-0.5],[0.5,-0.5,0.5],[0.5,0.5,0.5],[0.5,0.5,-0.5]],sh:0.68},
+    {n:[0,-1,0],vs:[[-0.5,-0.5,0.5],[0.5,-0.5,0.5],[0.5,-0.5,-0.5],[-0.5,-0.5,-0.5]],sh:0.50},
+    {n:[0,1,0], vs:[[-0.5,0.5,-0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]],sh:1.00},
+  ];
+
+  function air(x,y,z){
+    if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return true;
+    return!blocks[idx(x,y,z)];
+  }
+
+  function isPhantom(x,y,z){return phantomBlock&&phantomBlock.x===x&&phantomBlock.y===y&&phantomBlock.z===z;}
+
+  // Shared geometry for all boxes (reused, never recreated)
+  if(!_BOX_GEO)_BOX_GEO=new THREE.BoxGeometry(1,1,1);
+  const _dummy=new THREE.Object3D();
+  const cc=new THREE.Color();
+
+  // Collect blocks by type: colored (hex→positions) and textured (tex→positions)
+  const colorMap={}; // hex → [x,y,z ...]
+  const texMap=new Map(); // tex → [{x,y,z,isPhantom}]
+  const phantomColorMap={}; // for phantom colored blocks
+
+  for(let x=0;x<W;x++)for(let y=0;y<H;y++)for(let z=0;z<D;z++){
+    if(!blocks[idx(x,y,z)])continue;
+    const ci=idx(x,y,z);
+    const ore=oreRevealed[ci]?ORES[oreIdx[ci]||0]:ORES[0];
+    const phantom=isPhantom(x,y,z);
+    const hasFace=FACES.some(f=>air(x+f.n[0],y+f.n[1],z+f.n[2]));
+    if(!hasFace)continue;
+    const hasImg=!!ore.imgSrc;
+    const hasSym=ore.symbol!=null&&String(ore.symbol).trim()!=='';
+    if(hasImg||hasSym){
+      const tex=getOreFaceTexture(ore);
+      if(!tex)continue;
+      if(!texMap.has(tex))texMap.set(tex,[]);
+      texMap.get(tex).push({x,y,z,phantom});
+    }else{
+      const key=(ore.color||'#888888')+(phantom?'_p':'');
+      if(!colorMap[key])colorMap[key]={color:ore.color||'#888888',phantom,positions:[]};
+      colorMap[key].positions.push(x,y,z);
+    }
+  }
+
+  // Build InstancedMesh per color (massive perf win vs individual meshes)
+  for(const {color,phantom,positions} of Object.values(colorMap)){
+    const count=positions.length/3;
+    if(!count)continue;
+    cc.set(color);
+    const mat=new THREE.MeshBasicMaterial({color:cc.getHex()});
+    const im=new THREE.InstancedMesh(_BOX_GEO,mat,count);
+    im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    for(let k=0;k<count;k++){
+      _dummy.position.set(positions[k*3]+0.5,positions[k*3+1]+0.5,positions[k*3+2]+0.5);
+      _dummy.updateMatrix();
+      im.setMatrixAt(k,_dummy.matrix);
+    }
+    im.instanceMatrix.needsUpdate=true;
+    scene.add(im);
+    IMG_MESHES.push(im);
+  }
+
+  // Build InstancedMesh per texture (textured blocks)
+  for(const [tex,blocks2] of texMap){
+    const mat=new THREE.MeshBasicMaterial({map:tex});
+    const im=new THREE.InstancedMesh(_BOX_GEO,mat,blocks2.length);
+    im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    blocks2.forEach(({x,y,z},k)=>{
+      _dummy.position.set(x+0.5,y+0.5,z+0.5);
+      _dummy.updateMatrix();
+      im.setMatrixAt(k,_dummy.matrix);
+    });
+    im.instanceMatrix.needsUpdate=true;
+    scene.add(im);
+    IMG_MESHES.push(im);
+  }
+
+  // All blocks now rendered as individual BoxGeometry meshes (tracked in IMG_MESHES)
+  // worldMesh is no longer used for colored blocks
+  _scanCachedBestOre=null; // invalidate scanner cache on world change
+}
+
+function init3D(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x0b1220);
+  scene.fog=new THREE.Fog(0x0b1220,20,60);
+  camera=new THREE.PerspectiveCamera(75,1,0.05,120);
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  scene.add(new THREE.AmbientLight(0x6677aa,0.6));
+  const sun=new THREE.DirectionalLight(0xffe8cc,1.1);sun.position.set(10,18,8);scene.add(sun);
+  raycaster=new THREE.Raycaster();
+  raycaster.near=0.08;
+  raycaster.far=12;
+  selMesh=new THREE.Mesh(
+    new THREE.BoxGeometry(1.0,1.0,1.0),
+    new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:0.5})
+  );
+  selMesh.visible=false;scene.add(selMesh);
+  _buildWorldMeshReal();
+  spawnPlayer();
+
+  const cv=document.getElementById('c');
+  cv.addEventListener('click',()=>{if(!isLocked&&!isFreeMouse&&!shopOpen)cv.requestPointerLock();});
+  document.addEventListener('pointerlockchange',()=>{
+    isLocked=document.pointerLockElement===cv;
+    if(!isLocked&&!isFreeMouse){document.getElementById('free-ind').style.display='none';}
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!isLocked)return;
+    euler.y-=e.movementX*0.002;
+    euler.x=Math.max(-Math.PI/2+0.01,Math.min(Math.PI/2-0.01,euler.x-e.movementY*0.002));
+    camera.quaternion.setFromEuler(euler);
+  });
+  document.addEventListener('mousedown',e=>{
+    if(e.button===0){
+      // LMB: request lock if not locked; in free mode just mine if hovering block
+      if(!isLocked&&!isFreeMouse&&!shopOpen){cv.requestPointerLock();return;}
+      miningHeld=true;
+    }
+    if(e.button===2){
+      e.preventDefault();
+      // RMB always places phantom regardless of lock state (as long as not in shop)
+      if(!shopOpen)doPlace();
+    }
+  });
+  document.addEventListener('mouseup',e=>{if(e.button===0)miningHeld=false;});
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('keydown',e=>{
+    keys[e.code]=true;
+    if(e.code==='Space')e.preventDefault();
+    if(e.code==='KeyE')shopOpen?closeShop():openShop();
+    if(e.code==='Escape'&&shopOpen){closeShop();return;}
+    if(e.code==='ControlLeft'||e.code==='ControlRight')toggleFree();
+  });
+  document.addEventListener('keyup',e=>keys[e.code]=false);
+  window.addEventListener('resize',doResize);doResize();
+  buildPickBar();loop();
+}
+
+function toggleFree(){
+  if(!isLocked&&!isFreeMouse)return;
+  isFreeMouse=!isFreeMouse;
+  const cv=document.getElementById('c');
+  const ind=document.getElementById('free-ind');
+  if(isFreeMouse){document.exitPointerLock();cv.classList.add('free');ind.style.display='block';}
+  else{cv.classList.remove('free');ind.style.display='none';cv.requestPointerLock();}
+}
+
+function doResize(){
+  renderer.setSize(window.innerWidth,window.innerHeight,false);
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+}
+
+// ═══════════ MOVEMENT ═══════════
+function movePlayer(dt){
+  let spd=PSPEED;
+  if(currentPickId==='t10')spd*=2;
+  const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
+  const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
+  let dx=0,dz=0;
+  if(keys['KeyW']||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
+  if(keys['KeyS']||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
+  if(keys['KeyA']||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
+  if(keys['KeyD']||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
+  const len=Math.sqrt(dx*dx+dz*dz);
+  if(len>0){dx=(dx/len)*spd*dt;dz=(dz/len)*spd*dt;}
+  velY+=GRAVITY*dt;
+  if(keys['Space']&&onGround){velY=JUMP;onGround=false;}
+  const p=camera.position;
+  const r=moveAABB(p.x,p.y,p.z,dx,velY*dt,dz);
+  p.set(r.x,r.y,r.z);
+  const feet=p.y-CAM_H;
+  const cap=minCeilingAbove(p.x,feet,p.z);
+  const maxEye=cap-0.1;
+  if(p.y>maxEye)p.y=maxEye;
+}
+
+// ═══════════ RAYCASTING ═══════════
+function getHit(range){
+  raycaster.far=range||5.5;
+  raycaster.setFromCamera({x:0,y:0},camera);
+  const targets=[];
+  if(worldMesh)targets.push(worldMesh);
+  IMG_MESHES.forEach(m=>targets.push(m));
+  if(!targets.length)return null;
+  const h=raycaster.intersectObjects(targets,false);
+  return h.length?h[0]:null;
+}
+function hitPos(h,inside){
+  // Transform face normal to world space (handles both mesh types)
+  const normalWorld=h.face.normal.clone();
+  if(h.object.matrixWorld){
+    const normalMat=new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld);
+    normalWorld.applyMatrix3(normalMat).normalize();
+  }
+  const bias=inside?-0.01:0.01;
+  const p=h.point.clone().addScaledVector(normalWorld,bias);
+  return{x:Math.floor(p.x),y:Math.floor(p.y),z:Math.floor(p.z)};
+}
+
+// ═══════════ MINING ═══════════
+function tickMine(dt){
+  if(!miningHeld||isFreeMouse||shopOpen){mineCd=0;return;}
+  mineCd-=dt;
+  if(mineCd>0)return;
+  mineCd=MINE_INTERVAL;
+  doMine();
+}
+
+function doMine(){
+  const h=getHit(10);if(!h)return;
+  const{x,y,z}=hitPos(h,true);
+  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
+  const i=idx(x,y,z);if(!blocks[i])return;
+  const oI=oreIdx[i]||0;
+  const ore=ORES[oI];
+
+  // ── Phantom block pickup — handle first and return early ──
+  if(phantomBlock&&phantomBlock.x===x&&phantomBlock.y===y&&phantomBlock.z===z){
+    blocks[i]=0;
+    if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
+    const pName=phantomBlock.name;
+    phantomBlock=null;
+    if(ore.epinephrine)stopEpineAudio();
+    selectedInv=pName;
+    updatePlacingInd();
+    markMeshDirty();
+    markInvDirty();
+    return; // no sound, no luck, no ability, no inventory change
+  }
+
+  // ── Normal block ──
+  blocks[i]=0;mined++;
+  inventory[ore.name]=(inventory[ore.name]||0)+1;
+  // luck no longer scales with mining — fixed at 1.0, pick bonus only
+  if(ore.epinephrine&&epineBlockPos&&epineBlockPos.x===x&&epineBlockPos.y===y&&epineBlockPos.z===z){
+    stopEpineAudio();
+  }
+  // Don't mark inv dirty on every mine — only on pickaxe equip
+  // Inventory count changes but we batch the display update
+  revealAdjacentSolid(x,y,z,mined);
+  triggerPickAbility(x,y,z);
+  if(!phantomBlock){
+    _blocksSinceCave++;
+    // Luck increases cave spawn chance; max 1500 blocks forces a cave
+    const caveChance=Math.min(1, (luck*0.002) + (_blocksSinceCave/1500));
+    if(Math.random()<caveChance){
+      _blocksSinceCave=0;
+      spawnCave(x,y,z);
+    }
+  }
+  markMeshDirty();
+  // Instant reset at 5000 — no countdown
+  if(mined-lastResetMined>=MINE_RESET_AT){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);return;}
+  if(mined%50===0)saveGame();
+}
+
+// Generate a typed cave around a mined position
+function spawnCave(cx,cy,cz){
+  const total=CAVE_TYPES.reduce((a,t)=>a+t.freq,0);
+  let roll=Math.random()*total,chosen=CAVE_TYPES[0];
+  for(const t of CAVE_TYPES){roll-=t.freq;if(roll<=0){chosen=t;break;}}
+
+  const r=3+Math.floor(Math.random()*4);
+  const newAir=[];
+  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+    if(dx*dx+dy*dy+dz*dz>r*r*0.9)continue;
+    const nx=cx+dx,ny=cy+dy,nz=cz+dz;
+    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
+    const i=idx(nx,ny,nz);
+    if(chosen.type==='NormalCave'){
+      blocks[i]=0;
+      newAir.push([nx,ny,nz]);
+    }else{
+      const isWall=(dx*dx+dy*dy+dz*dz>r*r*0.55);
+      if(isWall){
+        blocks[i]=1;
+        const baseOreIdx=ORES.findIndex(o=>o.name===chosen.blocks[0]);
+        oreIdx[i]=baseOreIdx>=0?baseOreIdx:0;
+        oreRevealed[i]=1;
+      }else{
+        blocks[i]=0;
+        newAir.push([nx,ny,nz]);
+      }
+    }
+  }
+
+  // Roll each wall block against each exclusive ore's actual exact rarity
+  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+    const d2=dx*dx+dy*dy+dz*dz;
+    if(d2<r*r*0.5||d2>r*r*0.9)continue;
+    const nx=cx+dx,ny=cy+dy,nz=cz+dz;
+    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
+    const ii=idx(nx,ny,nz);
+    if(!blocks[ii])continue;
+    // Roll each exclusive: probability = luck / exact (true rarity)
+    for(const exName of chosen.exclusives){
+      const exIdx=ORES.findIndex(o=>o.name===exName);
+      if(exIdx<0)continue;
+      const caveOre=ORES[exIdx];
+      // luck=1 by default; exact gives the true 1-in-N chance
+      const spawnProb=luck/Math.max(1,caveOre.exact);
+      if(Math.random()<spawnProb){
+        oreIdx[ii]=exIdx;
+        oreRevealed[ii]=1;
+        // Fire spawn sound + scanner invalidation for cave exclusives
+        if(caveOre.spawnMsg){
+          if(CAVE_RARITY_SOUNDS[caveOre.rarity])playCaveSound(caveOre.rarity,caveOre);
+          else playSound(caveOre);
+          const caveCol=RC[caveOre.rarity]||caveOre.color||'#ffffff';
+          showSpawn(caveOre.spawnMsg+'\n'+caveOre.name+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
+          if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;
+        }
+        break; // one exclusive per block max
+      }
+    }
+  }
+
+  let salt=0;
+  for(const p of newAir)revealAdjacentSolid(p[0],p[1],p[2],salt++^cx^cy^cz);
+
+  const typeName=chosen.type.replace('Cave',' Cave');
+  showSpawn((lang==='fr'?'Cave generee: ':'Cave generated: ')+typeName, chosen.color, false, null);
+}
+
+// ═══════════ PLACING (PHANTOM) ═══════════
+// The phantom block is a preview — doesn't consume inventory until mined again.
+// Only 1 phantom at a time. Placing another removes the old one.
+function removePrevPhantom(){
+  if(!phantomBlock)return;
+  // If the phantom is still in the world, remove it silently
+  const{x,y,z,oi}=phantomBlock;
+  if(blocks[idx(x,y,z)]&&oreIdx[idx(x,y,z)]===oi){
+    blocks[idx(x,y,z)]=0;
+    // Rebuild mesh will happen after
+  }
+  // Remove 3D phantom mesh
+  if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
+  phantomBlock=null;
+}
+
+function buildPhantomMesh(x,y,z,ore){
+  if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
+  // No phantom visual mesh — block IS in world but rendered semi-transparent via oreIdx special flag
+  // We add it to blocks so physics can reference it, but use the ore's imgSrc or color
+}
+
+function doPlace(){
+  if(!selectedInv)return;
+  if(!(inventory[selectedInv]>0)){selectedInv=null;updatePlacingInd();updateHUD();return;}
+  const range=isFreeMouse?10:5.5;
+  const h=getHit(range);if(!h)return;
+  const{x,y,z}=hitPos(h,false);
+  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
+  if(blocks[idx(x,y,z)])return;
+  const oI=ORES.findIndex(o=>o.name===selectedInv);if(oI<0)return;
+  // Guard: don't place inside player
+  if(!isFreeMouse){
+    const p=camera.position;
+    const px=Math.floor(p.x),pz=Math.floor(p.z);
+    const py0=Math.floor(p.y-CAM_H),py1=Math.floor(p.y);
+    if(x===px&&z===pz&&(y===py0||y===py1))return;
+  }
+  // Remove previous phantom from world
+  removePrevPhantom();
+  // Place phantom block in world (same as normal block, kept in phantom registry)
+  const pi=idx(x,y,z);
+  blocks[pi]=1;
+  oreIdx[pi]=oI;
+  oreRevealed[pi]=1;
+  phantomBlock={x,y,z,oi:oI,name:selectedInv};
+  _scanOre=null;_scanPos=null; // force phantom scanner refresh
+  // Do NOT consume inventory — phantom is free to place
+  // Epinephrine spatial audio
+  if(ORES[oI].epinephrine)startEpineAudio(x,y,z);
+  markMeshDirty();updateHudStatsOnly();
+  showSpawn(lang==='fr'?'Phantom pose: '+selectedInv:'Phantom placed: '+selectedInv,'#c8a030',false,null);
+}
+
+// ═══════════ SPAWN MSG ═══════════
+function rarityClass(rarity){
+  if(!rarity)return'';
+  // Cave-exclusive compound rarities
+  if(rarity.includes('Exotic'))return'exotic';
+  if(rarity.includes('Exquisite'))return'exotic';
+  if(rarity.includes('Transcendent'))return'transcendent';
+  if(rarity.includes('Enigmatic'))return'enigmatic';
+  if(rarity.includes('Unfathomable'))return'unfathomable';
+  if(rarity.includes('Otherworldly'))return'otherworldly';
+  if(rarity.includes('Imaginary'))return'imaginary';
+  if(rarity.includes('Zenith'))return'zenith';
+  if(rarity.includes('Eternal'))return'eternal';
+  if(rarity.includes('Mythical'))return'zenith';
+  if(rarity==='SPAFF')return'spaff';
+  if(rarity==='Divine')return'otherworldly';
+  return'';
+}
+
+function showSpawn(txt,color,big,rarity){
+  const c=document.getElementById('spawn-msg');
+  const d=document.createElement('div');
+  const rc=rarityClass(rarity||'');
+  d.className='smsg'+(rc?' '+rc:'');
+  d.style.color=color||'#fff';
+  if(big)d.style.fontSize='9px';
+  d.style.borderColor=(color||'#fff')+'55';
+  // Add rarity icon above text if exotic+
+  if(rc){
+    const svg=drawRarityIcon(rarity,color||'#fff');
+    if(svg){
+      const iconWrap=document.createElement('div');
+      iconWrap.style.cssText='display:flex;justify-content:center;margin-bottom:4px';
+      iconWrap.innerHTML=svg;
+      d.appendChild(iconWrap);
+    }
+  }
+  const textNode=document.createElement('div');
+  textNode.textContent=txt;
+  d.appendChild(textNode);
+  c.appendChild(d);
+  setTimeout(()=>d.remove(),6000);
+}
+
+// ═══════════ SCANNER / RARITY ICONS ═══════════
+// SVG icon generators per rarity tier
+function drawRarityIcon(rarity,color){
+  const s=44;
+  const svgs={
+    Exotic:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><rect x="4" y="4" width="36" height="36" rx="4" fill="${color}22" stroke="${color}" stroke-width="2"/><rect x="12" y="12" width="20" height="20" rx="2" fill="${color}44"/><line x1="22" y1="4" x2="22" y2="40" stroke="${color}" stroke-width="1.5"/><line x1="4" y1="22" x2="40" y2="22" stroke="${color}" stroke-width="1.5"/></svg>`,
+    Exquisite:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><polygon points="22,2 42,22 22,42 2,22" fill="${color}22" stroke="${color}" stroke-width="2"/><polygon points="22,10 34,22 22,34 10,22" fill="${color}44"/><circle cx="22" cy="22" r="4" fill="${color}"/></svg>`,
+    Transcendent:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><polygon points="22,2 27,16 42,16 30,25 35,40 22,31 9,40 14,25 2,16 17,16" fill="${color}33" stroke="${color}" stroke-width="1.5"/><circle cx="22" cy="22" r="6" fill="${color}88"/></svg>`,
+    Enigmatic:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" fill="${color}22" stroke="${color}" stroke-width="2"/><circle cx="22" cy="22" r="11" fill="${color}33" stroke="${color}" stroke-width="1"/><circle cx="22" cy="22" r="5" fill="${color}"/><line x1="22" y1="3" x2="22" y2="14" stroke="${color}" stroke-width="1.5"/><line x1="22" y1="30" x2="22" y2="41" stroke="${color}" stroke-width="1.5"/><line x1="3" y1="22" x2="14" y2="22" stroke="${color}" stroke-width="1.5"/><line x1="30" y1="22" x2="41" y2="22" stroke="${color}" stroke-width="1.5"/></svg>`,
+    Unfathomable:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><polygon points="22,2 40,38 4,38" fill="${color}22" stroke="${color}" stroke-width="2"/><polygon points="22,10 34,36 10,36" fill="${color}33"/><circle cx="22" cy="28" r="4" fill="${color}"/></svg>`,
+    Otherworldly:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="${color}22" stroke="${color}" stroke-width="2"/><ellipse cx="22" cy="22" rx="20" ry="8" fill="none" stroke="${color}" stroke-width="1.5"/><circle cx="22" cy="22" r="7" fill="${color}55" stroke="${color}" stroke-width="1"/></svg>`,
+    Imaginary:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><polygon points="22,2 26,18 42,18 29,28 34,44 22,35 10,44 15,28 2,18 18,18" fill="${color}44" stroke="${color}" stroke-width="1.5"/><polygon points="22,10 24,18 32,18 26,23 28,31 22,27 16,31 18,23 12,18 20,18" fill="${color}"/></svg>`,
+    Zenith:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><polygon points="22,1 28,16 44,16 31,26 36,42 22,33 8,42 13,26 0,16 16,16" fill="${color}55" stroke="${color}" stroke-width="2"/><polygon points="22,8 26,18 37,18 29,24 32,35 22,29 12,35 15,24 7,18 18,18" fill="${color}88"/><circle cx="22" cy="22" r="4" fill="${color}"/></svg>`,
+    Eternal:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff0000"/><stop offset="25%" stop-color="#ffff00"/><stop offset="50%" stop-color="#00ff00"/><stop offset="75%" stop-color="#0088ff"/><stop offset="100%" stop-color="#ff00ff"/></linearGradient></defs><polygon points="22,1 28,16 44,16 31,26 36,42 22,33 8,42 13,26 0,16 16,16" fill="url(#rg)" opacity="0.8" stroke="url(#rg)" stroke-width="2"/><circle cx="22" cy="22" r="5" fill="white" opacity="0.9"/></svg>`,
+    SPAFF:`<svg width="${s}" height="${s}" viewBox="0 0 44 44"><polygon points="22,1 28,16 44,16 31,26 36,42 22,33 8,42 13,26 0,16 16,16" fill="#ff990044" stroke="#ff9900" stroke-width="2"/><text x="22" y="28" text-anchor="middle" font-size="14" fill="#ff9900" font-family="monospace">$$</text></svg>`,
+  };
+  // Map sub-rarities
+  // For cave compound rarities, extract the suffix
+  function getIconKey(r){
+    if(!r)return null;
+    if(r.includes('Exotic'))return'Exotic';
+    if(r.includes('Exquisite'))return'Exquisite';
+    if(r.includes('Transcendent'))return'Transcendent';
+    if(r.includes('Enigmatic'))return'Enigmatic';
+    if(r.includes('Unfathomable'))return'Unfathomable';
+    if(r.includes('Otherworldly'))return'Otherworldly';
+    if(r.includes('Imaginary'))return'Imaginary';
+    if(r.includes('Zenith'))return'Zenith';
+    if(r.includes('Eternal'))return'Eternal';
+    if(r.includes('Mythical'))return'Zenith';
+    if(r==='SPAFF')return'SPAFF';
+    if(r==='Divine')return'Otherworldly';
+    return null;
+  }
+  const key=getIconKey(rarity);
+  return key&&svgs[key]?svgs[key]:null;
+}
+
+// Scanner cache — only rescan when blocks change or every 60 frames
+let _scanFrameCount=0;
+let _scanCachedBestOre=null,_scanCachedBestX=0,_scanCachedBestY=0,_scanCachedBestZ=0;
+let _scanOre=null,_scanPos=null;
+
+function updateScanner(h){
+  const pick=PICKAXES.find(p=>p.id===currentPickId);
+  const ov=document.getElementById('scn-overlay');
+
+  // ── Phantom block scanner (always shown regardless of pick, like picture 3) ──
+  if(phantomBlock){
+    const pOre=ORES[phantomBlock.oi||0]||ORES[0];
+    const pCenter=new THREE.Vector3(phantomBlock.x+0.5,phantomBlock.y+0.5,phantomBlock.z+0.5);
+    const pv=pCenter.clone().project(camera);
+    const pIsAimed=h&&(()=>{const a=hitPos(h,true);return a.x===phantomBlock.x&&a.y===phantomBlock.y&&a.z===phantomBlock.z;})();
+    if(pv.z<=1&&!pIsAimed){
+      const psx=(pv.x+1)/2*window.innerWidth;
+      const psy=(1-pv.y)/2*window.innerHeight;
+      const pdist=camera.position.distanceTo(pCenter);
+      const pSize=Math.round(Math.min(100,Math.max(44,pdist*6)));
+      const pClampX=Math.max(pSize/2+4,Math.min(window.innerWidth-pSize/2-4,psx));
+      const pClampY=Math.max(pSize/2+4,Math.min(window.innerHeight-pSize/2-60,psy));
+      const prc=RC[pOre.rarity]||pOre.color||'#fff';
+      ov.style.display='block';
+      ov.style.left=pClampX+'px';
+      ov.style.top=pClampY+'px';
+      ov.style.color=prc;
+      const blockDiv=document.getElementById('scn-block');
+      // Phantom shows block image/color like picture 3
+      if(_scanOre!==pOre||_scanPos!=='phantom'){
+        _scanOre=pOre;_scanPos='phantom';
+        blockDiv.innerHTML='';
+        if(pOre.imgSrc){
+          // Use the live animated canvas from GIF_TEX_ENTRIES for animated ores
+          const entry=GIF_TEX_ENTRIES.find(e=>e.canvas&&e.img&&e.img.src&&e.img.src.includes(pOre.imgSrc));
+          if(entry){
+            // Clone the live canvas so it shows current animation frame
+            const liveCanvas=entry.canvas;
+            liveCanvas.id='phantom-scn-canvas';
+            liveCanvas.style.cssText=`display:block;width:${pSize}px;height:${pSize}px;border-radius:6px;border:2px solid ${prc};box-shadow:0 0 18px ${prc}88;image-rendering:pixelated;`;
+            blockDiv.appendChild(liveCanvas);
+          }else{
+            const img=document.createElement('img');
+            img.src=pOre.imgSrc;
+            img.style.cssText=`width:${pSize}px;height:${pSize}px;display:block;image-rendering:pixelated;border-radius:6px;border:2px solid ${prc};box-shadow:0 0 18px ${prc}88;`;
+            blockDiv.appendChild(img);
+          }
+        }else{
+          const c=document.createElement('canvas');c.width=64;c.height=64;
+          const ctx=c.getContext('2d');
+          ctx.fillStyle=pOre.color||'#888';ctx.fillRect(0,0,64,64);
+          if(pOre.symbol){ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=pOre.symbolColor||'#fff';ctx.font=`bold 26px Arial`;ctx.fillText(String(pOre.symbol),32,32);}
+          c.style.cssText=`display:block;width:${pSize}px;height:${pSize}px;border-radius:6px;border:2px solid ${prc};box-shadow:0 0 18px ${prc}88;`;
+          blockDiv.appendChild(c);
+        }
+        document.getElementById('scn-rarity-badge').style.display='none';
+        document.getElementById('scn-exact').textContent='[PHANTOM] '+pOre.name;
+        document.getElementById('scn-exact').style.color=prc;
+      }
+      blockDiv.style.width=pSize+'px';blockDiv.style.height=pSize+'px';
+      return;
+    }
+  }
+
+  // ── Regular scanner (pick T4+) ──
+  if(!pick||pick.scanMin===0){ov.style.display='none';_scanOre=null;_scanPos=null;return;}
+
+  _scanFrameCount++;
+  let bestOre,bestX,bestY,bestZ;
+  if(_scanFrameCount%300===0||_scanCachedBestOre===null){
+    let bestExact=0;bestOre=null;bestX=0;bestY=0;bestZ=0;
+    for(let x=0;x<W;x++)for(let y=0;y<H;y++)for(let z=0;z<D;z++){
+      const ci=idx(x,y,z);
+      if(!blocks[ci]||!oreRevealed[ci])continue;
+      const ore=ORES[oreIdx[ci]||0];
+      if(!ore||ore.exact<pick.scanMin)continue;
+      if(ore.exact>bestExact){bestExact=ore.exact;bestOre=ore;bestX=x;bestY=y;bestZ=z;}
+    }
+    _scanCachedBestOre=bestOre;_scanCachedBestX=bestX;_scanCachedBestY=bestY;_scanCachedBestZ=bestZ;
+  }else{
+    bestOre=_scanCachedBestOre;bestX=_scanCachedBestX;bestY=_scanCachedBestY;bestZ=_scanCachedBestZ;
+  }
+
+  if(!bestOre){ov.style.display='none';_scanOre=null;_scanPos=null;return;}
+
+  // Hide when aiming directly at the block
+  if(h){const aimed=hitPos(h,true);if(aimed.x===bestX&&aimed.y===bestY&&aimed.z===bestZ){ov.style.display='none';return;}}
+
+  const worldCenter=new THREE.Vector3(bestX+0.5,bestY+0.5,bestZ+0.5);
+  const dist=camera.position.distanceTo(worldCenter);
+  const v=worldCenter.clone().project(camera);
+  if(v.z>1){ov.style.display='none';return;}
+  const sx=(v.x+1)/2*window.innerWidth;
+  const sy=(1-v.y)/2*window.innerHeight;
+
+  // Bigger when far, smaller when close (inverse of intuition — stands out more at distance)
+  const rawSize=Math.round(Math.min(90,Math.max(24,dist*5)));
+  const clampedX=Math.max(rawSize/2+4,Math.min(window.innerWidth-rawSize/2-4,sx));
+  const clampedY=Math.max(rawSize/2+4,Math.min(window.innerHeight-rawSize/2-60,sy));
+  const rc=RC[bestOre.rarity]||bestOre.color||'#fff';
+
+  ov.style.display='block';
+  ov.style.left=clampedX+'px';
+  ov.style.top=clampedY+'px';
+  ov.style.color=rc;
+
+  if(_scanOre!==bestOre||_scanPos!==bestX*10000+bestY*100+bestZ){
+    _scanOre=bestOre;_scanPos=bestX*10000+bestY*100+bestZ;
+    // Rarity SVG icon only — no name, no image, just rarity symbol
+    const blockDiv=document.getElementById('scn-block');
+    const svg=drawRarityIcon(bestOre.rarity,rc);
+    blockDiv.innerHTML=svg?`<div style="filter:drop-shadow(0 0 10px ${rc})">${svg}</div>`
+      :`<div style="width:44px;height:44px;border-radius:50%;background:${bestOre.color}44;border:2px solid ${rc};box-shadow:0 0 12px ${rc}88"></div>`;
+    // Only rarity + exact — NO ore name (surprise!)
+    document.getElementById('scn-name').textContent='';
+    const badge=document.getElementById('scn-rarity-badge');
+    badge.style.display='inline-block';
+    badge.textContent=bestOre.rarity;badge.style.color=rc;badge.style.borderColor=rc;badge.style.textShadow=`0 0 6px ${rc}`;
+    document.getElementById('scn-exact').style.color='rgba(255,255,255,0.55)';
+    document.getElementById('scn-exact').textContent='1/'+fmtExact(bestOre.exact);
+  }
+}
+
+// ═══════════ PICKAXE SYSTEM ═══════════
+function equipPick(id){
+  const p=PICKAXES.find(p=>p.id===id);if(!p||!p.owned)return;
+  PICKAXES.forEach(q=>q.equipped=false);p.equipped=true;currentPickId=id;
+  buildPickBar();markInvDirty();updateHUD();saveGame();if(shopOpen)renderShop();
+}
+function unequipPick(id){
+  const p=PICKAXES.find(p=>p.id===id);if(!p||p.id==='t0')return;
+  p.equipped=false;PICKAXES[0].equipped=true;currentPickId='t0';
+  buildPickBar();markInvDirty();updateHUD();saveGame();if(shopOpen)renderShop();
+}
+function craftPick(id){
+  const p=PICKAXES.find(p=>p.id===id);if(!p||p.owned)return;
+  for(const[m,q]of Object.entries(p.recipe)){
+    if((inventory[m]||0)<q){showSpawn(T.nospace,'#cc3322',false);return;}
+  }
+  for(const[m,q]of Object.entries(p.recipe)){inventory[m]-=q;if(inventory[m]<=0)delete inventory[m];}
+  p.owned=true;equipPick(id);
+  showSpawn(p.tier+' '+p.label+' '+T.crafted,'#c8a030',false);
+  markInvDirty();updateHUD();renderShop();saveGame();
+}
+function buildPickBar(){
+  const bar=document.getElementById('pick-bar');bar.innerHTML='';
+  const p=PICKAXES.find(p=>p.id===currentPickId);if(!p)return;
+  const d=document.createElement('div');d.className='pick-slot';
+  const sw=document.createElement('div');sw.className='slot-swatch';sw.style.background=p.color;
+  const ti=document.createElement('div');ti.className='slot-tier';ti.textContent=p.tier;
+  const lb=document.createElement('div');lb.className='slot-label';lb.textContent=p.label;
+  d.append(sw,ti,lb);bar.appendChild(d);
+  document.getElementById('s-pick').textContent=p.tier;
+  // Build ability panel
+  const ap=document.getElementById('ability-panel');
+  const al=document.getElementById('ability-list');
+  if(p.abilities&&p.abilities.length>0){
+    ap.style.display='block';
+    al.innerHTML='';
+    p.abilities.forEach(a=>{
+      const row=document.createElement('div');row.className='ability-row';
+      row.innerHTML=`<div class="ability-icon" style="background:${a.color}55;border:1px solid ${a.color}88"></div>`+
+        `<span style="color:${a.color}">${a.name}</span>`+
+        `<span style="font-size:5px;color:#604020;margin-left:auto">${a.chance}</span>`;
+      const desc=document.createElement('div');
+      desc.className='ability-desc';
+      desc.textContent=a.desc;
+      al.appendChild(row);al.appendChild(desc);
+    });
+  }else{ap.style.display='none';}
+}
+
+// ═══════════ SHOP ═══════════
+window.setTab=function(tab,btn){shopTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderShop();};
+window.closeShop=function(){shopOpen=false;document.getElementById('shop-ov').classList.remove('open');};
+window.shopCraft=function(id){craftPick(id);};
+window.shopEquip=function(id){equipPick(id);};
+window.shopUnequip=function(id){unequipPick(id);};
+function openShop(){shopOpen=true;if(isLocked)document.exitPointerLock();document.getElementById('shop-ov').classList.add('open');renderShop();}
+function closeShop(){window.closeShop();}
+document.getElementById('shop-btn').addEventListener('click',openShop);
+
+function renderShop(){
+  const el=document.getElementById('shop-content');el.innerHTML='';
+  const list=shopTab==='mine'?PICKAXES.filter(p=>p.owned):PICKAXES;
+  list.forEach(p=>{
+    const hasRec=Object.keys(p.recipe).length>0;
+    const canCraft=!p.owned&&(!hasRec||Object.entries(p.recipe).every(([m,q])=>(inventory[m]||0)>=q));
+    const pills=hasRec
+      ?Object.entries(p.recipe).map(([m,q])=>{
+          const h=(inventory[m]||0)>=q;
+          return`<span class="rp ${h?'ok':'no'}">${m} x${q} (${inventory[m]||0}/${q})</span>`;
+        }).join('')
+      :`<span class="rp ok">${T.def}</span>`;
+    let act='';
+    if(!p.owned)act=`<button class="abt" ${canCraft?'':'disabled'} onclick="shopCraft('${p.id}')">${canCraft?T.craft:T.nomat}</button>`;
+    else if(p.equipped){act=`<button class="abt dim" disabled>${T.equipped}</button>`;if(p.id!=='t0')act+=`<button class="abt r" onclick="shopUnequip('${p.id}')">${T.unequip}</button>`;}
+    else act=`<button class="abt g" onclick="shopEquip('${p.id}')">${T.equip}</button>`;
+    const scanBadge=p.scanMin>0?` <span style="font-size:9px;color:#44aacc;font-family:sans-serif">[SCAN]</span>`:'';
+    const card=document.createElement('div');
+    card.className='pick-card'+(p.owned?' owned':'')+(p.equipped?' equipped':'');
+    // Abilities HTML for shop card
+    const abHtml=p.abilities&&p.abilities.length?p.abilities.map(a=>`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+        <div style="width:9px;height:9px;border-radius:2px;flex-shrink:0;background:${a.color}44;border:1px solid ${a.color}77"></div>
+        <span style="font-size:6px;color:${a.color}">${a.name}</span>
+        <span style="font-size:5px;color:#503520;margin-left:auto">${a.chance}</span>
+      </div>
+      <div style="font-size:9px;color:#5a4a30;margin-left:15px;font-family:sans-serif;margin-bottom:5px;line-height:1.6">${a.desc}</div>`).join(''):'<div style="font-size:9px;color:#3a2a18;font-family:sans-serif">Aucune capacite speciale.</div>';
+    card.innerHTML=`
+      <div class="c-badge" style="background:${p.owned?p.color+'22':'rgba(15,15,25,0.9)'};border:1px solid ${p.owned?p.color+'55':'rgba(40,40,50,0.4)'}">
+        <span style="font-size:9px;color:${p.owned?p.color:'#404040'}">${p.tier}</span>
+      </div>
+      <div class="c-info">
+        <h4>${p.label.toUpperCase()}${scanBadge}</h4>
+        <div class="c-desc">${p.desc}</div>
+        <div class="c-fx">${p.fx}</div>
+        <div class="rw">${pills}</div>
+        <div style="margin-top:7px;border-top:1px solid rgba(150,120,45,0.2);padding-top:7px">
+          <div style="font-size:5px;color:#b8943a;margin-bottom:5px;letter-spacing:1px">CAPACITES</div>
+          ${abHtml}
+        </div>
+      </div>
+      <div class="c-act">${act}</div>`;
+    el.appendChild(card);
+  });
+}
+
+// ═══════════ HUD ═══════════
+// updateHUD: always updates stats numbers; only rebuilds inventory DOM when dirty or 1/min
+function updateHUD(){
+  // ── Stats (always fast) ──
+  document.getElementById('s-mined').textContent=mined;
+  const el_luck=document.getElementById('s-luck');
+  if(el_luck){
+    const pickLuck=getPickLuck();
+    // Luck is BASE luck (from mining) × pickaxe multiplier — don't stack multiplicatively wrong
+    const totalLuck=luck*pickLuck;
+    el_luck.textContent='x'+totalLuck.toFixed(2);
+    el_luck.style.color=totalLuck>=10?'#df03fc':totalLuck>=5?'#ffeb3b':totalLuck>=2?'#00ff88':'#dddddd';
+  }
+  const bigCount=Object.entries(inventory).reduce((acc,[n,q])=>{const o=ORES.find(x=>x.name===n);return acc+(o&&o.exact>=100000000?q:0);},0);
+  const el_sc=document.getElementById('s-counter');if(el_sc)el_sc.textContent=bigCount;
+
+  // ── Mine counter top bar ──
+  updateMineTopBar();
+
+  // ── Inventory: only rebuild when dirty or every 60s ──
+  const now=Date.now();
+  if(!_invDirty&&now-_lastHudUpdate<60000)return;
+  _invDirty=false;_lastHudUpdate=now;
+  rebuildInvPanel();
+}
+
+function updateHudStatsOnly(){
+  document.getElementById('s-mined').textContent=mined;
+  updateMineTopBar();
+}
+
+function rebuildInvPanel(){
+  const list=document.getElementById('inv-list');
+  const entries=Object.entries(inventory).filter(([,q])=>q>0)
+    .sort((a,b)=>(ORES.find(o=>o.name===b[0])?.exact||0)-(ORES.find(o=>o.name===a[0])?.exact||0));
+  list.innerHTML='';
+  if(!entries.length){
+    list.innerHTML=`<div style="color:rgba(200,200,200,0.2);font-size:6px">${lang==='fr'?'Rien encore...':'Nothing yet...'}</div>`;
+  }else{
+    entries.forEach(([n,q])=>{
+      const ore=ORES.find(o=>o.name===n);
+      const rc=ore?(RC[ore.rarity]||ore.color||'#ddd'):'#ddd';
+      const row=document.createElement('div');
+      row.className='ore-row'+(selectedInv===n?' sel':'');
+      row.innerHTML=`<div class="ore-dot" style="background:${ore?ore.color:'#888'}"></div><span style="color:${rc}">${n}</span><span class="ore-qty">x${q}</span>`;
+      row.addEventListener('mouseenter',()=>{
+        if(!ore)return;
+        const tip=document.getElementById('ore-tip');
+        document.getElementById('ot-name').textContent=n;
+        const rc2=RC[ore.rarity]||'#aaa';
+        document.getElementById('ot-rare').innerHTML=`<span style="color:${rc2}">${ore.rarity}</span>`;
+        document.getElementById('ot-exact').textContent=T.rare1+fmtExact(ore.exact);
+        const rect=row.getBoundingClientRect();
+        tip.style.left=(rect.right+6)+'px';tip.style.top=rect.top+'px';tip.style.display='block';
+      });
+      row.addEventListener('mouseleave',()=>document.getElementById('ore-tip').style.display='none');
+      row.addEventListener('click',()=>{selectedInv=selectedInv===n?null:n;rebuildInvPanel();updatePlacingInd();});
+      list.appendChild(row);
+    });
+  }
+
+  // Index panel
+  const idxList=document.getElementById('idx-list');
+  idxList.innerHTML='';
+  const ownedCount=ORES.filter(o=>(inventory[o.name]||0)>0).length;
+  document.getElementById('lbl-idx').textContent=(lang==='fr'?'INDEX ':'INDEX ')+`(${ownedCount}/${ORES.length})`;
+  ORES_SORTED.forEach(ore=>{
+    const qty=inventory[ore.name]||0;
+    const owned=qty>0;
+    const rc=RC[ore.rarity]||'#888';
+    const row=document.createElement('div');
+    row.className='idx-row';
+    row.innerHTML=
+      `<div class="idx-dot" style="background:${owned?ore.color:'#1a1a1a'}"></div>`+
+      `<span style="color:${owned?rc:'rgba(255,255,255,0.18)'}">${ore.name}</span>`+
+      `<span class="idx-exact" style="color:${owned?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.1)'}">1/${fmtExact(ore.exact)}</span>`;
+    row.addEventListener('mouseenter',()=>{
+      const tip=document.getElementById('ore-tip');
+      document.getElementById('ot-name').textContent=ore.name+(owned?' x'+qty:'');
+      document.getElementById('ot-rare').innerHTML=`<span style="color:${rc}">${ore.rarity}</span>`;
+      document.getElementById('ot-exact').textContent=T.rare1+fmtExact(ore.exact);
+      const rect=row.getBoundingClientRect();
+      tip.style.left=(rect.right+6)+'px';
+      tip.style.top=Math.min(rect.top,window.innerHeight-110)+'px';
+      tip.style.display='block';
+    });
+    row.addEventListener('mouseleave',()=>document.getElementById('ore-tip').style.display='none');
+    idxList.appendChild(row);
+  });
+}
+
+function updatePlacingInd(){
+  const el=document.getElementById('placing-ind');
+  if(selectedInv){
+    const hasPhantom=!!phantomBlock;
+    const mode=hasPhantom
+      ?(lang==='fr'?'PHANTOM ACTIF — Clic D pour deplacer':'PHANTOM ACTIVE — RMB to move')
+      :(lang==='fr'?'Clic D pour poser phantom: ':'RMB to place phantom: ');
+    el.textContent=mode+selectedInv;
+    el.style.display='block';
+  }else el.style.display='none';
+}
+
+// ═══════════ PICKAXE ABILITY FX ═══════════
+// 2D canvas overlay for visual effects
+const fxCanvas=document.getElementById('ability-fx-canvas');
+fxCanvas.width=window.innerWidth;fxCanvas.height=window.innerHeight;
+fxCanvas.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:20;width:100%;height:100%';
+const fx2d=fxCanvas.getContext('2d');
+window.addEventListener('resize',()=>{fxCanvas.width=window.innerWidth;fxCanvas.height=window.innerHeight;});
+
+// Active particles / projectiles list
+const FX_PARTICLES=[];
+
+// ── Utility: mine a block in world coords (no mesh rebuild, batched) ──
+function abilityMine(wx,wy,wz){
+  if(wx<0||wx>=W||wy<0||wy>=H||wz<0||wz>=D)return false;
+  const i=idx(wx,wy,wz);
+  if(!blocks[i])return false;
+  // Never destroy phantom block via abilities — only player direct mining can pick it up
+  if(phantomBlock&&phantomBlock.x===wx&&phantomBlock.y===wy&&phantomBlock.z===wz)return false;
+  const ore=ORES[oreIdx[i]||0];
+  blocks[i]=0;mined++;
+  inventory[ore.name]=(inventory[ore.name]||0)+1;
+  markInvDirty();
+  revealAdjacentSolid(wx,wy,wz,mined);
+  return true;
+}
+
+// ── T1: Cube Mine 3×3 ──
+let t1Counter=0;
+function tryAbilityT1(mx,my,mz){
+  t1Counter++;
+  if(t1Counter%20!==0)return;
+  let hit=false;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+    if(dx===0&&dy===0&&dz===0)continue;
+    if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+  }
+  if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  spawnFX_CubeMine(mx,my,mz);
+}
+
+// ── T2: Crystal Shot ──
+let t2Counter=0;
+function tryAbilityT2(mx,my,mz){
+  t2Counter++;
+  if(t2Counter%4!==0)return;
+  // Fire a crystal projectile in camera forward direction
+  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  FX_PARTICLES.push({
+    type:'crystal_shot',color:'#7777cc',
+    px:camera.position.x,py:camera.position.y,pz:camera.position.z,
+    vx:dir.x*18,vy:dir.y*18,vz:dir.z*18,
+    life:3,maxLife:3,mined:false,
+    trailPts:[],
+  });
+}
+
+// ── T3: Dark Pulse ──
+let t3Counter=0,t3RingCount=0;
+function tryAbilityT3(mx,my,mz){
+  t3Counter++;
+  if(t3Counter%12!==0)return;
+  t3RingCount++;
+  const isPowerRing=(t3RingCount%6===0);
+  const radius=isPowerRing?3:1;
+  const color=isPowerRing?'#ff2200':'#334455';
+  spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,radius,color,isPowerRing);
+  // Mine all blocks within radius (sphere, not just ring edge)
+  let hit=false;
+  const ir=Math.ceil(radius);
+  for(let dx=-ir;dx<=ir;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-ir;dz<=ir;dz++){
+    if(dx*dx+dz*dz<=radius*radius){
+      if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+  }
+  if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+}
+
+// ── T4: Golden Pulse ──
+let t4Counter=0;
+function tryAbilityT4(mx,my,mz){
+  t4Counter++;
+  if(t4Counter%25!==0)return;
+  for(let r=0;r<3;r++){
+    const radius=1.5+r*1.8;
+    setTimeout(()=>{
+      spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,radius,'#cc8820',false);
+      let hit=false;
+      const steps=Math.round(radius*8);
+      for(let i=0;i<steps;i++){
+        const a=(i/steps)*Math.PI*2;
+        if(abilityMine(Math.round(mx+Math.cos(a)*radius),my,Math.round(mz+Math.sin(a)*radius)))hit=true;
+      }
+      if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+    },r*120);
+  }
+}
+
+// ── T5: Crystal abilities ──
+let t5ShotC=0,t5GrowC=0,t5RainC=0;
+function tryAbilityT5(mx,my,mz){
+  t5ShotC++;t5GrowC++;t5RainC++;
+  if(t5ShotC%20===0){
+    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+    FX_PARTICLES.push({type:'crystal_shot',color:'#22aacc',px:camera.position.x,py:camera.position.y,pz:camera.position.z,vx:dir.x*22,vy:dir.y*22,vz:dir.z*22,life:4,maxLife:4,trailPts:[]});
+  }
+  if(t5GrowC%35===0){spawnFX_CrystalGrowth(mx,my,mz);}
+  if(t5RainC%45===0){spawnFX_ShardRain(mx,my,mz);}
+}
+
+// ── T6: Octorb + Ore Clearing ──
+let t6OrbC=0,t6ClrC=0;
+function tryAbilityT6(mx,my,mz){
+  t6OrbC++;t6ClrC++;
+  if(t6OrbC%50===0){
+    const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+    dirs.forEach(([dx,dz])=>{
+      FX_PARTICLES.push({type:'orb',color:'#4444aa',px:mx+0.5,py:my+0.5,pz:mz+0.5,vx:dx*14,vy:0,vz:dz*14,life:1.5,maxLife:1.5,radius:2.5,trailPts:[]});
+    });
+  }
+  if(t6ClrC%50===0){
+    let hit=false;
+    // Radius 1 (direct neighbours only)
+    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+      const ni=idx(mx+dx,my+dy,mz+dz);
+      if(ni>=0&&ni<blocks.length&&blocks[ni]){
+        const o=ORES[oreIdx[ni]||0];
+        if(o.exact<=100000){if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;}
+      }
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,1,'#4444aa',false);
+  }
+}
+
+// ── T7: Moon Scepter ──
+let t7BladeC=0,t7BurstC=0,t7BeamC=0;
+function tryAbilityT7(mx,my,mz){
+  t7BladeC++;t7BurstC++;t7BeamC++;
+  if(t7BladeC%40===0){spawnFX_CrescentBlades();}
+  if(t7BurstC%150===0){spawnFX_MoonBurst(mx,my,mz);}
+  if(t7BeamC%80===0){spawnFX_Moonbeam(mx,my,mz);}
+}
+
+// ── T8: Soul Scythe ──
+let t8WispC=0,t8SlashC=0,t8VortexC=0,t8VortexAccum=0;
+function tryAbilityT8(mx,my,mz){
+  t8WispC++;t8SlashC++;t8VortexC++;t8VortexAccum++;
+  if(t8WispC%60===0){spawnFX_Wisps();}
+  if(t8SlashC%50===0){
+    spawnFX_SoulSlash(mx,my,mz);
+    const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+    let hit=false;
+    for(let r=1;r<=5;r++)for(let a=-5;a<=5;a++){
+      const angle=(a/5)*Math.PI*0.6;
+      const nx=Math.round(mx+Math.cos(angle)*fwd.x*r-Math.sin(angle)*fwd.z*r);
+      const nz=Math.round(mz+Math.sin(angle)*fwd.x*r+Math.cos(angle)*fwd.z*r);
+      if(abilityMine(nx,my,nz))hit=true;
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+  if(t8VortexAccum>=80&&t8VortexC%180===0){
+    t8VortexAccum=0;
+    spawnFX_AzureVortex(mx,my,mz);
+  }
+}
+
+// ── T9: MURD-ERROR ──
+let t9SpamC=0,t9FireC=0,t9LimitPot=0;
+function tryAbilityT9(mx,my,mz){
+  // HACK-HANDS: passive visual on every swing
+  spawnFX_HackHands(mx,my,mz);
+  t9SpamC++;t9FireC++;
+  if(t9SpamC%10===0){
+    let hit=false;
+    for(let i=0;i<35;i++){
+      const rx=mx+Math.round((Math.random()-0.5)*16);
+      const ry=my+Math.round((Math.random()-0.5)*6);
+      const rz=mz+Math.round((Math.random()-0.5)*16);
+      if(abilityMine(rx,ry,rz))hit=true;
+      FX_PARTICLES.push({type:'bit',color:'#ff4444',px:rx+0.5,py:ry+0.5,pz:rz+0.5,life:0.4,maxLife:0.4,vx:0,vy:0,vz:0,trailPts:[]});
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+  if(t9FireC%200===0){spawnFX_Firewall(mx,my,mz);}
+  t9LimitPot++;
+  if(t9LimitPot>=400){
+    t9LimitPot=0;
+    spawnFX_LimitBreak(mx,my,mz);
+    let hit=false;
+    for(let dy=-8;dy<=0;dy++)for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){
+      if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+}
+
+// ── T10: Prism of Chaos ──
+let t10RefrC=0,t10ShotC=0,t10BurstC=0,t10ChaosBlocks=0;
+function tryAbilityT10(mx,my,mz){
+  t10RefrC++;t10ShotC++;t10BurstC++;t10ChaosBlocks++;
+  // Light Refraction: 1/5 — 16 bounces with explosion at each
+  if(t10RefrC%5===0){spawnFX_LightRefraction(mx,my,mz);}
+  // Color Shotgun: 1/30
+  if(t10ShotC%30===0){spawnFX_ColorShotgun(mx,my,mz);}
+  // Prism Burst: 1/30 — 12 orbs
+  if(t10BurstC%30===0){spawnFX_PrismBurst(mx,my,mz);}
+  // Chaotization: 75% chance mine 6 bonus blocks (cross + up + down)
+  if(Math.random()<0.75){
+    const bonus=[[1,0,0],[-1,0,0],[0,0,1],[0,0,-1],[0,1,0],[0,-1,0]];
+    let hit=false;
+    bonus.forEach(([dx,dy,dz])=>{if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;});
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+}
+
+// ── FX Spawners ──
+
+function spawnFX_CubeMine(x,y,z){
+  for(let i=0;i<18;i++){
+    FX_PARTICLES.push({type:'spark',color:'#aaaaaa',
+      px:x+0.5+(Math.random()-0.5)*3,py:y+0.5+(Math.random()-0.5)*3,pz:z+0.5+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*6,vy:(Math.random())*4,vz:(Math.random()-0.5)*6,
+      life:0.6,maxLife:0.6,trailPts:[]});
+  }
+}
+
+function spawnFX_Ring(wx,wy,wz,radius,color,thick){
+  FX_PARTICLES.push({type:'ring3d',color,wx,wy,wz,radius,thick,life:0.7,maxLife:0.7,vx:0,vy:0,vz:0,trailPts:[]});
+}
+
+function spawnFX_CrystalGrowth(mx,my,mz){
+  let hit=false;
+  for(let t=0;t<8;t++){
+    setTimeout(()=>{
+      const r=t+1;
+      for(let a=0;a<Math.PI*2;a+=Math.PI/4){
+        const rx=Math.round(mx+Math.cos(a)*r);
+        const rz=Math.round(mz+Math.sin(a)*r);
+        if(abilityMine(rx,my,rz))hit=true;
+        FX_PARTICLES.push({type:'crystal_shard',color:'#22aacc',
+          px:rx+0.5,py:my+0.5,pz:rz+0.5,
+          vx:0,vy:Math.random()*3+1,vz:0,life:0.8,maxLife:0.8,trailPts:[]});
+      }
+      if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+    },t*60);
+  }
+}
+
+function spawnFX_ShardRain(mx,my,mz){
+  for(let i=0;i<20;i++){
+    const rx=mx+Math.round((Math.random()-0.5)*8);
+    const rz=mz+Math.round((Math.random()-0.5)*8);
+    FX_PARTICLES.push({type:'shard',color:'#22aacc',
+      px:rx+0.5,py:my+6,pz:rz+0.5,
+      vx:(Math.random()-0.5)*2,vy:-8-Math.random()*4,vz:(Math.random()-0.5)*2,
+      life:0.9,maxLife:0.9,trailPts:[],targetX:rx,targetZ:rz,targetY:my});
+  }
+}
+
+function spawnFX_Wisps(){
+  // 3 wisps at 3 different orbit radii around the player
+  [1.5,2.5,3.5].forEach((orbitR,i)=>{
+    FX_PARTICLES.push({type:'wisp',color:'#55ff88',
+      px:camera.position.x,py:camera.position.y,pz:camera.position.z,
+      vx:0,vy:0,vz:0,life:5,maxLife:5,trailPts:[],wispIdx:i,wispOrbitR:orbitR,age:0});
+  });
+}
+
+function spawnFX_SoulSlash(mx,my,mz){
+  FX_PARTICLES.push({type:'slash',color:'#55ff88',
+    px:mx+0.5,py:my+0.5,pz:mz+0.5,
+    camQuat:camera.quaternion.clone(),
+    life:0.5,maxLife:0.5,vx:0,vy:0,vz:0,trailPts:[]});
+}
+
+function spawnFX_AzureVortex(mx,my,mz){
+  for(let i=0;i<40;i++){
+    const a=(i/40)*Math.PI*2;
+    FX_PARTICLES.push({type:'vortex_ring',color:'#55ff88',
+      px:mx+0.5,py:my+0.5,pz:mz+0.5,
+      vx:Math.cos(a)*0.5,vy:(Math.random()-0.5)*2,vz:Math.sin(a)*0.5,
+      life:1.5,maxLife:1.5,trailPts:[]});
+  }
+}
+
+function spawnFX_CrescentBlades(){
+  for(let b=0;b<3;b++){
+    FX_PARTICLES.push({
+      type:'crescent',color:'#aabbff',
+      // start at player pos, updated each tick
+      px:camera.position.x,py:camera.position.y,pz:camera.position.z,
+      vx:0,vy:0,vz:0,
+      life:5,maxLife:5,blade:b,trailPts:[],age:0,
+      lastMineAngle:-999 // track angle to avoid mining same spot repeatedly
+    });
+  }
+}
+
+function spawnFX_MoonBurst(mx,my,mz){
+  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  for(let r=1;r<=8;r++){
+    setTimeout(()=>{
+      const bx=Math.round(mx+dir.x*r),by=Math.round(my+dir.y*r),bz=Math.round(mz+dir.z*r);
+      abilityMine(bx,by,bz);markMeshDirty();markInvDirty();updateHudStatsOnly();
+      spawnFX_Ring(bx+0.5,by+0.5,bz+0.5,2,'#aabbff',false);
+    },r*50);
+  }
+}
+
+function spawnFX_Moonbeam(mx,my,mz){
+  let hit=false;
+  for(let dy=0;dy>=-5;dy--){
+    if(abilityMine(mx,my+dy,mz))hit=true;
+    FX_PARTICLES.push({type:'beam_seg',color:'#aabbff',
+      px:mx+0.5,py:my+dy+0.5,pz:mz+0.5,
+      vx:0,vy:0,vz:0,life:0.8,maxLife:0.8,trailPts:[]});
+  }
+  if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+}
+
+function spawnFX_HackHands(mx,my,mz){
+  const handColors=['#ff2222','#ff4400','#cc0000','#ff0044'];
+  const offsets=[[1.2,0,0],[-1.2,0,0],[0,0,1.2],[0,0,-1.2]];
+  offsets.forEach(([dx,dy,dz],i)=>{
+    FX_PARTICLES.push({type:'hack_hand',color:handColors[i],
+      px:camera.position.x+dx,py:camera.position.y+dy,pz:camera.position.z+dz,
+      vx:dx*0.5,vy:0,vz:dz*0.5,
+      life:0.3,maxLife:0.3,trailPts:[]});
+  });
+}
+
+function spawnFX_Firewall(mx,my,mz){
+  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  const right=new THREE.Vector3(dir.z,0,-dir.x);
+  FX_PARTICLES.push({type:'firewall',color:'#ff2222',
+    px:mx+0.5,py:my+0.5,pz:mz+0.5,
+    dir:dir.clone(),right:right.clone(),
+    advance:0,life:2.5,maxLife:2.5,vx:dir.x*4,vy:0,vz:dir.z*4,trailPts:[],age:0});
+}
+
+function spawnFX_LimitBreak(mx,my,mz){
+  // Colossal pillar upward
+  for(let dy=0;dy<=8;dy++){
+    for(let i=0;i<12;i++){
+      const a=(i/12)*Math.PI*2;
+      FX_PARTICLES.push({type:'pillar_spark',color:'#ff0000',
+        px:mx+0.5+Math.cos(a)*0.8,py:my+dy+0.5,pz:mz+0.5+Math.sin(a)*0.8,
+        vx:(Math.random()-0.5)*3,vy:Math.random()*2,vz:(Math.random()-0.5)*3,
+        life:1.2,maxLife:1.2,trailPts:[]});
+    }
+  }
+}
+
+function spawnFX_LightRefraction(mx,my,mz){
+  // Ray bouncing 7 times
+  let ox=camera.position.x,oy=camera.position.y,oz=camera.position.z;
+  let dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  const pts=[[ox,oy,oz]];
+  for(let b=0;b<7;b++){
+    // Advance ray until block or limit
+    let hit=null;
+    for(let s=0.5;s<20;s+=0.5){
+      const nx=Math.floor(ox+dir.x*s),ny=Math.floor(oy+dir.y*s),nz=Math.floor(oz+dir.z*s);
+      if(nx>=0&&nx<W&&ny>=0&&ny<H&&nz>=0&&nz<D&&blocks[idx(nx,ny,nz)]){
+        hit={x:nx,y:ny,z:nz,dist:s};break;
+      }
+    }
+    if(!hit)break;
+    abilityMine(hit.x,hit.y,hit.z);
+    ox=hit.x+0.5;oy=hit.y+0.5;oz=hit.z+0.5;
+    pts.push([ox,oy,oz]);
+    // Reflect: simple random deflect
+    dir=new THREE.Vector3(dir.x+(Math.random()-0.5)*0.4,dir.y+(Math.random()-0.5)*0.4,dir.z+(Math.random()-0.5)*0.4).normalize();
+  }
+  FX_PARTICLES.push({type:'refraction_ray',color:'#ffaaff',pts,life:0.8,maxLife:0.8,vx:0,vy:0,vz:0,trailPts:[]});
+  markMeshDirty();markInvDirty();updateHudStatsOnly();
+}
+
+function spawnFX_ColorShotgun(mx,my,mz){
+  const colors=['#ff0000','#ff8800','#ffff00','#00ff00','#0088ff','#8800ff','#ff00ff'];
+  const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  colors.forEach((c,i)=>{
+    const spread=((i-(colors.length-1)/2)/7)*0.6;
+    const d=new THREE.Vector3(fwd.x+spread,fwd.y+(Math.random()-0.5)*0.2,fwd.z).normalize();
+    FX_PARTICLES.push({type:'crystal_shot',color:c,
+      px:camera.position.x,py:camera.position.y,pz:camera.position.z,
+      vx:d.x*20,vy:d.y*20,vz:d.z*20,life:1.5,maxLife:1.5,trailPts:[]});
+  });
+}
+
+function spawnFX_PrismBurst(mx,my,mz){
+  const colors=['#ff0000','#ff4400','#ff8800','#ffff00','#88ff00','#00ff00','#0088ff','#0044ff','#8800ff','#cc00ff','#ff00ff','#ffffff'];
+  for(let i=0;i<12;i++){
+    const a=(i/8)*Math.PI*2;
+    FX_PARTICLES.push({type:'orb',color:colors[i],
+      px:mx+0.5,py:my+0.5,pz:mz+0.5,
+      vx:Math.cos(a)*10,vy:0,vz:Math.sin(a)*10,
+      life:1.2,maxLife:1.2,radius:1.5,trailPts:[]});
+  }
+}
+
+// ── Dispatch ability on mine ──
+function triggerPickAbility(mx,my,mz){
+  switch(currentPickId){
+    case't1':tryAbilityT1(mx,my,mz);break;
+    case't2':tryAbilityT2(mx,my,mz);break;
+    case't3':tryAbilityT3(mx,my,mz);break;
+    case't4':tryAbilityT4(mx,my,mz);break;
+    case't5':tryAbilityT5(mx,my,mz);break;
+    case't6':tryAbilityT6(mx,my,mz);break;
+    case't7':tryAbilityT7(mx,my,mz);break;
+    case't8':tryAbilityT8(mx,my,mz);break;
+    case't9':tryAbilityT9(mx,my,mz);break;
+    case't10':tryAbilityT10(mx,my,mz);break;
+  }
+}
+
+// ── Project world pos to screen ──
+function worldToScreen(wx,wy,wz){
+  const v=new THREE.Vector3(wx,wy,wz);
+  v.project(camera);
+  if(v.z>1)return null; // behind camera
+  return{
+    x:(v.x+1)/2*fxCanvas.width,
+    y:(1-v.y)/2*fxCanvas.height
+  };
+}
+
+// ── Tick & draw all FX particles ──
+function tickFX(dt){
+  fx2d.clearRect(0,0,fxCanvas.width,fxCanvas.height);
+  for(let i=FX_PARTICLES.length-1;i>=0;i--){
+    const p=FX_PARTICLES[i];
+    p.life-=dt;
+    if(p.life<=0){FX_PARTICLES.splice(i,1);continue;}
+    const t=1-p.life/p.maxLife; // 0→1 progress
+    const alpha=Math.max(0,p.life/p.maxLife);
+
+    // Move
+    if(p.vx||p.vy||p.vz){
+      p.px+=p.vx*dt;p.py+=p.vy*dt;p.pz+=p.vz*dt;
+      if(p.type==='crystal_shot'||p.type==='orb'){
+        // Collision with blocks
+        const bx=Math.floor(p.px),by=Math.floor(p.py),bz=Math.floor(p.pz);
+        if(bx>=0&&bx<W&&by>=0&&by<H&&bz>=0&&bz<D&&blocks[idx(bx,by,bz)]){
+          abilityMine(bx,by,bz);markMeshDirty();markInvDirty();updateHudStatsOnly();
+          p.life=0;continue;
+        }
+      }
+      if(p.type==='shard'){
+        if(p.py<=p.targetY+0.5){
+          abilityMine(p.targetX,p.targetY,p.targetZ);markMeshDirty();markInvDirty();updateHudStatsOnly();
+          p.life=0;continue;
+        }
+      }
+    }
+
+    // Store trail
+    if(p.trailPts&&(p.type==='crystal_shot'||p.type==='orb')){
+      p.trailPts.push([p.px,p.py,p.pz]);
+      if(p.trailPts.length>12)p.trailPts.shift();
+    }
+
+    // Age for animated types
+    if(p.age!=null)p.age+=dt;
+
+    // Draw
+    switch(p.type){
+      case'spark':case'bit':case'crystal_shard':case'pillar_spark':case'vortex_ring':case'beam_seg':case'hack_hand':case'shard':{
+        const s=worldToScreen(p.px,p.py,p.pz);if(!s)break;
+        const r=p.type==='bit'?4:p.type==='crystal_shard'?5:p.type==='shard'?6:3;
+        fx2d.beginPath();
+        fx2d.arc(s.x,s.y,r*(0.5+alpha*0.5),0,Math.PI*2);
+        fx2d.fillStyle=p.color+(Math.round(alpha*255).toString(16).padStart(2,'0'));
+        fx2d.fill();
+        break;
+      }
+      case'crystal_shot':{
+        // Draw trail then head
+        if(p.trailPts.length>1){
+          fx2d.beginPath();
+          for(let ti=0;ti<p.trailPts.length;ti++){
+            const ts=worldToScreen(...p.trailPts[ti]);if(!ts){fx2d.beginPath();continue;}
+            ti===0?fx2d.moveTo(ts.x,ts.y):fx2d.lineTo(ts.x,ts.y);
+          }
+          fx2d.strokeStyle=p.color+'88';fx2d.lineWidth=3;fx2d.stroke();
+        }
+        const s=worldToScreen(p.px,p.py,p.pz);if(!s)break;
+        fx2d.beginPath();fx2d.arc(s.x,s.y,6*alpha,0,Math.PI*2);
+        fx2d.fillStyle=p.color;fx2d.fill();
+        // Glow
+        const g=fx2d.createRadialGradient(s.x,s.y,0,s.x,s.y,14);
+        g.addColorStop(0,p.color+'88');g.addColorStop(1,p.color+'00');
+        fx2d.beginPath();fx2d.arc(s.x,s.y,14,0,Math.PI*2);
+        fx2d.fillStyle=g;fx2d.fill();
+        break;
+      }
+      case'orb':{
+        const s=worldToScreen(p.px,p.py,p.pz);if(!s)break;
+        fx2d.beginPath();fx2d.arc(s.x,s.y,8*alpha,0,Math.PI*2);
+        fx2d.fillStyle=p.color+(Math.round(alpha*200).toString(16).padStart(2,'0'));
+        fx2d.fill();
+        // Trail
+        if(p.trailPts.length>1){
+          fx2d.beginPath();
+          p.trailPts.forEach(([tx,ty,tz],ti)=>{
+            const ts=worldToScreen(tx,ty,tz);if(!ts){fx2d.beginPath();return;}
+            ti===0?fx2d.moveTo(ts.x,ts.y):fx2d.lineTo(ts.x,ts.y);
+          });
+          fx2d.strokeStyle=p.color+'55';fx2d.lineWidth=4;fx2d.stroke();
+        }
+        break;
+      }
+      case'ring3d':{
+        // Draw ring as projected ellipse on screen
+        const pts2d=[];
+        const steps=32;
+        for(let si=0;si<=steps;si++){
+          const a=(si/steps)*Math.PI*2;
+          const rx=p.wx+Math.cos(a)*p.radius;
+          const rz=p.wz+Math.sin(a)*p.radius;
+          const s=worldToScreen(rx,p.wy,rz);
+          if(s)pts2d.push(s);else pts2d.push(null);
+        }
+        fx2d.beginPath();
+        let moved=false;
+        pts2d.forEach(s=>{
+          if(!s){moved=false;return;}
+          if(!moved){fx2d.moveTo(s.x,s.y);moved=true;}
+          else fx2d.lineTo(s.x,s.y);
+        });
+        fx2d.strokeStyle=p.color+(Math.round(alpha*255).toString(16).padStart(2,'0'));
+        fx2d.lineWidth=p.thick?4:2;fx2d.stroke();
+        // Glow
+        fx2d.lineWidth=p.thick?8:4;
+        fx2d.strokeStyle=p.color+(Math.round(alpha*80).toString(16).padStart(2,'0'));
+        fx2d.beginPath();moved=false;
+        pts2d.forEach(s=>{if(!s){moved=false;return;}if(!moved){fx2d.moveTo(s.x,s.y);moved=true;}else fx2d.lineTo(s.x,s.y);});
+        fx2d.stroke();
+        break;
+      }
+      case'slash':{
+        // Draw arc on screen
+        const cx=fxCanvas.width/2,cy=fxCanvas.height/2;
+        const r=120;
+        fx2d.beginPath();fx2d.arc(cx,cy,r,-Math.PI*0.6,Math.PI*0.6);
+        fx2d.strokeStyle=p.color+(Math.round(alpha*220).toString(16).padStart(2,'0'));
+        fx2d.lineWidth=12*alpha;fx2d.stroke();
+        break;
+      }
+      case'crescent':{
+        // Follow player
+        p.px=camera.position.x;p.py=camera.position.y-0.3;p.pz=camera.position.z;
+        const bladeAngle=(p.blade/3)*Math.PI*2+p.age*2.2;
+        const orbitR=1.5;
+        const bwx=p.px+Math.cos(bladeAngle)*orbitR;
+        const bwy=p.py;
+        const bwz=p.pz+Math.sin(bladeAngle)*orbitR;
+        // Mine only the block directly at blade position (radius 1 reduced)
+        const bx3=Math.round(bwx),by3=Math.round(bwy-0.5),bz3=Math.round(bwz);
+        for(let dx=-0;dx<=0;dx++)for(let dy=-0;dy<=0;dy++)for(let dz=-0;dz<=0;dz++){
+          const tx=bx3+dx,ty=by3+dy,tz=bz3+dz;
+          if(tx>=0&&tx<W&&ty>=0&&ty<H&&tz>=0&&tz<D&&blocks[idx(tx,ty,tz)]){
+            abilityMine(tx,ty,tz);
+          }
+        }
+        markMeshDirty();markInvDirty();updateHudStatsOnly();
+        // Draw on screen
+        const s=worldToScreen(bwx,bwy,bwz);if(!s)break;
+        const sweep=Math.PI*1.4;
+        fx2d.beginPath();
+        fx2d.arc(s.x,s.y,14,bladeAngle+0.3,bladeAngle+0.3+sweep);
+        fx2d.strokeStyle=p.color+(Math.round(alpha*220).toString(16).padStart(2,'0'));
+        fx2d.lineWidth=5*alpha;fx2d.stroke();
+        // Glow
+        const g=fx2d.createRadialGradient(s.x,s.y,0,s.x,s.y,22);
+        g.addColorStop(0,p.color+'55');g.addColorStop(1,p.color+'00');
+        fx2d.fillStyle=g;fx2d.beginPath();fx2d.arc(s.x,s.y,22,0,Math.PI*2);fx2d.fill();
+        break;
+      }
+      case'refraction_ray':{
+        if(!p.pts||p.pts.length<2)break;
+        const colors=['#ff4444','#ff8800','#ffff44','#44ff44','#44aaff','#aa44ff','#ff44ff'];
+        for(let si=0;si<p.pts.length-1;si++){
+          const s1=worldToScreen(...p.pts[si]);
+          const s2=worldToScreen(...p.pts[si+1]);
+          if(!s1||!s2)continue;
+          fx2d.beginPath();fx2d.moveTo(s1.x,s1.y);fx2d.lineTo(s2.x,s2.y);
+          fx2d.strokeStyle=(colors[si%colors.length])+(Math.round(alpha*255).toString(16).padStart(2,'0'));
+          fx2d.lineWidth=3;fx2d.stroke();
+          // Glow
+          fx2d.lineWidth=8;
+          fx2d.strokeStyle=(colors[si%colors.length])+(Math.round(alpha*80).toString(16).padStart(2,'0'));
+          fx2d.beginPath();fx2d.moveTo(s1.x,s1.y);fx2d.lineTo(s2.x,s2.y);fx2d.stroke();
+        }
+        break;
+      }
+      case'firewall':{
+        p.advance+=dt;
+        const wallX=p.px+p.vx*p.advance;
+        const wallZ=p.pz+p.vz*p.advance;
+        // Draw 5×5 wall projected on screen
+        for(let u=-2;u<=2;u++)for(let v=-2;v<=2;v++){
+          const wx2=wallX+p.right.x*u;
+          const wy2=p.py+v;
+          const wz2=wallZ+p.right.z*u;
+          // Mine block at wall position
+          if(Math.random()<0.15){abilityMine(Math.round(wx2),Math.round(wy2),Math.round(wz2));markMeshDirty();markInvDirty();updateHudStatsOnly();}
+          const s=worldToScreen(wx2,wy2,wz2);if(!s)continue;
+          fx2d.fillStyle='#ff2222'+(Math.round(alpha*180).toString(16).padStart(2,'0'));
+          fx2d.fillRect(s.x-3,s.y-3,6,6);
+        }
+        break;
+      }
+      case'wisp':{
+        // Wisps orbit the player at their assigned radius
+        const angle=p.age*1.8+(p.wispIdx/3)*Math.PI*2;
+        const wr=p.wispOrbitR||2;
+        const wx2=camera.position.x+Math.cos(angle)*wr;
+        const wz2=camera.position.z+Math.sin(angle)*wr;
+        const wy2=camera.position.y-0.3+Math.sin(p.age*2)*0.3;
+        p.px=wx2;p.py=wy2;p.pz=wz2;
+        const s=worldToScreen(wx2,wy2,wz2);if(!s)break;
+        // Draw wisp glow
+        const g=fx2d.createRadialGradient(s.x,s.y,0,s.x,s.y,18);
+        g.addColorStop(0,p.color+'cc');g.addColorStop(1,p.color+'00');
+        fx2d.beginPath();fx2d.arc(s.x,s.y,18,0,Math.PI*2);
+        fx2d.fillStyle=g;fx2d.fill();
+        fx2d.beginPath();fx2d.arc(s.x,s.y,5,0,Math.PI*2);
+        fx2d.fillStyle=p.color;fx2d.fill();
+        // Mine the block at wisp position every tick
+        const bx=Math.round(wx2),by=Math.round(wy2-0.5),bz=Math.round(wz2);
+        if(bx>=0&&bx<W&&by>=0&&by<H&&bz>=0&&bz<D&&blocks[idx(bx,by,bz)]){
+          abilityMine(bx,by,bz);markMeshDirty();markInvDirty();
+        }
+        break;
+      }
+    }
+  }
+}
+
+// ═══════════ MAIN LOOP ═══════════
+let lastT=0,lastHudTick=0;
+function loop(t=0){
+  requestAnimationFrame(loop);
+  const dt=Math.min((t-lastT)/1000,0.05);lastT=t;
+  if(!shopOpen&&!isFreeMouse)movePlayer(dt);
+  tickMine(dt);
+
+  // Update stats display once per second (not every frame)
+  if(t-lastHudTick>1000){lastHudTick=t;updateHUD();}
+
+  // Rebuild world mesh ONCE per frame if dirty (batches all ability mines from this frame)
+  if(_meshDirty){_meshDirty=false;_buildWorldMeshReal();_scanCachedBestOre=null;}
+
+  const h=getHit(10);
+  if(h&&!shopOpen){
+    const{x,y,z}=hitPos(h,true);
+    if(x>=0&&x<W&&y>=0&&y<H&&z>=0&&z<D){
+      const isP=phantomBlock&&phantomBlock.x===x&&phantomBlock.y===y&&phantomBlock.z===z;
+      if(!isP){selMesh.position.set(x+0.5,y+0.5,z+0.5);selMesh.visible=true;}
+      else{selMesh.visible=false;}
+      const ore=getCellOreForUI(x,y,z)||ORES[0];
+      const rc=RC[ore.rarity]||ore.color||'#aaa';
+      document.getElementById('tooltip').innerHTML=
+        `<span style="color:${rc}">${ore.name}</span> | 1/${fmtExact(ore.exact)} | <span style="color:${rc}">${ore.rarity}</span>`+
+        (isP?' <span style="color:rgba(255,255,255,0.5)">[PHANTOM]</span>':'');
+    }
+  }else{
+    selMesh.visible=false;
+    document.getElementById('tooltip').textContent=shopOpen?T.shopopen:(isFreeMouse?T.freemouse:T.aimat);
+  }
+  // Scanner always runs — searches nearby, hides when aimed directly at block
+  if(!shopOpen)updateScanner(h);
+  else document.getElementById('scn-overlay').style.display='none';
+  updateEpineAudio();
+  updateGifTextures();
+  tickFX(dt);
+  renderer.render(scene,camera);
+}
+
+// ═══════════ BOOT ═══════════
+applyI18N();
+const hasSave=loadGame();
+genWorld();
+init3D();
+updateHUD();buildPickBar();updatePlacingInd();checkMineCapacity();
+if(hasSave)showSpawn(lang==='fr'?'Partie chargee':'Game loaded','#60b060',false);
+</script>
+</body>
+</html>
