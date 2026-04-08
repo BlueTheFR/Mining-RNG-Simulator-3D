@@ -1676,8 +1676,34 @@ function doPlace(){
   if(!selectedInv)return;
   if(!(inventory[selectedInv]>0)){selectedInv=null;updatePlacingInd();updateHUD();return;}
   const range=isFreeMouse?10:5.5;
-  const h=getHit(range);if(!h)return;
-  const{x,y,z}=hitPos(h,false);
+  const h=getHit(range);
+  let x,y,z;
+  if(h){
+    // Normal case: place adjacent to hit face
+    const pos=hitPos(h,false);
+    x=pos.x;y=pos.y;z=pos.z;
+  }else{
+    // No block in range — raycast forward and clamp to world border
+    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+    const origin=camera.position;
+    // Step along ray until we hit world boundary or find empty air cell at border
+    let found=false;
+    for(let d=0.5;d<=range;d+=0.5){
+      const tx=origin.x+dir.x*d;
+      const ty=origin.y+dir.y*d;
+      const tz=origin.z+dir.z*d;
+      const bx=Math.floor(tx),by=Math.floor(ty),bz=Math.floor(tz);
+      // Check if we've reached the world edge
+      const atEdge=(bx<=0||bx>=W-1||by<=0||by>=H-1||bz<=0||bz>=D-1);
+      if(atEdge){
+        x=Math.max(0,Math.min(W-1,bx));
+        y=Math.max(0,Math.min(H-1,by));
+        z=Math.max(0,Math.min(D-1,bz));
+        found=true;break;
+      }
+    }
+    if(!found)return;
+  }
   if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
   if(blocks[idx(x,y,z)])return;
   const oI=ORES.findIndex(o=>o.name===selectedInv);if(oI<0)return;
@@ -1690,15 +1716,12 @@ function doPlace(){
   }
   // Remove previous phantom from world
   removePrevPhantom();
-  // Place phantom block in world (same as normal block, kept in phantom registry)
   const pi=idx(x,y,z);
   blocks[pi]=1;
   oreIdx[pi]=oI;
   oreRevealed[pi]=1;
   phantomBlock={x,y,z,oi:oI,name:selectedInv};
-  _scanOre=null;_scanPos=null; // force phantom scanner refresh
-  // Do NOT consume inventory — phantom is free to place
-  // Epinephrine spatial audio
+  _scanOre=null;_scanPos=null;
   if(ORES[oI].epinephrine)startEpineAudio(x,y,z);
   markMeshDirty();updateHudStatsOnly();
   showSpawn(lang==='fr'?'Phantom pose: '+selectedInv:'Phantom placed: '+selectedInv,'#c8a030',false,null);
