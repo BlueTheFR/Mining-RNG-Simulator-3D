@@ -719,6 +719,10 @@ const PICKAXES=[
    desc:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (chaque 400). x8 Luck.",fx:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
    recipe:{VoidPlus:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
    abilities:[{name:'HACK-HANDS',desc:'4 mains glitchées actives en permanence autour du joueur, minent aléatoirement',chance:'Passif',color:'#ff2222'},{name:'SPAM',desc:'35 bits corrompus explosent dans un rayon de 8, minent tout',chance:'1/10',color:'#ff4444'},{name:'FIREWALL',desc:'Mur 5×5 avance sur 8 blocs en minant tout sur son passage',chance:'1/200',color:'#ff2222'},{name:'LIMIT BREAK',desc:'Accumule du potentiel. À 400 blocs: pilier colossal de hauteur 10',chance:'Spécial/400',color:'#ff0000'}]},
+  {id:'t10',tier:'T10',label:"Prism of Chaos",color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
+   desc:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization: vitesse x2, 75% mine 6 bonus. x15 Luck.",fx:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',
+   recipe:{Zanacharium:1,Nucleonix:1,VoidPlus:2,PetaPlus4:2},
+   abilities:[{name:'Light Refraction',desc:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',chance:'1/5',color:'#ffaaff'},{name:'Color Shotgun',desc:'16 éclats de couleurs, chaque 8e: rafale de 32 éclats en éventail',chance:'1/30',color:'#ffaaff'},{name:'Prism Burst',desc:'12 orbes géants en étoile avec traînée qui mine sur toute la trajectoire',chance:'1/30',color:'#ffaaff'},{name:'Chaotization',desc:'Permanent: vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix+haut+bas',chance:'Passif',color:'#dd88ff'}]},
   {id:'t11',tier:'T11',label:"Poison Pick",color:'#44ff44',scanMin:1000000,owned:false,equipped:false,
    desc:"Chaque bloc miné empoisonne la zone: les blocs verts sont détruits 1s après et propagent le poison à 5 blocs voisins en chaîne jusqu'au reset. x500 Luck.",fx:'Poison Chain (Passif). x500 Luck.',
    recipe:{NuclearWaste:1500,AbyssSand:1500,ShadowMatter:1500,Energy:1500,LavaRock:1500},
@@ -727,10 +731,6 @@ const PICKAXES=[
    desc:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs en contact. 1 seul trou noir max, réinitialisé au reset mine. x1000 Luck.",fx:'Blackhole (Passif). x1000 Luck.',
    recipe:{SPAFF:1,BlueTheFR:1},
    abilities:[{name:'Singularity',desc:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée (inventaire compté)',chance:'Passif',color:'#ff8800'}]},
-  {id:'t10',tier:'T10',label:"Prism of Chaos",color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
-   desc:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization: vitesse x2, 75% mine 6 bonus. x15 Luck.",fx:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',
-   recipe:{Zanacharium:1,Nucleonix:1,VoidPlus:2,PetaPlus4:2},
-   abilities:[{name:'Light Refraction',desc:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',chance:'1/5',color:'#ffaaff'},{name:'Color Shotgun',desc:'16 éclats de couleurs, chaque 8e: rafale de 32 éclats en éventail',chance:'1/30',color:'#ffaaff'},{name:'Prism Burst',desc:'12 orbes géants en étoile avec traînée qui mine sur toute la trajectoire',chance:'1/30',color:'#ffaaff'},{name:'Chaotization',desc:'Permanent: vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix+haut+bas',chance:'Passif',color:'#dd88ff'}]},
 ];
 
 // ═══════════ STATE ═══════════
@@ -2342,7 +2342,14 @@ function getPoisonOreIdx(){
   if(_poisonOreIdx<0){ORES.push({name:'__POISON__',rarity:'Poison',exact:1,color:'#00ff44',symbol:'☠'});_poisonOreIdx=ORES.length-1;}
   return _poisonOreIdx;
 }
-function tryAbilityT11(mx,my,mz){poisonBlock(mx,my,mz);}
+function tryAbilityT11(mx,my,mz){
+  // Poison the mined block + 3 adjacent blocks immediately on every mine
+  poisonBlock(mx,my,mz);
+  // 3 random adjacent blocks also get poisoned right away
+  const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
+  const shuffled=N.sort(()=>Math.random()-0.5).slice(0,3);
+  shuffled.forEach(([dx,dy,dz])=>poisonBlock(mx+dx,my+dy,mz+dz));
+}
 function poisonBlock(x,y,z){
   // No depth limit — only _poisonedBlocks Set prevents infinite loops
   if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
