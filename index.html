@@ -214,16 +214,6 @@ canvas.free{cursor:default}
       <h3 id="lbl-idx">INDEX</h3>
       <div id="idx-list"></div>
     </div>
-    <div class="panel">
-      <h3 id="lbl-stats">STATS</h3>
-      <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
-      <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
-      <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
-      <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
-        <span style="color:#df03fc;font-size:5px">100M+ TROUVES</span>
-        <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
-      </div>
-    </div>
   </div>
   <div id="scanner" style="display:none"></div>
   <div id="scn-overlay">
@@ -253,9 +243,18 @@ canvas.free{cursor:default}
   <div id="free-ind" id="free-ind"></div>
 </div>
 <button id="shop-btn" id="shop-btn">BOUTIQUE [E]</button>
-<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE [I/E]</button>
+<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE MENU</button>
 <div id="save-ind" id="save-ind">SAVE</div>
-
+<div class="panel">
+      <h3 id="lbl-stats">STATS</h3>
+      <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
+      <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
+      <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
+      <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
+        <span style="color:#df03fc;font-size:5px">100M+ TROUVES</span>
+        <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
+    </div>
+</div>
 <!-- Import/Export Modal -->
 <div id="savemod-ov" style="position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:60;align-items:center;justify-content:center;pointer-events:all">
   <div style="background:#06060d;border:1px solid rgba(255,255,255,0.14);border-radius:6px;width:520px;padding:24px;font-family:'Press Start 2P',monospace">
