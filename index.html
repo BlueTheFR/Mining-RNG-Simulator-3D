@@ -2394,7 +2394,6 @@ function poisonBlock(x,y,z){
     _poisonedBlocks.delete(i);
     markMeshDirty();markInvDirty();
     revealAdjacentSolid(x,y,z,mined);
-    spawnFX_Ring(x+0.5,y+0.5,z+0.5,1.2,'#00ff44',false);
     // Spread to ALL 6 neighbours — infinite until no more solid blocks
     const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
     N.forEach(([dx,dy,dz])=>poisonBlock(x+dx,y+dy,z+dz));
