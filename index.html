@@ -1455,6 +1455,7 @@ function doResize(){
   camera.updateProjectionMatrix();
 }
 
+
 // ═══════════ MOVEMENT ═══════════
 function movePlayer(dt){
   let spd=PSPEED;
@@ -1462,15 +1463,10 @@ function movePlayer(dt){
   const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
   const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
   let dx=0,dz=0;
-  // AZERTY (FR): ZQSD | QWERTY (EN): WASD
-  const kFwd=lang==='fr'?'KeyZ':'KeyW';
-  const kBack=lang==='fr'?'KeyS':'KeyS';
-  const kLeft=lang==='fr'?'KeyQ':'KeyA';
-  const kRight=lang==='fr'?'KeyD':'KeyD';
-  if(keys[kFwd]||keys['KeyW']||keys['KeyZ']||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
-  if(keys[kBack]||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
-  if(keys[kLeft]||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
-  if(keys[kRight]||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
+  if(keys['KeyW']||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
+  if(keys['KeyS']||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
+  if(keys['KeyA']||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
+  if(keys['KeyD']||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
   const len=Math.sqrt(dx*dx+dz*dz);
   if(len>0){dx=(dx/len)*spd*dt;dz=(dz/len)*spd*dt;}
   velY+=GRAVITY*dt;
