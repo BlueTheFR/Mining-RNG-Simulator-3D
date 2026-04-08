@@ -58,7 +58,9 @@ canvas.free{cursor:default}
 #tooltip{position:absolute;bottom:76px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:5px 10px;color:var(--hud-text);font-size:8px;pointer-events:none;max-width:280px;line-height:2}
 
 /* ── Hint ── */
-#hint{position:absolute;bottom:76px;left:10px;background:var(--hud-bg);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:6px 10px;color:rgba(255,255,255,0.2);font-size:5px;line-height:2.2;pointer-events:none;display:flex;flex-direction:column;gap:1px}
+#hint{position:absolute;bottom:76px;left:10px;background:var(--hud-bg);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:10px 14px;color:rgba(255,255,255,0.3);font-size:8px;line-height:2.4;pointer-events:all;display:flex;flex-direction:column;gap:2px;cursor:default}
+#hint-move-btn{cursor:pointer;text-decoration:underline;color:rgba(255,255,255,0.5);transition:color .12s}
+#hint-move-btn:hover{color:rgba(255,255,255,0.9)}
 
 /* ── Hotbar ── */
 #pick-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);pointer-events:all}
@@ -214,15 +216,15 @@ canvas.free{cursor:default}
       <h3 id="lbl-idx">INDEX</h3>
       <div id="idx-list"></div>
     </div>
-    <div class="panel">
-      <h3 id="lbl-stats">STATS</h3>
-      <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
-      <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
-      <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
-      <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
-        <span style="color:#df03fc;font-size:5px">100M+ TROUVES</span>
-        <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
-      </div>
+  </div>
+  <div id="stats-panel" style="position:absolute;top:90px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;pointer-events:none;min-width:160px">
+    <h3 id="lbl-stats" style="font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55">STATS</h3>
+    <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
+    <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
+    <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
+    <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
+      <span style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
+      <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
     </div>
   </div>
   <div id="scanner" style="display:none"></div>
@@ -242,11 +244,11 @@ canvas.free{cursor:default}
   <div id="spawn-msg"></div>
   <div id="tooltip"></div>
   <div id="hint">
-    <span id='hint-move'></span>
-    <span>Souris : regarder</span>
-    <span>Clic G maintenu : miner</span>
-    <span>Ctrl : liberer souris</span>
-    <span>E : boutique</span>
+    <span id="hint-move-btn" onclick="toggleKeyLayout()" title="Cliquer pour changer">ZQSD : avancer ↺</span>
+    <span id="hint-look">Souris : regarder</span>
+    <span id="hint-mine">Clic G maintenu : miner</span>
+    <span id="hint-ctrl">Ctrl : liberer souris</span>
+    <span id="hint-shop">E : boutique</span>
   </div>
   <div id="pick-bar"></div>
   <div id="placing-ind"></div>
@@ -303,7 +305,7 @@ canvas.free{cursor:default}
 <script>
 const MAX_ORE_EXACT=5000000000;
 // ═══════════ I18N ═══════════
-const lang='fr'; // Toujours en français
+const lang=(navigator.language||navigator.userLanguage||'fr').toLowerCase().startsWith('fr')?'fr':'en';
 const T={
   fr:{inv:'INVENTAIRE',idx:'INDEX',stats:'STATS',mined:'Blocs mines',pick:'Pioche',luck:'Luck',
       atelier:'ATELIER DES PIOCHES',craftsub:'Craftez, equipez ou desequipez vos outils',
@@ -326,6 +328,17 @@ const T={
       freemouse:'Free mode — Ctrl to re-lock',shopopen:'Shop open',
       aimat:'Aim at a block',saved:'SAVED',rare1:'1 in '}
 }[lang];
+
+let _useQwerty=lang!=='fr';
+function toggleKeyLayout(){
+  _useQwerty=!_useQwerty;
+  const btn=document.getElementById('hint-move-btn');
+  if(btn)btn.textContent=(_useQwerty?'WASD : move ↺':'ZQSD : avancer ↺');
+}
+function isForward(code){return _useQwerty?(code==='KeyW'):(code==='KeyZ');}
+function isBack(code){return code==='KeyS';}
+function isLeft(code){return _useQwerty?(code==='KeyA'):(code==='KeyQ');}
+function isRight(code){return code==='KeyD';}
 
 function applyI18N(){
   document.getElementById('lbl-inv').textContent=T.inv;
@@ -693,7 +706,7 @@ const PICKAXES=[
   {id:'t6',tier:'T6',label:"NilAxe",color:'#4444aa',scanMin:250000,owned:false,equipped:false,
    desc:"Octorb (1/50): 8 orbes en étoile. Ore Clearing (1/50): rayon 1. Luck Boost x3 pendant 10s (1/40). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear (1/50). Luck Boost x3 10s (1/40). Scanner. x4 Luck.',
    recipe:{Void:25,Giga:10,Smiley:5,Peta:1},
-   abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon 1 autour du bloc ciblé',chance:'1/50',color:'#4444aa'},{name:'Luck Boost x5',desc:'Boost de luck x5 pendant 10 secondes',chance:'1/40',color:'#aa44ff'}]},
+   abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon 1 autour du bloc ciblé',chance:'1/50',color:'#4444aa'},{name:'Luck Boost x3',desc:'Boost de luck x3 pendant 10 secondes',chance:'1/40',color:'#aa44ff'}]},
   {id:'t7',tier:'T7',label:"Moon Scepter",color:'#aabbff',scanMin:250000,owned:false,equipped:false,
    desc:"3 lames lunaires orbitent rayon 1.5 (1/40), Moonburst rayon 10 (1/150), Moonbeam colonne -8 (1/80). x5 Luck.",fx:'Crescent Blades (1/40). MoonBurst (1/150). Moonbeam (1/80). x5 Luck.',
    recipe:{PetaPlus2:1,Smiley:12,PetaPlus1:3,Diamond:50},
@@ -701,11 +714,19 @@ const PICKAXES=[
   {id:'t8',tier:'T8',label:"Soul Scythe",color:'#55ff88',scanMin:250000,owned:false,equipped:false,
    desc:"3 Wisps orbitent (1/60) et minent chaque bloc sur leur passage. Soul Slash demi-sphère r4 (1/50). Azure Vortex (1/180). x6 Luck.",fx:'Wisps orbite (1/60). Soul Slash (1/50). Vortex (1/180). x6 Luck.',
    recipe:{PetaPlus3:1,PetaPlus2:3,Smiley:20,Emerald:60},
-   abilities:[{name:'Guiding Wisps',desc:'3 wisps orbitent 5s et minent les minerais Exotic+ à portée',chance:'1/60',color:'#55ff88'},{name:'Soul Slash',desc:'Demi-sphère de rayon 4 devant le joueur, mine tout',chance:'1/50',color:'#55ff88'},{name:'Azure Vortex',desc:'Vortex qui mine en spirale 3x3 sur 6 blocs',chance:'1/180',color:'#55ff88'}]},
+   abilities:[{name:'Guiding Wisps',desc:'3 wisps orbitent 5s, minent tous les blocs dans un rayon de 4 autour du joueur',chance:'1/60',color:'#55ff88'},{name:'Soul Slash',desc:'Demi-sphère de rayon 4 devant le joueur, mine tout',chance:'1/50',color:'#55ff88'},{name:'Azure Vortex',desc:'Vortex qui mine en spirale 3x3 sur 6 blocs',chance:'1/180',color:'#55ff88'}]},
   {id:'t9',tier:'T9',label:"MURD-ERROR",color:'#ff2222',scanMin:250000,owned:false,equipped:false,
    desc:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (chaque 400). x8 Luck.",fx:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
    recipe:{VoidPlus:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
    abilities:[{name:'HACK-HANDS',desc:'4 mains glitchées actives en permanence autour du joueur, minent aléatoirement',chance:'Passif',color:'#ff2222'},{name:'SPAM',desc:'35 bits corrompus explosent dans un rayon de 8, minent tout',chance:'1/10',color:'#ff4444'},{name:'FIREWALL',desc:'Mur 5×5 avance sur 8 blocs en minant tout sur son passage',chance:'1/200',color:'#ff2222'},{name:'LIMIT BREAK',desc:'Accumule du potentiel. À 400 blocs: pilier colossal de hauteur 10',chance:'Spécial/400',color:'#ff0000'}]},
+  {id:'t11',tier:'T11',label:"Poison Pick",color:'#44ff44',scanMin:1000000,owned:false,equipped:false,
+   desc:"Chaque bloc miné empoisonne la zone: les blocs verts sont détruits 1s après et propagent le poison à 5 blocs voisins en chaîne jusqu'au reset. x500 Luck.",fx:'Poison Chain (Passif). x500 Luck.',
+   recipe:{NuclearWaste:1500,AbyssSand:1500,ShadowMatter:1500,Energy:1500,LavaRock:1500},
+   abilities:[{name:'Poison Chain',desc:'Chaque bloc miné devient empoisonné (vert), explose 1s plus tard et propage le poison à 5 blocs voisins en chaîne',chance:'Passif',color:'#44ff44'}]},
+  {id:'t12',tier:'T12',label:"Blackhole Pick",color:'#ff8800',scanMin:1000000,owned:false,equipped:false,
+   desc:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs en contact. 1 seul trou noir max, réinitialisé au reset mine. x1000 Luck.",fx:'Blackhole (Passif). x1000 Luck.',
+   recipe:{SPAFF:1,BlueTheFR:1},
+   abilities:[{name:'Singularity',desc:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée (inventaire compté)',chance:'Passif',color:'#ff8800'}]},
   {id:'t10',tier:'T10',label:"Prism of Chaos",color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
    desc:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization: vitesse x2, 75% mine 6 bonus. x15 Luck.",fx:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',
    recipe:{Zanacharium:1,Nucleonix:1,VoidPlus:2,PetaPlus4:2},
@@ -728,6 +749,8 @@ let phantomBlock=null;
 let phantomMesh=null;
 let miningHeld=false;
 let _blocksSinceCave=0; // tracks mines since last cave gen
+let _poisonedBlocks=new Map(); // idx → timeout handle
+let _blackhole=null; // {x,y,z,radius,age} — only 1 at a time
 let mineCd=0;
 const MINE_INTERVAL=0.07;
 let _invDirty=true;
@@ -857,7 +880,7 @@ function getPickLuck(){
   const pick=PICKAXES.find(p=>p.id===currentPickId);
   if(!pick)return 1;
   // Balanced luck progression — T10 strongest
-  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:8,t10:15};
+  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:8,t10:15,t11:500,t12:1000};
   return luckMap[pick.id]||1;
 }
 
@@ -1085,9 +1108,8 @@ function needsAnimCanvasPath(src){
 
 function mountAnimImageInDom(img){
   if(img.parentNode)return;
-  // opacity:0 = invisible but FULLY rendered by GPU compositor (unlike visibility:hidden or display:none)
-  // position:fixed 1x1px at corner — takes no layout space, but browser animates GIF/WEBP frames
-  img.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+  // opacity:0 keeps GPU compositing alive → browser advances GIF/WEBP animation frames
+  img.style.cssText='position:fixed;right:1px;bottom:1px;width:64px;height:64px;opacity:0.001;pointer-events:none;z-index:0;';
   document.body.appendChild(img);
 }
 
@@ -2311,6 +2333,54 @@ function tryAbilityT10(mx,my,mz){
   }
 }
 
+// ── T11: Poison Pick — infinite chain until mine reset ──
+// Find/create poison ore once at startup
+let _poisonOreIdx=-1;
+function getPoisonOreIdx(){
+  if(_poisonOreIdx>=0)return _poisonOreIdx;
+  _poisonOreIdx=ORES.findIndex(o=>o.name==='__POISON__');
+  if(_poisonOreIdx<0){ORES.push({name:'__POISON__',rarity:'Poison',exact:1,color:'#00ff44',symbol:'☠'});_poisonOreIdx=ORES.length-1;}
+  return _poisonOreIdx;
+}
+function tryAbilityT11(mx,my,mz){poisonBlock(mx,my,mz);}
+function poisonBlock(x,y,z){
+  // No depth limit — only _poisonedBlocks Set prevents infinite loops
+  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
+  const i=idx(x,y,z);
+  if(!blocks[i])return;
+  if(_poisonedBlocks.has(i))return; // already poisoned — prevents infinite loop
+  const _origOre=oreIdx[i];
+  _poisonedBlocks.set(i,_origOre); // store original ore index
+  oreIdx[i]=getPoisonOreIdx();
+  oreRevealed[i]=1;
+  markMeshDirty();
+  // Explode 1 second later, then spread infinitely
+  setTimeout(()=>{
+    if(!blocks[i]||!_poisonedBlocks.has(i)){_poisonedBlocks.delete(i);return;}
+    const origIdx=_poisonedBlocks.get(i);
+    const ore=ORES[origIdx]||ORES[0];
+    blocks[i]=0;mined++;
+    inventory[ore.name]=(inventory[ore.name]||0)+1;
+    _poisonedBlocks.delete(i);
+    markMeshDirty();markInvDirty();
+    revealAdjacentSolid(x,y,z,mined);
+    spawnFX_Ring(x+0.5,y+0.5,z+0.5,1.2,'#00ff44',false);
+    // Spread to ALL 6 neighbours — infinite until no more solid blocks
+    const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
+    N.forEach(([dx,dy,dz])=>poisonBlock(x+dx,y+dy,z+dz));
+  },1000);
+}
+
+// ── T12: Blackhole Pick — infinite lifetime until mine reset ──
+function tryAbilityT12(mx,my,mz){
+  if(_blackhole)return; // only 1 at a time, until mine reset
+  _blackhole={x:mx+0.5,y:my+0.5,z:mz+0.5,radius:0.5,age:0};
+  // life=999999 = effectively infinite (only resetMine clears _blackhole)
+  FX_PARTICLES.push({type:'blackhole',color:'#ff8800',
+    px:mx+0.5,py:my+0.5,pz:mz+0.5,
+    vx:0,vy:0,vz:0,life:999999,maxLife:999999,trailPts:[],age:0});
+}
+
 // ── FX Spawners ──
 
 function spawnFX_CubeMine(x,y,z){
@@ -2502,6 +2572,8 @@ function spawnFX_PrismBurst(mx,my,mz){
 // ── Dispatch ability on mine ──
 function triggerPickAbility(mx,my,mz){
   switch(currentPickId){
+    case't11':tryAbilityT11(mx,my,mz);break;
+    case't12':tryAbilityT12(mx,my,mz);break;
     case't1':tryAbilityT1(mx,my,mz);break;
     case't2':tryAbilityT2(mx,my,mz);break;
     case't3':tryAbilityT3(mx,my,mz);break;
@@ -2715,6 +2787,52 @@ function tickFX(dt){
         }
         break;
       }
+      case'blackhole':{
+        // Blackhole grows and sucks nearby blocks
+        if(_blackhole){
+          _blackhole.age+=dt;
+          _blackhole.radius=0.5+_blackhole.age*0.8; // grow over time
+          // Suck blocks within radius
+          const bhR=Math.ceil(_blackhole.radius);
+          const bhX=Math.round(_blackhole.x),bhY=Math.round(_blackhole.y),bhZ=Math.round(_blackhole.z);
+          for(let dx=-bhR;dx<=bhR;dx++)for(let dy=-bhR;dy<=bhR;dy++)for(let dz=-bhR;dz<=bhR;dz++){
+            if(dx*dx+dy*dy+dz*dz>_blackhole.radius*_blackhole.radius)continue;
+            const bx=bhX+dx,by=bhY+dy,bz=bhZ+dz;
+            if(bx<0||bx>=W||by<0||by>=H||bz<0||bz>=D)continue;
+            if(blocks[idx(bx,by,bz)]&&!(phantomBlock&&phantomBlock.x===bx&&phantomBlock.y===by&&phantomBlock.z===bz)){
+              abilityMine(bx,by,bz);markMeshDirty();markInvDirty();
+            }
+          }
+          // _blackhole only cleared by resetMine()
+        }
+        // Draw blackhole: dark sphere with orange glow + swirling particles
+        const s=worldToScreen(p.px,p.py,p.pz);if(!s)break;
+        const bhSize=Math.max(8,(_blackhole?_blackhole.radius:1)*18);
+        // Outer orange glow
+        const og=fx2d.createRadialGradient(s.x,s.y,bhSize*0.3,s.x,s.y,bhSize*1.8);
+        og.addColorStop(0,'#ff880066');og.addColorStop(0.4,'#ff440033');og.addColorStop(1,'#00000000');
+        fx2d.beginPath();fx2d.arc(s.x,s.y,bhSize*1.8,0,Math.PI*2);
+        fx2d.fillStyle=og;fx2d.fill();
+        // Black core
+        const bg2=fx2d.createRadialGradient(s.x,s.y,0,s.x,s.y,bhSize);
+        bg2.addColorStop(0,'#000000ff');bg2.addColorStop(0.7,'#000000ff');bg2.addColorStop(1,'#00000000');
+        fx2d.beginPath();fx2d.arc(s.x,s.y,bhSize,0,Math.PI*2);
+        fx2d.fillStyle=bg2;fx2d.fill();
+        // Swirling accretion particles
+        const ang=p.age*3;
+        for(let pi=0;pi<8;pi++){
+          const a=ang+(pi/8)*Math.PI*2;
+          const r=bhSize*1.2;
+          const px2=s.x+Math.cos(a)*r,py2=s.y+Math.sin(a)*r*0.4;
+          const hue=(pi/8)*360;
+          fx2d.beginPath();fx2d.arc(px2,py2,3*alpha,0,Math.PI*2);
+          fx2d.fillStyle=`hsla(${hue},100%,70%,${alpha})`;fx2d.fill();
+        }
+        // Orange ring
+        fx2d.beginPath();fx2d.arc(s.x,s.y,bhSize*1.05,0,Math.PI*2);
+        fx2d.strokeStyle=`rgba(255,136,0,${alpha*0.8})`;fx2d.lineWidth=3;fx2d.stroke();
+        break;
+      }
       case'wisp':{
         // Wisps orbit the player at their assigned radius
         const angle=p.age*1.8+(p.wispIdx/3)*Math.PI*2;
@@ -2731,10 +2849,14 @@ function tickFX(dt){
         fx2d.fillStyle=g;fx2d.fill();
         fx2d.beginPath();fx2d.arc(s.x,s.y,5,0,Math.PI*2);
         fx2d.fillStyle=p.color;fx2d.fill();
-        // Mine the block at wisp position every tick
-        const bx=Math.round(wx2),by=Math.round(wy2-0.5),bz=Math.round(wz2);
-        if(bx>=0&&bx<W&&by>=0&&by<H&&bz>=0&&bz<D&&blocks[idx(bx,by,bz)]){
-          abilityMine(bx,by,bz);markMeshDirty();markInvDirty();
+        // Mine all blocks in radius 4 around the player (not just wisp position)
+        const _pxi=Math.round(camera.position.x),_pyi=Math.round(camera.position.y-0.5),_pzi=Math.round(camera.position.z);
+        for(let _dx=-4;_dx<=4;_dx++)for(let _dy=-4;_dy<=4;_dy++)for(let _dz=-4;_dz<=4;_dz++){
+          if(_dx*_dx+_dy*_dy+_dz*_dz>16)continue;
+          const _bx2=_pxi+_dx,_by2=_pyi+_dy,_bz2=_pzi+_dz;
+          if(_bx2>=0&&_bx2<W&&_by2>=0&&_by2<H&&_bz2>=0&&_bz2<D&&blocks[idx(_bx2,_by2,_bz2)]){
+            abilityMine(_bx2,_by2,_bz2);markMeshDirty();markInvDirty();
+          }
         }
         break;
       }
@@ -2784,7 +2906,11 @@ function loop(t=0){
 
 // ═══════════ BOOT ═══════════
 applyI18N();
-document.getElementById('hint-move').textContent=lang==='fr'?'ZQSD : avancer':'WASD : move';
+const _hmBtn=document.getElementById('hint-move-btn');if(_hmBtn)_hmBtn.textContent=_useQwerty?'WASD : move ↺':'ZQSD : avancer ↺';
+const _hlook=document.getElementById('hint-look');if(_hlook)_hlook.textContent=lang==='fr'?'Souris : regarder':'Mouse : look';
+const _hmine=document.getElementById('hint-mine');if(_hmine)_hmine.textContent=lang==='fr'?'Clic G maintenu : miner':'Hold LMB : mine';
+const _hctrl=document.getElementById('hint-ctrl');if(_hctrl)_hctrl.textContent=lang==='fr'?'Ctrl : liberer souris':'Ctrl : free mouse';
+const _hshop=document.getElementById('hint-shop');if(_hshop)_hshop.textContent=lang==='fr'?'E : boutique':'E : shop';
 const hasSave=loadGame();
 genWorld();
 init3D();
