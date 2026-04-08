@@ -1549,7 +1549,7 @@ function doMine(){
     _blocksSinceCave++;
     // Cave: earliest at 1000/luck blocks, forced at 5000
     const _cMin=Math.max(100,Math.round(1000/Math.max(1,luck)));
-    const _cMax=5000;
+    const _cMax=4500;
     if(_blocksSinceCave>=_cMax||(
       _blocksSinceCave>=_cMin&&Math.random()<(_blocksSinceCave-_cMin)/Math.max(1,_cMax-_cMin)
     )){_blocksSinceCave=0;spawnCave(x,y,z);}
@@ -1625,7 +1625,7 @@ function spawnCave(cx,cy,cz){
   for(const p of newAir)revealAdjacentSolid(p[0],p[1],p[2],salt++^cx^cy^cz);
 
   const typeName=chosen.type.replace('Cave',' Cave');
-  showSpawn((lang==='fr'?'Cave generee: ':'Cave generated: ')+typeName, chosen.color, false, null);
+  showSpawn((lang==='fr'?'Cave generé: ':'Cave generated: ')+typeName, chosen.color, false, null);
 }
 
 // ═══════════ PLACING (PHANTOM) ═══════════
