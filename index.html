@@ -242,7 +242,7 @@ canvas.free{cursor:default}
   <div id="spawn-msg"></div>
   <div id="tooltip"></div>
   <div id="hint">
-    <span>ZQSD : avancer</span>
+    <span id='hint-move'></span>
     <span>Souris : regarder</span>
     <span>Clic G maintenu : miner</span>
     <span>Ctrl : liberer souris</span>
@@ -691,7 +691,7 @@ const PICKAXES=[
    recipe:{Diamond:30,Emerald:20,UltraMega:2,Ruby:15},
    abilities:[{name:'Crystal Shot',desc:'Cristal rapide qui traverse les blocs et mine tout sur 5 blocs',chance:'1/20',color:'#22aacc'},{name:'Crystal Growth',desc:'Cristal qui grandit et mine en cercle sur 8 paliers',chance:'1/35',color:'#22aacc'},{name:'Shard Rain',desc:'20 éclats tombent dans un carré 8x8 et minent à l\'impact',chance:'1/45',color:'#22aacc'}]},
   {id:'t6',tier:'T6',label:"NilAxe",color:'#4444aa',scanMin:250000,owned:false,equipped:false,
-   desc:"Octorb (1/50): 8 orbes en étoile. Ore Clearing (1/50): rayon 1. Luck Boost x5 pendant 10s (1/40). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear (1/50). Luck Boost x5 10s (1/40). Scanner. x4 Luck.',
+   desc:"Octorb (1/50): 8 orbes en étoile. Ore Clearing (1/50): rayon 1. Luck Boost x5 pendant 10s (1/40). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear (1/50). Luck Boost x3 10s (1/40). Scanner. x4 Luck.',
    recipe:{Void:25,Giga:10,Smiley:5,Peta:1},
    abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon 1 autour du bloc ciblé',chance:'1/50',color:'#4444aa'},{name:'Luck Boost x5',desc:'Boost de luck x5 pendant 10 secondes',chance:'1/40',color:'#aa44ff'}]},
   {id:'t7',tier:'T7',label:"Moon Scepter",color:'#aabbff',scanMin:250000,owned:false,equipped:false,
@@ -885,7 +885,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const _lk=luck*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const _lk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
@@ -1085,19 +1085,10 @@ function needsAnimCanvasPath(src){
 
 function mountAnimImageInDom(img){
   if(img.parentNode)return;
-  let h=document.getElementById('anim-tex-mount');
-  if(!h){
-    h=document.createElement('div');
-    h.id='anim-tex-mount';
-    h.setAttribute('aria-hidden','true');
-    // Position at exact screen edge — fully rendered by compositor but not visible to user.
-    // Using transform to push it off-screen while keeping paint alive.
-    // Images must be rendered by compositor to animate. Keep in viewport, tiny, painted.
-    h.style.cssText='position:fixed;right:0;bottom:0;width:2px;height:2px;overflow:hidden;pointer-events:none;z-index:-1;';
-    document.body.appendChild(h);
-  }
-  img.style.cssText='position:absolute;right:0;bottom:0;width:128px;height:128px;display:block;';
-  h.appendChild(img);
+  // opacity:0 = invisible but FULLY rendered by GPU compositor (unlike visibility:hidden or display:none)
+  // position:fixed 1x1px at corner — takes no layout space, but browser animates GIF/WEBP frames
+  img.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+  document.body.appendChild(img);
 }
 
 function drawAnimOverlay(ctx,cw,ch,ore){
@@ -1176,16 +1167,22 @@ function updateGifTextures(){
   for(const e of GIF_TEX_ENTRIES){
     if(!e.img||!e.img.complete||e.img.naturalWidth<1)continue;
     try{
-      // Ensure canvas is sized
-      if(e.canvas.width!==128||e.canvas.height!==128){
-        e.canvas.width=128;e.canvas.height=128;
-      }
+      if(e.canvas.width!==128||e.canvas.height!==128){e.canvas.width=128;e.canvas.height=128;}
       e.ctx.clearRect(0,0,128,128);
       e.ctx.drawImage(e.img,0,0,128,128);
-      // No text overlay — image animates cleanly
-      // Force GPU upload every frame for animated content
       e.tex.needsUpdate=true;
     }catch(err){}
+  }
+  // Also update phantom scanner canvas if visible
+  const scnCanvas=document.getElementById('phantom-scn-canvas');
+  if(scnCanvas&&phantomBlock){
+    const pOre=ORES[phantomBlock.oi||0];
+    if(pOre&&pOre.imgSrc){
+      const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&e.img.src.includes(pOre.imgSrc));
+      if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
+        try{const ctx2=scnCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
+      }
+    }
   }
 }
 let euler=new THREE.Euler(0,0,0,'YXZ');
@@ -1465,10 +1462,15 @@ function movePlayer(dt){
   const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
   const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
   let dx=0,dz=0;
-  if(keys['KeyW']||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
-  if(keys['KeyS']||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
-  if(keys['KeyA']||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
-  if(keys['KeyD']||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
+  // AZERTY (FR): ZQSD | QWERTY (EN): WASD
+  const kFwd=lang==='fr'?'KeyZ':'KeyW';
+  const kBack=lang==='fr'?'KeyS':'KeyS';
+  const kLeft=lang==='fr'?'KeyQ':'KeyA';
+  const kRight=lang==='fr'?'KeyD':'KeyD';
+  if(keys[kFwd]||keys['KeyW']||keys['KeyZ']||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
+  if(keys[kBack]||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
+  if(keys[kLeft]||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
+  if(keys[kRight]||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
   const len=Math.sqrt(dx*dx+dz*dz);
   if(len>0){dx=(dx/len)*spd*dt;dz=(dz/len)*spd*dt;}
   velY+=GRAVITY*dt;
@@ -1799,19 +1801,17 @@ function updateScanner(h){
         _scanOre=pOre;_scanPos='phantom';
         blockDiv.innerHTML='';
         if(pOre.imgSrc){
-          // Use the live animated canvas from GIF_TEX_ENTRIES for animated ores
-          const entry=GIF_TEX_ENTRIES.find(e=>e.canvas&&e.img&&e.img.src&&e.img.src.includes(pOre.imgSrc));
-          if(entry){
-            // Clone the live canvas so it shows current animation frame
-            const liveCanvas=entry.canvas;
-            liveCanvas.id='phantom-scn-canvas';
-            liveCanvas.style.cssText=`display:block;width:${pSize}px;height:${pSize}px;border-radius:6px;border:2px solid ${prc};box-shadow:0 0 18px ${prc}88;image-rendering:pixelated;`;
-            blockDiv.appendChild(liveCanvas);
-          }else{
-            const img=document.createElement('img');
-            img.src=pOre.imgSrc;
-            img.style.cssText=`width:${pSize}px;height:${pSize}px;display:block;image-rendering:pixelated;border-radius:6px;border:2px solid ${prc};box-shadow:0 0 18px ${prc}88;`;
-            blockDiv.appendChild(img);
+          // Create a canvas that updateGifTextures will refresh each frame
+          const scnCanvas=document.createElement('canvas');
+          scnCanvas.width=128;scnCanvas.height=128;
+          scnCanvas.id='phantom-scn-canvas';
+          scnCanvas.style.cssText=`display:block;width:${pSize}px;height:${pSize}px;border-radius:6px;border:2px solid ${prc};box-shadow:0 0 18px ${prc}88;image-rendering:pixelated;`;
+          blockDiv.appendChild(scnCanvas);
+          // Fill immediately from existing GIF entry if available
+          const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&e.img.src.includes(pOre.imgSrc));
+          if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
+            const ctx2=scnCanvas.getContext('2d');
+            ctx2.drawImage(entry.img,0,0,128,128);
           }
         }else{
           const c=document.createElement('canvas');c.width=64;c.height=64;
@@ -2212,7 +2212,7 @@ function tryAbilityT5(mx,my,mz){
 let t6OrbC=0,t6ClrC=0,t6LuckC=0;
 function tryAbilityT6(mx,my,mz){
   t6OrbC++;t6ClrC++;t6LuckC++;
-  if(t6LuckC%40===0){_luckBoostMult=5;_luckBoostUntil=Date.now()+10000;showSpawn('⚡ Luck Boost x5 — 10s!','#aa44ff',false);}
+  if(t6LuckC%40===0){_luckBoostMult=3;_luckBoostUntil=Date.now()+10000;showSpawn('⚡ Luck Boost x3 — 10s!','#aa44ff',false);}
   if(t6OrbC%50===0){
     const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
     dirs.forEach(([dx,dz])=>{
@@ -2274,10 +2274,10 @@ function tryAbilityT9(mx,my,mz){
   t9SpamC++;t9FireC++;
   if(t9SpamC%10===0){
     let hit=false;
-    for(let i=0;i<35;i++){
-      const rx=mx+Math.round((Math.random()-0.5)*16);
-      const ry=my+Math.round((Math.random()-0.5)*6);
-      const rz=mz+Math.round((Math.random()-0.5)*16);
+    for(let i=0;i<60;i++){
+      const rx=mx+Math.round((Math.random()-0.5)*24);
+      const ry=my+Math.round((Math.random()-0.5)*10);
+      const rz=mz+Math.round((Math.random()-0.5)*24);
       if(abilityMine(rx,ry,rz))hit=true;
       FX_PARTICLES.push({type:'bit',color:'#ff4444',px:rx+0.5,py:ry+0.5,pz:rz+0.5,life:0.4,maxLife:0.4,vx:0,vy:0,vz:0,trailPts:[]});
     }
@@ -2289,7 +2289,7 @@ function tryAbilityT9(mx,my,mz){
     t9LimitPot=0;
     spawnFX_LimitBreak(mx,my,mz);
     let hit=false;
-    for(let dy=-8;dy<=0;dy++)for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){
+    for(let dy=-12;dy<=0;dy++)for(let dx=-5;dx<=5;dx++)for(let dz=-5;dz<=5;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
@@ -2553,7 +2553,10 @@ function tickFX(dt){
       }
       if(p.type==='shard'){
         if(p.py<=p.targetY+0.5){
-          abilityMine(p.targetX,p.targetY,p.targetZ);markMeshDirty();markInvDirty();updateHudStatsOnly();
+          // Mine 2 blocks: target and the one above
+          abilityMine(p.targetX,p.targetY,p.targetZ);
+          abilityMine(p.targetX,p.targetY+1,p.targetZ);
+          markMeshDirty();markInvDirty();updateHudStatsOnly();
           p.life=0;continue;
         }
       }
@@ -2704,7 +2707,7 @@ function tickFX(dt){
         const wallX=p.px+p.vx*p.advance;
         const wallZ=p.pz+p.vz*p.advance;
         // Draw 5×5 wall projected on screen
-        for(let u=-2;u<=2;u++)for(let v=-2;v<=2;v++){
+        for(let u=-3;u<=3;u++)for(let v=-3;v<=3;v++){
           const wx2=wallX+p.right.x*u;
           const wy2=p.py+v;
           const wz2=wallZ+p.right.z*u;
@@ -2785,6 +2788,7 @@ function loop(t=0){
 
 // ═══════════ BOOT ═══════════
 applyI18N();
+document.getElementById('hint-move').textContent=lang==='fr'?'ZQSD : avancer':'WASD : move';
 const hasSave=loadGame();
 genWorld();
 init3D();
