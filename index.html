@@ -223,7 +223,7 @@ canvas.free{cursor:default}
     <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
     <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
     <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
-      <span style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
+      <span id="lbl-100m" style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
       <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
     </div>
   </div>
@@ -244,7 +244,7 @@ canvas.free{cursor:default}
   <div id="spawn-msg"></div>
   <div id="tooltip"></div>
   <div id="hint">
-    <span id="hint-move-btn" onclick="toggleKeyLayout()" title="Cliquer pour changer">ZQSD : avancer ↺</span>
+    <span id="hint-move-btn" onclick="toggleKeyLayout()" title="Click to change layout">ZQSD : avancer ↺</span>
     <span id="hint-look">Souris : regarder</span>
     <span id="hint-mine">Clic G maintenu : miner</span>
     <span id="hint-ctrl">Ctrl : liberer souris</span>
@@ -261,29 +261,29 @@ canvas.free{cursor:default}
 <!-- Import/Export Modal -->
 <div id="savemod-ov" style="position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:60;align-items:center;justify-content:center;pointer-events:all">
   <div style="background:#06060d;border:1px solid rgba(255,255,255,0.14);border-radius:6px;width:520px;padding:24px;font-family:'Press Start 2P',monospace">
-    <h2 style="font-size:8px;color:rgba(255,255,255,0.85);margin-bottom:4px;letter-spacing:3px">SAUVEGARDE</h2>
-    <div style="font-size:10px;color:rgba(200,200,200,0.25);margin-bottom:16px;font-family:sans-serif">Exportez ou importez votre progression</div>
+    <h2 style="font-size:8px;color:rgba(255,255,255,0.85);margin-bottom:4px;letter-spacing:3px" id="savemod-title">SAVE</h2>
+    <div style="font-size:10px;color:rgba(200,200,200,0.25);margin-bottom:16px;font-family:sans-serif" id="savemod-sub">Export or import your progress</div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div>
-        <div style="font-size:6px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:1px">EXPORTER</div>
-        <div style="font-size:9px;color:rgba(200,200,200,0.3);margin-bottom:8px;font-family:sans-serif">Copie vos données dans le presse-papier, ou télécharge un fichier .json</div>
+        <div style="font-size:6px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:1px" id="savemod-export-lbl">EXPORT</div>
+        <div style="font-size:9px;color:rgba(200,200,200,0.3);margin-bottom:8px;font-family:sans-serif" id="savemod-export-desc">Copy your data to clipboard, or download a .json file</div>
         <div style="display:flex;gap:6px">
-          <button onclick="exportSaveClipboard()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.6)'">COPIER</button>
-          <button onclick="exportSaveFile()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.6)'">TÉLÉCHARGER</button>
+          <button onclick="exportSaveClipboard()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.6)'" id="savemod-copy-btn">COPY</button>
+          <button onclick="exportSaveFile()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.6)'" id="savemod-dl-btn">DOWNLOAD</button>
         </div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
-        <div style="font-size:6px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:1px">IMPORTER</div>
-        <div style="font-size:9px;color:rgba(200,200,200,0.3);margin-bottom:8px;font-family:sans-serif">Collez vos données ci-dessous ou chargez un fichier .json</div>
-        <textarea id="import-ta" placeholder="Collez le JSON ici..." style="width:100%;height:80px;background:#03030a;border:1px solid rgba(255,255,255,0.1);border-radius:2px;color:rgba(220,220,220,0.8);font-family:monospace;font-size:9px;padding:6px;resize:vertical;box-sizing:border-box;outline:none"></textarea>
+        <div style="font-size:6px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:1px" id="savemod-import-lbl">IMPORT</div>
+        <div style="font-size:9px;color:rgba(200,200,200,0.3);margin-bottom:8px;font-family:sans-serif" id="savemod-import-desc">Paste your data below or load a .json file</div>
+        <textarea id="import-ta" placeholder="Paste JSON here..." style="width:100%;height:80px;background:#03030a;border:1px solid rgba(255,255,255,0.1);border-radius:2px;color:rgba(220,220,220,0.8);font-family:monospace;font-size:9px;padding:6px;resize:vertical;box-sizing:border-box;outline:none"></textarea>
         <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
-          <button onclick="importSaveText()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(100,200,100,0.3);border-radius:2px;color:rgba(120,200,120,0.8);cursor:pointer">CHARGER TEXTE</button>
-          <label style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(100,200,100,0.3);border-radius:2px;color:rgba(120,200,120,0.8);cursor:pointer">CHARGER FICHIER<input type="file" accept=".json,application/json" onchange="importSaveFile(event)" style="display:none"></label>
+          <button onclick="importSaveText()" style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(100,200,100,0.3);border-radius:2px;color:rgba(120,200,120,0.8);cursor:pointer" id="savemod-load-text-btn">LOAD TEXT</button>
+          <label style="font-family:'Press Start 2P',monospace;font-size:5px;padding:8px 12px;background:transparent;border:1px solid rgba(100,200,100,0.3);border-radius:2px;color:rgba(120,200,120,0.8);cursor:pointer" id="savemod-load-file-lbl">LOAD FILE<input type="file" accept=".json,application/json" onchange="importSaveFile(event)" style="display:none"></label>
           <span id="import-msg" style="font-size:9px;font-family:sans-serif;color:rgba(120,200,120,0.9);display:none"></span>
         </div>
       </div>
     </div>
-    <button onclick="closeSaveMenu()" style="font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:14px;transition:all .12s" onmouseover="this.style.color='rgba(255,255,255,0.7)';this.style.borderColor='rgba(255,255,255,0.25)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">FERMER</button>
+    <button onclick="closeSaveMenu()" style="font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:14px;transition:all .12s" onmouseover="this.style.color='rgba(255,255,255,0.7)';this.style.borderColor='rgba(255,255,255,0.25)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'" id="savemod-close-btn">CLOSE</button>
   </div>
 </div>
 
@@ -332,9 +332,16 @@ const T={
 let _useQwerty=lang!=='fr';
 function toggleKeyLayout(){
   _useQwerty=!_useQwerty;
-  const btn=document.getElementById('hint-move-btn');
-  if(btn)btn.textContent=(_useQwerty?'WASD : move ↺':'ZQSD : avancer ↺');
+  saveGame();
+  _applyHintMoveBtn();
   showSpawn(_useQwerty?'⌨ Layout: WASD (QWERTY)':'⌨ Layout: ZQSD (AZERTY)','#88aaff',false);
+}
+function _applyHintMoveBtn(){
+  const btn=document.getElementById('hint-move-btn');
+  if(!btn)return;
+  // Always show ZQSD first then WASD when AZERTY, WASD first when QWERTY
+  if(_useQwerty)btn.textContent=lang==='fr'?'WASD : avancer ↺':'WASD : move ↺';
+  else btn.textContent=lang==='fr'?'ZQSD : avancer ↺':'ZQSD : move ↺';
 }
 function isForward(code){return _useQwerty?(code==='KeyW'):(code==='KeyZ');}
 function isBack(code){return code==='KeyS';}
@@ -353,10 +360,32 @@ function applyI18N(){
   document.getElementById('tab-mine-btn').textContent=T.mine;
   document.getElementById('lbl-close').textContent=T.close;
   document.getElementById('shop-btn').textContent=T.shop;
-  // hint is now column spans, skip overwrite
   document.getElementById('tooltip').textContent=T.clickplay;
   document.getElementById('free-ind').textContent=T.free;
   document.getElementById('save-ind').textContent=T.saved;
+  // Hint card
+  _applyHintMoveBtn();
+  const _hl=document.getElementById('hint-look');if(_hl)_hl.textContent=lang==='fr'?'Souris : regarder':'Mouse : look';
+  const _hm=document.getElementById('hint-mine');if(_hm)_hm.textContent=lang==='fr'?'Clic G maintenu : miner':'Hold LMB : mine';
+  const _hc=document.getElementById('hint-ctrl');if(_hc)_hc.textContent=lang==='fr'?'Ctrl : libérer souris':'Ctrl : free mouse';
+  const _hs=document.getElementById('hint-shop');if(_hs)_hs.textContent=lang==='fr'?'E : boutique':'E : shop';
+  // Save modal
+  const _sm=document.getElementById('savemod-title');if(_sm)_sm.textContent=lang==='fr'?'SAUVEGARDE':'SAVE';
+  const _ss=document.getElementById('savemod-sub');if(_ss)_ss.textContent=lang==='fr'?'Exportez ou importez votre progression':'Export or import your progress';
+  const _sel=document.getElementById('savemod-export-lbl');if(_sel)_sel.textContent=lang==='fr'?'EXPORTER':'EXPORT';
+  const _sed=document.getElementById('savemod-export-desc');if(_sed)_sed.textContent=lang==='fr'?'Copie vos données dans le presse-papier, ou télécharge un fichier .json':'Copy your data to clipboard, or download a .json file';
+  const _sil=document.getElementById('savemod-import-lbl');if(_sil)_sil.textContent=lang==='fr'?'IMPORTER':'IMPORT';
+  const _sid=document.getElementById('savemod-import-desc');if(_sid)_sid.textContent=lang==='fr'?'Collez vos données ci-dessous ou chargez un fichier .json':'Paste your data below or load a .json file';
+  const _scp=document.getElementById('savemod-copy-btn');if(_scp)_scp.textContent=lang==='fr'?'COPIER':'COPY';
+  const _sdl=document.getElementById('savemod-dl-btn');if(_sdl)_sdl.textContent=lang==='fr'?'TÉLÉCHARGER':'DOWNLOAD';
+  const _slt=document.getElementById('savemod-load-text-btn');if(_slt)_slt.textContent=lang==='fr'?'CHARGER TEXTE':'LOAD TEXT';
+  const _slf=document.getElementById('savemod-load-file-lbl');if(_slf){const inp=_slf.querySelector('input');_slf.textContent=lang==='fr'?'CHARGER FICHIER':'LOAD FILE';if(inp)_slf.appendChild(inp);}
+  const _scl=document.getElementById('savemod-close-btn');if(_scl)_scl.textContent=lang==='fr'?'FERMER':'CLOSE';
+  const _ta=document.getElementById('import-ta');if(_ta)_ta.placeholder=lang==='fr'?'Collez le JSON ici...':'Paste JSON here...';
+  // Ability panel title
+  const _apt=document.getElementById('ability-title');if(_apt)_apt.textContent=lang==='fr'?'CAPACITÉS':'ABILITIES';
+  // Stats 100M label
+  const _s100=document.getElementById('lbl-100m');if(_s100)_s100.textContent=lang==='fr'?'100M+ TROUVÉS':'100M+ FOUND';
 }
 
 // ═══════════ RARITY COLORS ═══════════
@@ -388,10 +417,45 @@ const RC={
   'CaveExclusive-Eternal':'#00fbff',
 };
 
-// ═══════════ ORES (from paste + base) ═══════════
-// Textures 6 faces : imgSrc (png/webp/gif), et/ou symbol (+ symbolColor) généré sur canvas.
+// ═══════════ ORES ═══════════
+// spawnMsg = English, spawnMsgFr = French. Use getOreSpawnMsg(ore) to get correct lang.
+function getOreSpawnMsg(ore){
+  if(!ore||!ore.spawnMsg)return null;
+  return(lang==='fr'&&ore.spawnMsgFr)?ore.spawnMsgFr:ore.spawnMsg;
+}
+// Rarity display name translation (keys stay in English as RC map keys)
+const RARITY_FR={
+  Common:'Commun',Uncommon:'Peu Commun',Rare:'Rare',Epic:'Épique',
+  Legendary:'Légendaire','Legendary+':'Légendaire+',Mythic:'Mythique',Mythical:'Mythique+',
+  Exotic:'Exotique',Exquisite:'Exquis',Transcendent:'Transcendant',Enigmatic:'Énigmatique',
+  Unfathomable:'Insondable',Otherworldly:'Extraterrestre',Imaginary:'Imaginaire',
+  Zenith:'Zénith',Eternal:'Éternel',SPAFF:'SPAFF',Divine:'Divin',
+  'IceCaveExclusive':'Exclusif Cave de Glace',
+  'IceCaveExclusive-Exotic':'Exclusif Cave Glace — Exotique',
+  'IceCaveExclusive-Eternal':'Exclusif Cave Glace — Éternel',
+  'EnergyCaveExclusive':'Exclusif Cave d\'Énergie',
+  'EnergyCaveExclusive-Exquisite':'Exclusif Cave Énergie — Exquis',
+  'EnergyCaveExclusive-Zenith':'Exclusif Cave Énergie — Zénith',
+  'NuclearCaveExclusive':'Exclusif Cave Nucléaire',
+  'NuclearCaveExclusive-Transcendent':'Exclusif Cave Nucl. — Transcendant',
+  'ShadowCaveExclusive':'Exclusif Cave des Ombres',
+  'ShadowCaveExclusive-Enigmatic':'Exclusif Cave Ombres — Énigmatique',
+  'ShadowCaveExclusive-Imaginary':'Exclusif Cave Ombres — Imaginaire',
+  'AbyssCaveExclusive':'Exclusif Cave des Abysses',
+  'AbyssCaveExclusive-Unfathomable':'Exclusif Cave Abysses — Insondable',
+  'AbyssCaveExclusive-Zenith':'Exclusif Cave Abysses — Zénith',
+  'LavaCaveExclusive':'Exclusif Cave de Lave',
+  'LavaCaveExclusive-Otherworldly':'Exclusif Cave Lave — Extraterrestre',
+  'LavaCaveExclusive-Eternal':'Exclusif Cave Lave — Éternel',
+  'CaveExclusive-Mythical':'Exclusif Cave — Mythique+',
+  'CaveExclusive-Eternal':'Exclusif Cave — Éternel',
+};
+function getRarityDisplay(rarity){
+  if(lang==='fr'&&RARITY_FR[rarity])return RARITY_FR[rarity];
+  return rarity;
+}
 const ORES=[
-  // Base blocks (no spawn msg, very common)
+  // Base blocks
   {name:'Stone',     rarity:'Common',      exact:3,       color:'#777777',spawnMsg:null},
   {name:'Coal',      rarity:'Common',      exact:10,      color:'#444444',spawnMsg:null},
   {name:'Iron',      rarity:'Uncommon',    exact:20,      color:'#aaaaaa',spawnMsg:null},
@@ -407,92 +471,92 @@ const ORES=[
   {name:'HyperMega', rarity:'Mythic',      exact:50000,   color:'#e91e63',spawnMsg:null},
   {name:'VoidShard', rarity:'Mythical',    exact:75000,   color:'#00e5ff',spawnMsg:null},
   {name:'Giga',      rarity:'Mythical',    exact:100000,  color:'#2196f3',spawnMsg:null},
-  // Exotic+ (spawn sounds)
-  {name:'Smiley',    rarity:'Exotic',      exact:250000,  color:'#ffeb3b',spawnMsg:'A chill goes down your spine!'},
-  {name:'FrostWraith',rarity:'Exotic',     exact:750000,  color:'#00b0ff',spawnMsg:'A chill goes down your spine!'},
-  {name:'Tera',      rarity:'Exotic',      exact:500000,  color:'#9c27b0',spawnMsg:'A chill goes down your spine!'},
-  {name:'TeraPlus',  rarity:'Exotic',      exact:1000000, color:'#ff4081',spawnMsg:'A chill goes down your spine!'},
-  {name:'SoulGlacier',rarity:'Exotic',     exact:2000000, color:'#9c27b0',spawnMsg:'A chill goes down your spine!'},
-  {name:'EmberPhantom',rarity:'Exotic',    exact:3000000, color:'#ff9800',spawnMsg:'A chill goes down your spine!'},
-  {name:'CrimsonEclipse',rarity:'Exotic',  exact:4000000, color:'#f44336',spawnMsg:'A chill goes down your spine!'},
-  {name:'Peta',      rarity:'Exotic',      exact:5000000, color:'#00bcd4',spawnMsg:'A chill goes down your spine!'},
-  {name:'PetaPlus1', rarity:'Exquisite',   exact:10000000,color:'#ff4081',spawnMsg:'Your heart skips a beat!'},
-  {name:'CelestiteNova',rarity:'Exquisite',exact:12100000,color:'#ff80ab',spawnMsg:'Your heart skips a beat!'},
-  {name:'NovaShard', rarity:'Exquisite',   exact:12000000,color:'#ff6ec7',spawnMsg:'Your heart skips a beat!'},
-  {name:'AuroriteShard',rarity:'Exquisite',exact:13500000,color:'#80d8ff',spawnMsg:'Your heart skips a beat!'},
-  {name:'Celestium', rarity:'Exquisite',   exact:15000000,color:'#7c4dff',spawnMsg:'Your heart skips a beat!'},
-  {name:'LuminaraGem',rarity:'Exquisite',  exact:15500000,color:'#ffd740',spawnMsg:'Your heart skips a beat!'},
-  {name:'Astralite', rarity:'Exquisite',   exact:18000000,color:'#00e5ff',spawnMsg:'Your heart skips a beat!'},
-  {name:'EclipseraCore',rarity:'Exquisite',exact:17000000,color:'#ff1744',spawnMsg:'Your heart skips a beat!'},
-  {name:'Luminite',  rarity:'Exquisite',   exact:21000000,color:'#ffd740',spawnMsg:'Your heart skips a beat!'},
-  {name:'EclipseCore',rarity:'Exquisite',  exact:24000000,color:'#ff1744',spawnMsg:'Your heart skips a beat!'},
-  {name:'PetaPlus2', rarity:'Transcendent',exact:25000000,color:'#cddc39',spawnMsg:'You hear a ringing!'},
-  {name:'Nebulium',  rarity:'Transcendent',exact:26000000,color:'#76ff03',spawnMsg:'You hear a ringing!'},
-  {name:'Stellarium',rarity:'Transcendent',exact:28000000,color:'#00bcd4',spawnMsg:'You hear a ringing!'},
-  {name:'Lunarium',  rarity:'Transcendent',exact:30000000,color:'#ffeb3b',spawnMsg:'You hear a ringing!'},
-  {name:'Solarium',  rarity:'Transcendent',exact:32000000,color:'#ff9800',spawnMsg:'You hear a ringing!'},
-  {name:'Aetherium', rarity:'Transcendent',exact:35000000,color:'#8bc34a',spawnMsg:'You hear a ringing!'},
-  {name:'Chronium',  rarity:'Transcendent',exact:38000000,color:'#00ffff',spawnMsg:'You hear a ringing!'},
-  {name:'Quantumite',rarity:'Transcendent',exact:40000000,color:'#2196f3',spawnMsg:'You hear a ringing!'},
-  {name:'Hyperion',  rarity:'Transcendent',exact:45000000,color:'#ff4081',spawnMsg:'You hear a ringing!'},
-  {name:'PetaPlus3', rarity:'Transcendent',exact:51000000,color:'#ff5722',spawnMsg:'You hear a ringing!'},
-  {name:'Vortexium', rarity:'Transcendent',exact:52500000,color:'#9c27b0',spawnMsg:'You hear a ringing!'},
-  {name:'Ecliptium', rarity:'Transcendent',exact:55000000,color:'#ff5722',spawnMsg:'You hear a ringing!'},
-  {name:'EclipseShard',rarity:'Enigmatic', exact:60000000,color:'#1c1c1c',spawnMsg:'Your vision begins to blur!'},
-  {name:'ShadowFragment',rarity:'Enigmatic',exact:61230000,color:'#2f2f2f',spawnMsg:'Your vision begins to blur!'},
-  {name:'TwilightGem',rarity:'Enigmatic',  exact:63000000,color:'#512da8',spawnMsg:'Your vision begins to blur!'},
-  {name:'PetaPlus4', rarity:'Enigmatic',   exact:75000000,color:'#00bcd4',spawnMsg:'Your vision begins to blur!'},
-  {name:'OblivionStone',rarity:'Enigmatic',exact:70000000,color:'#263238',spawnMsg:'Your vision begins to blur!'},
-  {name:'NightCore', rarity:'Enigmatic',   exact:77000000,color:'#ff1744',spawnMsg:'Your vision begins to blur!'},
-  {name:'SpecterGem',rarity:'Enigmatic',   exact:81000000,color:'#37474f',spawnMsg:'Your vision begins to blur!'},
-  {name:'OblivionShard',rarity:'Enigmatic',exact:85000000,color:'#263238',spawnMsg:'Your vision begins to blur!'},
-  {name:'PhantomCrystal',rarity:'Enigmatic',exact:95000000,color:'#37474f',spawnMsg:'Your vision begins to blur!'},
-  {name:'OblivionCore',rarity:'Enigmatic', exact:90000000,color:'#37474f',spawnMsg:'Your vision begins to blur!'},
-  {name:'AbyssGem',  rarity:'Enigmatic',   exact:99000000,color:'#4a148c',spawnMsg:'Your vision begins to blur!'},
-  {name:'ZergHunter',rarity:'Unfathomable',exact:100000000,color:'#ff1300',spawnMsg:'Survive... or become meat'},
-  {name:'FrostShard',rarity:'Unfathomable',exact:120000000,color:'#00dfff',spawnMsg:'A shard of eternal frost crystallizes before your eyes!'},
-  {name:'GlacierHeart',rarity:'Unfathomable',exact:140000000,color:'#00aaff',spawnMsg:'The heart of a glacier pulses, freezing everything around it!'},
-  {name:'AbyssalCore',rarity:'Unfathomable',exact:150000000,color:'#4a148c',spawnMsg:'A bottomless abyss opens beneath your feet...'},
-  {name:'IceboundCore',rarity:'Unfathomable',exact:180000000,color:'#88eeff',spawnMsg:'IceboundCore emerges, encasing reality in glacial chains!'},
-  {name:'AbyssalSingularity',rarity:'Unfathomable',exact:200000000,color:'#000000',spawnMsg:'Reality distorts around you...'},
-  {name:'DarkMatter',rarity:'Unfathomable',exact:220000000,color:'#1a237e',spawnMsg:'Gravity distorts violently around the Dark Matter!'},
-  {name:'AbyssHeart',rarity:'Unfathomable',exact:230000000,color:'#5e0f6f',spawnMsg:'A bottomless heart opens beneath you...'},
-  {name:'VoidTitan', rarity:'Unfathomable',exact:240000000,color:'#4b0082',spawnMsg:'The VoidTitan awakens from the depths!'},
-  {name:'VoidPlus',  rarity:'Unfathomable',exact:250000000,color:'#8e24aa',spawnMsg:'A ripple runs through the cosmos as you uncover the VoidPlus!'},
-  {name:'Atomarion', rarity:'Unfathomable',exact:265000000,color:'#00ff66',spawnMsg:'A surge of atomic energy radiates as Atomarion manifests!'},
-  {name:'Infernium', rarity:'Unfathomable',exact:285000000,color:'#ff3300',spawnMsg:'Molten fury erupts from Infernium, scorching all nearby!'},
-  {name:'AstralCataclysm',rarity:'Otherworldly',exact:300000000,color:'#1a237e',spawnMsg:'The sky fractures with alien light!'},
-  {name:'VoidRequiem',rarity:'Otherworldly',exact:400000000,color:'#4a148c',spawnMsg:'A silent hymn echoes from beyond existence...'},
-  {name:'VoidUltra', rarity:'Otherworldly',exact:500000000,color:'#000000',spawnMsg:"The universe trembles! You've discovered the legendary VoidUltra!"},
-  {name:'Abyssion',  rarity:'Otherworldly',exact:525000000,color:'#8b0000',spawnMsg:'The world trembles as Abyssion emerges!'},
-  {name:'Eternium',  rarity:'Otherworldly',exact:550000000,color:'#ff1744',spawnMsg:'Eternium pulses with unimaginable energy!'},
-  {name:'Voidessence',rarity:'Otherworldly',exact:600000000,color:'#6a1b9a',spawnMsg:'Voidessence warps the very fabric of existence!'},
-  {name:'Cosmosite', rarity:'Otherworldly',exact:650000000,color:'#ff6867',spawnMsg:'The cosmos quivers as Cosmosite forms!'},
-  {name:'Singulite', rarity:'Otherworldly',exact:700000000,color:'#00ffff',spawnMsg:'Singulite bends space and time around you!'},
-  {name:'CosmicRelic',rarity:'Otherworldly',exact:750000000,color:'#ff6867',spawnMsg:'The fabric of existence tears apart!'},
-  {name:'EternalParadox',rarity:'Otherworldly',exact:800000000,color:'#b71c1c',spawnMsg:'Time collapses. Something impossible has awakened.'},
-  {name:'Lugubre',   rarity:'Otherworldly',exact:850000000,color:'#ffc7f8',spawnMsg:'INCROYABLE luck!!!'},
-  {name:'Infinity',  rarity:'Imaginary',   exact:1000000000,color:'#000000',spawnMsg:'You feel the universe itself watching you!'},
-  {name:'EventideStar',rarity:'Imaginary', exact:1200000000,color:'#0a0a0a',spawnMsg:'A ripple of eternity whispers through the void as EventideStar appears!'},
-  {name:'QuantumCore',rarity:'Imaginary',  exact:1300000000,color:'#00ffcc',spawnMsg:'Digital circuits hum as QuantumCore boots the system!'},
-  {name:'CosmoNova', rarity:'Imaginary',   exact:1400000000,color:'#141414',spawnMsg:'Stars ignite and collapse in a cosmic dance around CosmoNova!'},
-  {name:'VoidEclipse',rarity:'Imaginary',  exact:1500000000,color:'#0d0d0d',spawnMsg:'Darkness stretches infinitely as VoidEclipse emerges from the void!'},
-  {name:'Singularity',rarity:'Imaginary',  exact:2000000000,color:'#000000',spawnMsg:'Time stops. Space collapses. You found the impossible.'},
-  {name:'AlterDemon',rarity:'Divine',     exact:1000000,   color:'#000000',spawnMsg:'Alters demon is here to catch you'},
-  {name:'Veritcal',  rarity:'Imaginary',   exact:4444444444, color:'#90d5ff',spawnMsg:"You shouldn't dig straight down"},
-  {name:'Zanacharium',rarity:'Zenith',     exact:687500000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...'},
-  {name:'Nucleonix', rarity:'Zenith',      exact:6000000000,color:'#00ff00',spawnMsg:'Radiation hums as Nucleonix pulses with atomic energy!'},
-  {name:'Chronovexium',rarity:'Zenith',    exact:12500000000,color:'#00f0ff',spawnMsg:'Time fractures as Chronovexium emerges from the continuum...'},
-  {name:'Aqualith',  rarity:'Zenith',      exact:30000000000,color:'#00bfff',spawnMsg:'Ocean currents converge as Aqualith emerges from the deep!'},
-  {name:'Aetherion', rarity:'Zenith',      exact:35000000000,color:'#ffd700',spawnMsg:'The heavens shimmer as Aetherion descends into existence...'},
-  {name:'Pyrocore',  rarity:'Zenith',      exact:50000000000,color:'#ff4500',spawnMsg:'Flames swirl violently as Pyrocore erupts from the magma!'},
-  {name:'Circuitium',rarity:'Zenith',      exact:75000000000,color:'#cccccc',spawnMsg:'Digital sparks fly as Circuitium materializes from the grid!'},
-  {name:'Paradoxium',rarity:'Eternal',     exact:150000000000,color:'#6a00ff',spawnMsg:'Reality twists into an impossible shape as Paradoxium manifests...'},
-  {name:'Genesis',   rarity:'Eternal',     exact:500000000000,color:'#000000',spawnMsg:'Twisting circuitry explodes in a ferocious outburst of electric energy...'},
-  {name:'Divinitium',rarity:'Eternal',     exact:700000000000,color:'#bfcadb',spawnMsg:'A blinding radiance heralds the arrival of Divinitium!'},
-  {name:'Pyronis',   rarity:'Eternal',     exact:400000000000,color:'#ff6600',spawnMsg:'Flames twist violently as Pyronis bursts forth from molten rock!'},
-  {name:'BlueTheFR', rarity:'Eternal',     exact:1000000000000,color:'#00fbff',spawnMsg:'You meet the creator...'},
-  {name:'SPAFF',     rarity:'SPAFF',       exact:100000000000000,           color:'#ff9900',spawnMsg:'Le SPAFF est la!!'},
+  // Exotic+
+  {name:'Smiley',    rarity:'Exotic',      exact:250000,  color:'#ffeb3b',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'FrostWraith',rarity:'Exotic',     exact:750000,  color:'#00b0ff',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'Tera',      rarity:'Exotic',      exact:500000,  color:'#9c27b0',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'TeraPlus',  rarity:'Exotic',      exact:1000000, color:'#ff4081',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'SoulGlacier',rarity:'Exotic',     exact:2000000, color:'#9c27b0',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'EmberPhantom',rarity:'Exotic',    exact:3000000, color:'#ff9800',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'CrimsonEclipse',rarity:'Exotic',  exact:4000000, color:'#f44336',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'Peta',      rarity:'Exotic',      exact:5000000, color:'#00bcd4',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
+  {name:'PetaPlus1', rarity:'Exquisite',   exact:10000000,color:'#ff4081',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'CelestiteNova',rarity:'Exquisite',exact:12100000,color:'#ff80ab',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'NovaShard', rarity:'Exquisite',   exact:12000000,color:'#ff6ec7',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'AuroriteShard',rarity:'Exquisite',exact:13500000,color:'#80d8ff',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'Celestium', rarity:'Exquisite',   exact:15000000,color:'#7c4dff',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'LuminaraGem',rarity:'Exquisite',  exact:15500000,color:'#ffd740',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'Astralite', rarity:'Exquisite',   exact:18000000,color:'#00e5ff',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'EclipseraCore',rarity:'Exquisite',exact:17000000,color:'#ff1744',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'Luminite',  rarity:'Exquisite',   exact:21000000,color:'#ffd740',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'EclipseCore',rarity:'Exquisite',  exact:24000000,color:'#ff1744',spawnMsg:'Your heart skips a beat!',                            spawnMsgFr:'Votre cœur rate un battement !'},
+  {name:'PetaPlus2', rarity:'Transcendent',exact:25000000,color:'#cddc39',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Nebulium',  rarity:'Transcendent',exact:26000000,color:'#76ff03',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Stellarium',rarity:'Transcendent',exact:28000000,color:'#00bcd4',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Lunarium',  rarity:'Transcendent',exact:30000000,color:'#ffeb3b',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Solarium',  rarity:'Transcendent',exact:32000000,color:'#ff9800',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Aetherium', rarity:'Transcendent',exact:35000000,color:'#8bc34a',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Chronium',  rarity:'Transcendent',exact:38000000,color:'#00ffff',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Quantumite',rarity:'Transcendent',exact:40000000,color:'#2196f3',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Hyperion',  rarity:'Transcendent',exact:45000000,color:'#ff4081',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'PetaPlus3', rarity:'Transcendent',exact:51000000,color:'#ff5722',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Vortexium', rarity:'Transcendent',exact:52500000,color:'#9c27b0',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'Ecliptium', rarity:'Transcendent',exact:55000000,color:'#ff5722',spawnMsg:'You hear a ringing!',                                 spawnMsgFr:'Vous entendez un bourdonnement !'},
+  {name:'EclipseShard',rarity:'Enigmatic', exact:60000000,color:'#1c1c1c',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'ShadowFragment',rarity:'Enigmatic',exact:61230000,color:'#2f2f2f',spawnMsg:'Your vision begins to blur!',                        spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'TwilightGem',rarity:'Enigmatic',  exact:63000000,color:'#512da8',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'PetaPlus4', rarity:'Enigmatic',   exact:75000000,color:'#00bcd4',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'OblivionStone',rarity:'Enigmatic',exact:70000000,color:'#263238',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'NightCore', rarity:'Enigmatic',   exact:77000000,color:'#ff1744',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'SpecterGem',rarity:'Enigmatic',   exact:81000000,color:'#37474f',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'OblivionShard',rarity:'Enigmatic',exact:85000000,color:'#263238',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'PhantomCrystal',rarity:'Enigmatic',exact:95000000,color:'#37474f',spawnMsg:'Your vision begins to blur!',                        spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'OblivionCore',rarity:'Enigmatic', exact:90000000,color:'#37474f',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'AbyssGem',  rarity:'Enigmatic',   exact:99000000,color:'#4a148c',spawnMsg:'Your vision begins to blur!',                         spawnMsgFr:'Votre vision commence à se troubler !'},
+  {name:'ZergHunter',rarity:'Unfathomable',exact:100000000,color:'#ff1300',spawnMsg:'Survive... or become meat',                          spawnMsgFr:'Survivez... ou devenez de la chair !'},
+  {name:'FrostShard',rarity:'Unfathomable',exact:120000000,color:'#00dfff',spawnMsg:'A shard of eternal frost crystallizes before your eyes!', spawnMsgFr:'Un éclat de givre éternel se cristallise devant vous !'},
+  {name:'GlacierHeart',rarity:'Unfathomable',exact:140000000,color:'#00aaff',spawnMsg:'The heart of a glacier pulses, freezing everything around it!', spawnMsgFr:'Le cœur d\'un glacier pulse, gelant tout alentour !'},
+  {name:'AbyssalCore',rarity:'Unfathomable',exact:150000000,color:'#4a148c',spawnMsg:'A bottomless abyss opens beneath your feet...',      spawnMsgFr:'Un abîsse sans fond s\'ouvre sous vos pieds...'},
+  {name:'IceboundCore',rarity:'Unfathomable',exact:180000000,color:'#88eeff',spawnMsg:'IceboundCore emerges, encasing reality in glacial chains!', spawnMsgFr:'IceboundCore surgit, enchaînant la réalité dans des chaînes glaciales !'},
+  {name:'AbyssalSingularity',rarity:'Unfathomable',exact:200000000,color:'#000000',spawnMsg:'Reality distorts around you...',              spawnMsgFr:'La réalité se distord autour de vous...'},
+  {name:'DarkMatter',rarity:'Unfathomable',exact:220000000,color:'#1a237e',spawnMsg:'Gravity distorts violently around the Dark Matter!',  spawnMsgFr:'La gravité se distord violemment autour de la Matière Sombre !'},
+  {name:'AbyssHeart',rarity:'Unfathomable',exact:230000000,color:'#5e0f6f',spawnMsg:'A bottomless heart opens beneath you...',             spawnMsgFr:'Un cœur sans fond s\'ouvre sous vous...'},
+  {name:'VoidTitan', rarity:'Unfathomable',exact:240000000,color:'#4b0082',spawnMsg:'The VoidTitan awakens from the depths!',              spawnMsgFr:'Le VoidTitan s\'éveille des profondeurs !'},
+  {name:'VoidPlus',  rarity:'Unfathomable',exact:250000000,color:'#8e24aa',spawnMsg:'A ripple runs through the cosmos as you uncover the VoidPlus!', spawnMsgFr:'Une onde traverse le cosmos tandis que vous découvrez le VoidPlus !'},
+  {name:'Atomarion', rarity:'Unfathomable',exact:265000000,color:'#00ff66',spawnMsg:'A surge of atomic energy radiates as Atomarion manifests!', spawnMsgFr:'Une vague d\'énergie atomique se propage lorsqu\'Atomarion se manifeste !'},
+  {name:'Infernium', rarity:'Unfathomable',exact:285000000,color:'#ff3300',spawnMsg:'Molten fury erupts from Infernium, scorching all nearby!', spawnMsgFr:'Une furie de lave jaillit d\'Infernium, brûlant tout aux alentours !'},
+  {name:'AstralCataclysm',rarity:'Otherworldly',exact:300000000,color:'#1a237e',spawnMsg:'The sky fractures with alien light!',            spawnMsgFr:'Le ciel se fracture d\'une lumière extraterrestre !'},
+  {name:'VoidRequiem',rarity:'Otherworldly',exact:400000000,color:'#4a148c',spawnMsg:'A silent hymn echoes from beyond existence...',       spawnMsgFr:'Un hymne silencieux résonne depuis l\'au-delà de l\'existence...'},
+  {name:'VoidUltra', rarity:'Otherworldly',exact:500000000,color:'#000000',spawnMsg:"The universe trembles! You've discovered the legendary VoidUltra!", spawnMsgFr:"L'univers tremble ! Vous avez découvert le légendaire VoidUltra !"},
+  {name:'Abyssion',  rarity:'Otherworldly',exact:525000000,color:'#8b0000',spawnMsg:'The world trembles as Abyssion emerges!',             spawnMsgFr:'Le monde tremble lorsqu\'Abyssion surgit !'},
+  {name:'Eternium',  rarity:'Otherworldly',exact:550000000,color:'#ff1744',spawnMsg:'Eternium pulses with unimaginable energy!',            spawnMsgFr:'Eternium pulse d\'une énergie inimaginable !'},
+  {name:'Voidessence',rarity:'Otherworldly',exact:600000000,color:'#6a1b9a',spawnMsg:'Voidessence warps the very fabric of existence!',    spawnMsgFr:'Voidessence déforme le tissu même de l\'existence !'},
+  {name:'Cosmosite', rarity:'Otherworldly',exact:650000000,color:'#ff6867',spawnMsg:'The cosmos quivers as Cosmosite forms!',              spawnMsgFr:'Le cosmos frémit à la formation de Cosmosite !'},
+  {name:'Singulite', rarity:'Otherworldly',exact:700000000,color:'#00ffff',spawnMsg:'Singulite bends space and time around you!',          spawnMsgFr:'Singulite courbe l\'espace et le temps autour de vous !'},
+  {name:'CosmicRelic',rarity:'Otherworldly',exact:750000000,color:'#ff6867',spawnMsg:'The fabric of existence tears apart!',               spawnMsgFr:'Le tissu de l\'existence se déchire !'},
+  {name:'EternalParadox',rarity:'Otherworldly',exact:800000000,color:'#b71c1c',spawnMsg:'Time collapses. Something impossible has awakened.', spawnMsgFr:'Le temps s\'effondre. Quelque chose d\'impossible s\'est éveillé.'},
+  {name:'Lugubre',   rarity:'Otherworldly',exact:850000000,color:'#ffc7f8',spawnMsg:'INCREDIBLE luck!!!',                                  spawnMsgFr:'INCROYABLE luck !!!'},
+  {name:'Infinity',  rarity:'Imaginary',   exact:1000000000,color:'#000000',spawnMsg:'You feel the universe itself watching you!',         spawnMsgFr:'Vous sentez l\'univers lui-même vous observer !'},
+  {name:'EventideStar',rarity:'Imaginary', exact:1200000000,color:'#0a0a0a',spawnMsg:'A ripple of eternity whispers through the void as EventideStar appears!', spawnMsgFr:'Un murmure d\'éternité traverse le vide lorsqu\'EventideStar apparaît !'},
+  {name:'QuantumCore',rarity:'Imaginary',  exact:1300000000,color:'#00ffcc',spawnMsg:'Digital circuits hum as QuantumCore boots the system!', spawnMsgFr:'Les circuits numériques bourdonnent lorsque QuantumCore démarre !'},
+  {name:'CosmoNova', rarity:'Imaginary',   exact:1400000000,color:'#141414',spawnMsg:'Stars ignite and collapse in a cosmic dance around CosmoNova!', spawnMsgFr:'Les étoiles s\'embrasent et s\'effondrent dans une danse cosmique autour de CosmoNova !'},
+  {name:'VoidEclipse',rarity:'Imaginary',  exact:1500000000,color:'#0d0d0d',spawnMsg:'Darkness stretches infinitely as VoidEclipse emerges from the void!', spawnMsgFr:'Les ténèbres s\'étendent à l\'infini lorsque VoidEclipse surgit du néant !'},
+  {name:'Singularity',rarity:'Imaginary',  exact:2000000000,color:'#000000',spawnMsg:'Time stops. Space collapses. You found the impossible.', spawnMsgFr:'Le temps s\'arrête. L\'espace s\'effondre. Vous avez trouvé l\'impossible.'},
+  {name:'AlterDemon',rarity:'Divine',      exact:1000000,   color:'#000000',spawnMsg:'Alters demon is here to catch you',                  spawnMsgFr:'Le démon d\'Alter est là pour vous attraper'},
+  {name:'Veritcal',  rarity:'Imaginary',   exact:4444444444, color:'#90d5ff',spawnMsg:"You shouldn't dig straight down",                  spawnMsgFr:"Vous n'auriez pas dû creuser tout droit"},
+  {name:'Zanacharium',rarity:'Zenith',     exact:687500000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...', spawnMsgFr:'Une force inhabituelle se matérialise à la surface de ce monde...'},
+  {name:'Nucleonix', rarity:'Zenith',      exact:6000000000,color:'#00ff00',spawnMsg:'Radiation hums as Nucleonix pulses with atomic energy!', spawnMsgFr:'La radiation bourdonne alors que Nucleonix pulse d\'énergie atomique !'},
+  {name:'Chronovexium',rarity:'Zenith',    exact:12500000000,color:'#00f0ff',spawnMsg:'Time fractures as Chronovexium emerges from the continuum...', spawnMsgFr:'Le temps se fracture lorsque Chronovexium surgit du continuum...'},
+  {name:'Aqualith',  rarity:'Zenith',      exact:30000000000,color:'#00bfff',spawnMsg:'Ocean currents converge as Aqualith emerges from the deep!', spawnMsgFr:'Les courants océaniques convergent alors qu\'Aqualith surgit des profondeurs !'},
+  {name:'Aetherion', rarity:'Zenith',      exact:35000000000,color:'#ffd700',spawnMsg:'The heavens shimmer as Aetherion descends into existence...', spawnMsgFr:'Les cieux scintillent tandis qu\'Aetherion descend dans l\'existence...'},
+  {name:'Pyrocore',  rarity:'Zenith',      exact:50000000000,color:'#ff4500',spawnMsg:'Flames swirl violently as Pyrocore erupts from the magma!', spawnMsgFr:'Les flammes tourbillonnent violemment lorsque Pyrocore émerge de la lave !'},
+  {name:'Circuitium',rarity:'Zenith',      exact:75000000000,color:'#cccccc',spawnMsg:'Digital sparks fly as Circuitium materializes from the grid!', spawnMsgFr:'Des étincelles numériques jaillissent lorsque Circuitium se matérialise !'},
+  {name:'Paradoxium',rarity:'Eternal',     exact:150000000000,color:'#6a00ff',spawnMsg:'Reality twists into an impossible shape as Paradoxium manifests...', spawnMsgFr:'La réalité se tord en une forme impossible lorsque Paradoxium se manifeste...'},
+  {name:'Genesis',   rarity:'Eternal',     exact:500000000000,color:'#000000',spawnMsg:'Twisting circuitry explodes in a ferocious outburst of electric energy...', spawnMsgFr:'Des circuits torsadés explosent dans un déchaînement d\'énergie électrique...'},
+  {name:'Divinitium',rarity:'Eternal',     exact:700000000000,color:'#bfcadb',spawnMsg:'A blinding radiance heralds the arrival of Divinitium!', spawnMsgFr:'Un éclat aveuglant annonce l\'arrivée de Divinitium !'},
+  {name:'Pyronis',   rarity:'Eternal',     exact:400000000000,color:'#ff6600',spawnMsg:'Flames twist violently as Pyronis bursts forth from molten rock!', spawnMsgFr:'Les flammes se tordent violemment lorsque Pyronis jaillit de la roche en fusion !'},
+  {name:'BlueTheFR', rarity:'Eternal',     exact:1000000000000,color:'#00fbff',spawnMsg:'You meet the creator...',                         spawnMsgFr:'Vous rencontrez le créateur...'},
+  {name:'SPAFF',     rarity:'SPAFF',       exact:100000000000000,color:'#ff9900',spawnMsg:'THE SPAFF IS HERE!!',                           spawnMsgFr:'Le SPAFF est là !!'},
   // ── Cave base blocks ──
   {name:'Ice',           rarity:'IceCaveExclusive',             exact:1,           color:'#88eeff',spawnMsg:null,caveBase:true},
   {name:'Energy',        rarity:'EnergyCaveExclusive',          exact:1,           color:'#a327f5',spawnMsg:null,caveBase:true},
@@ -501,18 +565,18 @@ const ORES=[
   {name:'AbyssSand',     rarity:'AbyssCaveExclusive',           exact:1,           color:'#0b0e61',spawnMsg:null,caveBase:true},
   {name:'LavaRock',      rarity:'LavaCaveExclusive',            exact:1,           color:'#66584a',spawnMsg:null,caveBase:true},
   // ── Cave exclusive rare ores ──
-  {name:'CrystalFrost',     rarity:'IceCaveExclusive-Exotic',          exact:500000,       color:'#00ffff',spawnMsg:'A shard of CrystalFrost glimmers in the icy cave!'},
-  {name:'GlowingNova',      rarity:'EnergyCaveExclusive-Exquisite',    exact:1000000,      color:'#ff00ff',spawnMsg:'GlowingNova illuminates the cavern with a soft pulse!'},
-  {name:'ZenithShard',      rarity:'EnergyCaveExclusive-Zenith',       exact:60000000,     color:'#df03fc',spawnMsg:'ZenithShard glows with impossible energy!'},
-  {name:'RadiantCore',      rarity:'NuclearCaveExclusive-Transcendent',exact:3000000,      color:'#ffd700',spawnMsg:'RadiantCore radiates blinding light across the cave!'},
-  {name:'ShadowGem',        rarity:'ShadowCaveExclusive-Enigmatic',    exact:5000000,      color:'#4b0082',spawnMsg:'ShadowGem distorts the shadows in the cavern!'},
-  {name:'VoidOrb',          rarity:'ShadowCaveExclusive-Imaginary',    exact:45000000,     color:'#000000',spawnMsg:'VoidOrb bends reality in the cavern!'},
-  {name:'AbyssCrystal',     rarity:'AbyssCaveExclusive-Unfathomable',  exact:20000000,     color:'#0d47a1',spawnMsg:'AbyssCrystal pulses with a bottomless energy!'},
-  {name:'AbyssFish',        rarity:'AbyssCaveExclusive-Zenith',        exact:69019008,     color:'#003fa3',spawnMsg:'Fish!'},
-  {name:'LavaRelic',        rarity:'LavaCaveExclusive-Otherworldly',   exact:38000000,     color:'#ff4500',spawnMsg:'LavaRelic radiates heat from molten rock!'},
-  {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!'},
-  {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...'},
-  {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:999000000,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true},
+  {name:'CrystalFrost',     rarity:'IceCaveExclusive-Exotic',          exact:500000,       color:'#00ffff',spawnMsg:'A shard of CrystalFrost glimmers in the icy cave!',                   spawnMsgFr:'Un éclat de CrystalFrost scintille dans la cave de glace !'},
+  {name:'GlowingNova',      rarity:'EnergyCaveExclusive-Exquisite',    exact:1000000,      color:'#ff00ff',spawnMsg:'GlowingNova illuminates the cavern with a soft pulse!',               spawnMsgFr:'GlowingNova illumine la caverne d\'une douce pulsation !'},
+  {name:'ZenithShard',      rarity:'EnergyCaveExclusive-Zenith',       exact:60000000,     color:'#df03fc',spawnMsg:'ZenithShard glows with impossible energy!',                           spawnMsgFr:'ZenithShard rayonne d\'une énergie impossible !'},
+  {name:'RadiantCore',      rarity:'NuclearCaveExclusive-Transcendent',exact:3000000,      color:'#ffd700',spawnMsg:'RadiantCore radiates blinding light across the cave!',                spawnMsgFr:'RadiantCore irradie une lumière aveuglante dans la cave !'},
+  {name:'ShadowGem',        rarity:'ShadowCaveExclusive-Enigmatic',    exact:5000000,      color:'#4b0082',spawnMsg:'ShadowGem distorts the shadows in the cavern!',                      spawnMsgFr:'ShadowGem déforme les ombres dans la caverne !'},
+  {name:'VoidOrb',          rarity:'ShadowCaveExclusive-Imaginary',    exact:45000000,     color:'#000000',spawnMsg:'VoidOrb bends reality in the cavern!',                               spawnMsgFr:'VoidOrb courbe la réalité dans la caverne !'},
+  {name:'AbyssCrystal',     rarity:'AbyssCaveExclusive-Unfathomable',  exact:20000000,     color:'#0d47a1',spawnMsg:'AbyssCrystal pulses with a bottomless energy!',                      spawnMsgFr:'AbyssCrystal pulse d\'une énergie insondable !'},
+  {name:'AbyssFish',        rarity:'AbyssCaveExclusive-Zenith',        exact:69019008,     color:'#003fa3',spawnMsg:'Fish!',                                                              spawnMsgFr:'Poisson !'},
+  {name:'LavaRelic',        rarity:'LavaCaveExclusive-Otherworldly',   exact:38000000,     color:'#ff4500',spawnMsg:'LavaRelic radiates heat from molten rock!',                          spawnMsgFr:'LavaRelic irradie la chaleur de la roche en fusion !'},
+  {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!',                  spawnMsgFr:'EternalCrystal brille comme le cœur de la création !'},
+  {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...',       spawnMsgFr:'De sa naissance, les étoiles se lèvent et illuminent l\'univers...'},
+  {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:999000000,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true, spawnMsgFr:'Votre adrénaline monte violemment lorsqu\'Epinéphrine éclate !'},
 ];
 const ORE_EXTRA={
 Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#000000',imgSrc:'Zanarchium.gif'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,imgSrc:'GENESIS.gif'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.gif'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,imgSrc:'MonolithofOrigin.gif'},Epinephrine:{value:192,symbol:'EP',imgSrc:'Epinephrine.gif'},
@@ -679,60 +743,129 @@ function playSound(ore){
   try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().catch(()=>{});}}catch(e){}
 }
 
-// ═══════════ PICKAXES T0-T10 ═══════════
+// ═══════════ PICKAXES T0-T12 ═══════════
+// Each pick has bilingual label/desc/fx/abilities. getPick*() helpers read current lang.
 const PICKAXES=[
-  {id:'t0',tier:'T0',label:'Pioche Defaut',color:'#6a5530',scanMin:0,owned:true,equipped:true,
-   desc:'Pioche par défaut. x1 Luck. Aucune capacité.',fx:'Aucun effet spécial.',recipe:{},
+  {id:'t0',tier:'T0',
+   labelFr:'Pioche Défaut',labelEn:'Default Pick',
+   color:'#6a5530',scanMin:0,owned:true,equipped:true,
+   descFr:'Pioche par défaut. x1 Luck. Aucune capacité.',descEn:'Default pickaxe. x1 Luck. No ability.',
+   fxFr:'Aucun effet spécial.',fxEn:'No special effect.',recipe:{},
    abilities:[]},
-  {id:'t1',tier:'T1',label:"Miner's Mallet",color:'#8a8070',scanMin:0,owned:false,equipped:false,
-   desc:"Cube 3x3 autour du bloc toutes les 20 mines. x1.1 Luck.",fx:'Cube Mine 3x3 (1/20). x1.1 Luck.',
+  {id:'t1',tier:'T1',
+   labelFr:"Marteau du Mineur",labelEn:"Miner's Mallet",
+   color:'#8a8070',scanMin:0,owned:false,equipped:false,
+   descFr:"Cube 3x3 autour du bloc toutes les 20 mines. x1.1 Luck.",descEn:"3x3 cube around the block every 20 mines. x1.1 Luck.",
+   fxFr:'Cube Mine 3x3 (1/20). x1.1 Luck.',fxEn:'Cube Mine 3x3 (1/20). x1.1 Luck.',
    recipe:{Stone:30,Coal:10,Iron:5},
-   abilities:[{name:'Cube Mine',desc:'Mine un cube 3x3 autour du bloc cible',chance:'1/20',color:'#aaaaaa'}]},
-  {id:'t2',tier:'T2',label:"Spirit Pickaxe",color:'#7777cc',scanMin:0,owned:false,equipped:false,
-   desc:"Crystal Shot toutes les 4 mines: cristal qui traverse les blocs sur sa trajectoire. x1.25 Luck.",fx:'Crystal Shot (1/4). x1.25 Luck.',
+   abilities:[{nameFr:'Cube Mine',nameEn:'Cube Mine',descFr:'Mine un cube 3x3 autour du bloc cible',descEn:'Mines a 3x3 cube around the target block',chance:'1/20',color:'#aaaaaa'}]},
+  {id:'t2',tier:'T2',
+   labelFr:"Pioche Spirituelle",labelEn:"Spirit Pickaxe",
+   color:'#7777cc',scanMin:0,owned:false,equipped:false,
+   descFr:"Crystal Shot toutes les 4 mines : cristal qui traverse les blocs. x1.25 Luck.",descEn:"Crystal Shot every 4 mines: crystal piercing through blocks. x1.25 Luck.",
+   fxFr:'Crystal Shot (1/4). x1.25 Luck.',fxEn:'Crystal Shot (1/4). x1.25 Luck.',
    recipe:{Iron:20,Emerald:5,Ruby:3,Stone:15},
-   abilities:[{name:'Crystal Shot',desc:'Cristal traversant qui mine sur sa trajectoire pendant 3s',chance:'1/4',color:'#7777cc'}]},
-  {id:'t3',tier:'T3',label:"Darkstone Pick",color:'#334455',scanMin:0,owned:false,equipped:false,
-   desc:"Dark Pulse (1/12): anneau rayon 1 mine tout autour. Chaque 6e anneau: rayon 3 méga-pulse. x1.5 Luck.",fx:'Dark Pulse (1/12). Méga-pulse (1/72). x1.5 Luck.',
+   abilities:[{nameFr:'Tir de Cristal',nameEn:'Crystal Shot',descFr:'Cristal traversant qui mine sur sa trajectoire pendant 3s',descEn:'Piercing crystal that mines along its path for 3s',chance:'1/4',color:'#7777cc'}]},
+  {id:'t3',tier:'T3',
+   labelFr:"Pioche de Pierre Sombre",labelEn:"Darkstone Pick",
+   color:'#334455',scanMin:0,owned:false,equipped:false,
+   descFr:"Dark Pulse (1/12) : anneau rayon 1 autour. Tous les 6 anneaux : méga-pulse rayon 3. x1.5 Luck.",descEn:"Dark Pulse (1/12): radius-1 ring all around. Every 6th ring: radius-3 mega-pulse. x1.5 Luck.",
+   fxFr:'Dark Pulse (1/12). Méga-pulse (1/72). x1.5 Luck.',fxEn:'Dark Pulse (1/12). Mega-pulse (1/72). x1.5 Luck.',
    recipe:{Sapphire:30,Diamond:8,Void:3,Iron:20},
-   abilities:[{name:'Dark Pulse',desc:'Anneau rouge mine tout autour. Tous les 6 anneaux: mega-anneau rayon 5',chance:'1/12',color:'#334455'}]},
-  {id:'t4',tier:'T4',label:"Nostalgic Axe",color:'#cc8820',scanMin:250000,owned:false,equipped:false,
-   desc:"Golden Pulse 3 anneaux (1/25). Luck Boost x2 pendant 5s (1/20). Scanner. x2 Luck.",fx:'Golden Pulse (1/25). Luck Boost x2 5s (1/20). Scanner. x2 Luck.',
+   abilities:[{nameFr:'Dark Pulse',nameEn:'Dark Pulse',descFr:'Anneau rouge mine tout autour. Tous les 6 anneaux : méga-anneau rayon 5',descEn:'Red ring mines all around. Every 6 rings: mega-ring radius 5',chance:'1/12',color:'#334455'}]},
+  {id:'t4',tier:'T4',
+   labelFr:"Hache Nostalgique",labelEn:"Nostalgic Axe",
+   color:'#cc8820',scanMin:250000,owned:false,equipped:false,
+   descFr:"Golden Pulse 3 anneaux (1/25). Boost Luck x2 5s (1/20). Scanner. x2 Luck.",descEn:"Golden Pulse 3 rings (1/25). Luck Boost x2 5s (1/20). Scanner. x2 Luck.",
+   fxFr:'Golden Pulse (1/25). Boost Luck x2 5s (1/20). Scanner. x2 Luck.',fxEn:'Golden Pulse (1/25). Luck Boost x2 5s (1/20). Scanner. x2 Luck.',
    recipe:{Gold:40,Ruby:10,Diamond:12,Void:8},
-   abilities:[{name:'Golden Pulse',desc:'3 anneaux dorés expansifs, minent tout sur leur passage',chance:'1/25',color:'#cc8820'},{name:'Luck Boost x2',desc:'Boost de luck x2 pendant 5 secondes',chance:'1/20',color:'#ffcc44'}]},
-  {id:'t5',tier:'T5',label:"Crystallized Pick",color:'#22aacc',scanMin:250000,owned:false,equipped:false,
-   desc:"Crystal Shot (1/20), Crystal Growth 8 paliers (1/35), Shard Rain 20 éclats (1/45). Scanner. x3 Luck.",fx:'Crystal Shot/Growth/Rain. Scanner. x3 Luck.',
+   abilities:[{nameFr:'Pouls Doré',nameEn:'Golden Pulse',descFr:'3 anneaux dorés expansifs, minent tout sur leur passage',descEn:'3 expanding golden rings, mine everything in their path',chance:'1/25',color:'#cc8820'},
+              {nameFr:'Boost de Luck x2',nameEn:'Luck Boost x2',descFr:'Boost de luck x2 pendant 5 secondes',descEn:'Luck boost x2 for 5 seconds',chance:'1/20',color:'#ffcc44'}]},
+  {id:'t5',tier:'T5',
+   labelFr:"Pioche Cristallisée",labelEn:"Crystallized Pick",
+   color:'#22aacc',scanMin:250000,owned:false,equipped:false,
+   descFr:"Crystal Shot (1/20), Crystal Growth 8 paliers (1/35), Pluie d'Éclats 20 (1/45). Scanner. x3 Luck.",descEn:"Crystal Shot (1/20), Crystal Growth 8 tiers (1/35), Shard Rain 20 (1/45). Scanner. x3 Luck.",
+   fxFr:'Crystal Shot/Growth/Rain. Scanner. x3 Luck.',fxEn:'Crystal Shot/Growth/Rain. Scanner. x3 Luck.',
    recipe:{Diamond:30,Emerald:20,UltraMega:2,Ruby:15},
-   abilities:[{name:'Crystal Shot',desc:'Cristal rapide qui traverse les blocs et mine tout sur 5 blocs',chance:'1/20',color:'#22aacc'},{name:'Crystal Growth',desc:'Cristal qui grandit et mine en cercle sur 8 paliers',chance:'1/35',color:'#22aacc'},{name:'Shard Rain',desc:'20 éclats tombent dans un carré 8x8 et minent à l\'impact',chance:'1/45',color:'#22aacc'}]},
-  {id:'t6',tier:'T6',label:"NilAxe",color:'#4444aa',scanMin:250000,owned:false,equipped:false,
-   desc:"Octorb (1/50): 8 orbes en étoile. Ore Clearing (1/50): rayon 1. Luck Boost x3 pendant 10s (1/40). Scanner. x4 Luck.",fx:'Octorb (1/50). Ore Clear (1/50). Luck Boost x3 10s (1/40). Scanner. x4 Luck.',
+   abilities:[{nameFr:'Tir de Cristal',nameEn:'Crystal Shot',descFr:'Cristal rapide traversant les blocs, mine tout sur 5 blocs',descEn:'Fast crystal piercing blocks, mines everything within 5 blocks',chance:'1/20',color:'#22aacc'},
+              {nameFr:'Croissance Cristalline',nameEn:'Crystal Growth',descFr:'Cristal qui grandit et mine en cercle sur 8 paliers',descEn:'Crystal that grows and mines in a circle over 8 tiers',chance:'1/35',color:'#22aacc'},
+              {nameFr:"Pluie d'Éclats",nameEn:'Shard Rain',descFr:"20 éclats tombent dans un carré 8x8 et minent à l'impact",descEn:'20 shards fall in an 8x8 area and mine on impact',chance:'1/45',color:'#22aacc'}]},
+  {id:'t6',tier:'T6',
+   labelFr:"NilAxe",labelEn:"NilAxe",
+   color:'#4444aa',scanMin:250000,owned:false,equipped:false,
+   descFr:"Octorb (1/50) : 8 orbes en étoile. Ore Clearing (1/50) : rayon 1. Boost Luck x3 10s (1/40). Scanner. x4 Luck.",descEn:"Octorb (1/50): 8 star orbs. Ore Clearing (1/50): radius 1. Luck Boost x3 10s (1/40). Scanner. x4 Luck.",
+   fxFr:'Octorb (1/50). Ore Clear (1/50). Boost Luck x3 10s (1/40). Scanner. x4 Luck.',fxEn:'Octorb (1/50). Ore Clear (1/50). Luck Boost x3 10s (1/40). Scanner. x4 Luck.',
    recipe:{Void:25,Giga:10,Smiley:5,Peta:1},
-   abilities:[{name:'Octorb',desc:'8 orbes partent dans les 8 directions, minent en explosant à l\'impact',chance:'1/50',color:'#4444aa'},{name:'Ore Clearing',desc:'Mine tous les blocs Mythic- dans un rayon 1 autour du bloc ciblé',chance:'1/50',color:'#4444aa'},{name:'Luck Boost x3',desc:'Boost de luck x3 pendant 10 secondes',chance:'1/40',color:'#aa44ff'}]},
-  {id:'t7',tier:'T7',label:"Moon Scepter",color:'#aabbff',scanMin:250000,owned:false,equipped:false,
-   desc:"3 lames lunaires orbitent rayon 1.5 (1/40), Moonburst rayon 10 (1/150), Moonbeam colonne -8 (1/80). x5 Luck.",fx:'Crescent Blades (1/40). MoonBurst (1/150). Moonbeam (1/80). x5 Luck.',
+   abilities:[{nameFr:'Octorb',nameEn:'Octorb',descFr:"8 orbes partent dans les 8 directions, minent en explosant à l'impact",descEn:'8 orbs fly in 8 directions, mine on impact explosion',chance:'1/50',color:'#4444aa'},
+              {nameFr:'Nettoyage de Minerai',nameEn:'Ore Clearing',descFr:'Mine tous les blocs Mythic- dans un rayon 1 autour du bloc ciblé',descEn:'Mines all Mythic- blocks in radius 1 around the target block',chance:'1/50',color:'#4444aa'},
+              {nameFr:'Boost de Luck x3',nameEn:'Luck Boost x3',descFr:'Boost de luck x3 pendant 10 secondes',descEn:'Luck boost x3 for 10 seconds',chance:'1/40',color:'#aa44ff'}]},
+  {id:'t7',tier:'T7',
+   labelFr:"Sceptre Lunaire",labelEn:"Moon Scepter",
+   color:'#aabbff',scanMin:250000,owned:false,equipped:false,
+   descFr:"3 lames lunaires orbitent r1.5 (1/40), Moonburst r10 (1/150), Moonbeam colonne -8 (1/80). x5 Luck.",descEn:"3 lunar blades orbit r1.5 (1/40), Moonburst r10 (1/150), Moonbeam column -8 (1/80). x5 Luck.",
+   fxFr:'Crescent Blades (1/40). MoonBurst (1/150). Moonbeam (1/80). x5 Luck.',fxEn:'Crescent Blades (1/40). MoonBurst (1/150). Moonbeam (1/80). x5 Luck.',
    recipe:{PetaPlus2:1,Smiley:12,PetaPlus1:3,Diamond:50},
-   abilities:[{name:'Crescent Blades',desc:'3 lames lunaires orbitent 5s, minent tout dans rayon 3',chance:'1/40',color:'#aabbff'},{name:'Moonlight Burst',desc:'Rayon de 10 blocs vers la cible avec explosion finale rayon 3',chance:'1/150',color:'#aabbff'},{name:'Moonbeam',desc:'Colonne vers le bas depuis le joueur, mine 8 blocs',chance:'1/80',color:'#aabbff'}]},
-  {id:'t8',tier:'T8',label:"Soul Scythe",color:'#55ff88',scanMin:250000,owned:false,equipped:false,
-   desc:"3 Wisps orbitent (1/60) et minent chaque bloc sur leur passage. Soul Slash demi-sphère r4 (1/50). Azure Vortex (1/180). x6 Luck.",fx:'Wisps orbite (1/60). Soul Slash (1/50). Vortex (1/180). x6 Luck.',
+   abilities:[{nameFr:'Lames Croissantes',nameEn:'Crescent Blades',descFr:'3 lames lunaires orbitent 5s, minent tout dans rayon 3',descEn:'3 lunar blades orbit for 5s, mine everything in radius 3',chance:'1/40',color:'#aabbff'},
+              {nameFr:'Éclat Lunaire',nameEn:'Moonlight Burst',descFr:'Rayon de 10 blocs vers la cible avec explosion finale rayon 3',descEn:'10-block beam toward target with final explosion radius 3',chance:'1/150',color:'#aabbff'},
+              {nameFr:'Faisceau Lunaire',nameEn:'Moonbeam',descFr:'Colonne vers le bas depuis le joueur, mine 8 blocs',descEn:'Column downward from the player, mines 8 blocks',chance:'1/80',color:'#aabbff'}]},
+  {id:'t8',tier:'T8',
+   labelFr:"Faux de l'Âme",labelEn:"Soul Scythe",
+   color:'#55ff88',scanMin:250000,owned:false,equipped:false,
+   descFr:"3 Wisps orbitent (1/60) et minent leur passage. Soul Slash demi-sphère r4 (1/50). Azure Vortex (1/180). x6 Luck.",descEn:"3 Wisps orbit (1/60) and mine their path. Soul Slash half-sphere r4 (1/50). Azure Vortex (1/180). x6 Luck.",
+   fxFr:'Wisps orbite (1/60). Soul Slash (1/50). Vortex (1/180). x6 Luck.',fxEn:'Wisps orbit (1/60). Soul Slash (1/50). Vortex (1/180). x6 Luck.',
    recipe:{PetaPlus3:1,PetaPlus2:3,Smiley:20,Emerald:60},
-   abilities:[{name:'Guiding Wisps',desc:'3 wisps orbitent 5s, minent tous les blocs dans un rayon de 4 autour du joueur',chance:'1/60',color:'#55ff88'},{name:'Soul Slash',desc:'Demi-sphère de rayon 4 devant le joueur, mine tout',chance:'1/50',color:'#55ff88'},{name:'Azure Vortex',desc:'Vortex qui mine en spirale 3x3 sur 6 blocs',chance:'1/180',color:'#55ff88'}]},
-  {id:'t9',tier:'T9',label:"MURD-ERROR",color:'#ff2222',scanMin:250000,owned:false,equipped:false,
-   desc:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (chaque 400). x8 Luck.",fx:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
+   abilities:[{nameFr:'Wisps Guident',nameEn:'Guiding Wisps',descFr:'3 wisps orbitent 5s, minent tous les blocs dans rayon 4 autour du joueur',descEn:'3 wisps orbit for 5s, mine all blocks in radius 4 around the player',chance:'1/60',color:'#55ff88'},
+              {nameFr:'Slash de l\'Âme',nameEn:'Soul Slash',descFr:'Demi-sphère de rayon 4 devant le joueur, mine tout',descEn:'Half-sphere radius 4 in front of the player, mines everything',chance:'1/50',color:'#55ff88'},
+              {nameFr:'Vortex Azure',nameEn:'Azure Vortex',descFr:'Vortex qui mine en spirale 3x3 sur 6 blocs',descEn:'Vortex that mines in a 3x3 spiral over 6 blocks',chance:'1/180',color:'#55ff88'}]},
+  {id:'t9',tier:'T9',
+   labelFr:"MURD-ERROR",labelEn:"MURD-ERROR",
+   color:'#ff2222',scanMin:250000,owned:false,equipped:false,
+   descFr:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (tous les 400). x8 Luck.",descEn:"HACK-HANDS passive. SPAM 35 bits r8 (1/10). FIREWALL 5x5 advances 8 blocks (1/200). LIMIT BREAK column h10 (every 400). x8 Luck.",
+   fxFr:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',fxEn:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
    recipe:{VoidPlus:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
-   abilities:[{name:'HACK-HANDS',desc:'4 mains glitchées actives en permanence autour du joueur, minent aléatoirement',chance:'Passif',color:'#ff2222'},{name:'SPAM',desc:'35 bits corrompus explosent dans un rayon de 8, minent tout',chance:'1/10',color:'#ff4444'},{name:'FIREWALL',desc:'Mur 5×5 avance sur 8 blocs en minant tout sur son passage',chance:'1/200',color:'#ff2222'},{name:'LIMIT BREAK',desc:'Accumule du potentiel. À 400 blocs: pilier colossal de hauteur 10',chance:'Spécial/400',color:'#ff0000'}]},
-  {id:'t10',tier:'T10',label:"Prism of Chaos",color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
-   desc:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization: vitesse x2, 75% mine 6 bonus. x15 Luck.",fx:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',
+   abilities:[{nameFr:'HACK-HANDS',nameEn:'HACK-HANDS',descFr:'4 mains glitchées permanentes autour du joueur, minent aléatoirement',descEn:'4 glitched hands permanently active around the player, mine randomly',chance:'Passif/Passive',color:'#ff2222'},
+              {nameFr:'SPAM',nameEn:'SPAM',descFr:'35 bits corrompus explosent dans rayon 8, minent tout',descEn:'35 corrupted bits explode in radius 8, mine everything',chance:'1/10',color:'#ff4444'},
+              {nameFr:'FIREWALL',nameEn:'FIREWALL',descFr:'Mur 5×5 avance sur 8 blocs en minant tout sur son passage',descEn:'5×5 wall advances 8 blocks mining everything in its path',chance:'1/200',color:'#ff2222'},
+              {nameFr:'LIMIT BREAK',nameEn:'LIMIT BREAK',descFr:'Accumule du potentiel. À 400 blocs : pilier colossal hauteur 10',descEn:'Builds up potential. At 400 blocks: colossal pillar height 10',chance:'Spécial/400',color:'#ff0000'}]},
+  {id:'t10',tier:'T10',
+   labelFr:"Prisme du Chaos",labelEn:"Prism of Chaos",
+   color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
+   descFr:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization : vitesse x2, 75% mine 6 bonus. x15 Luck.",descEn:"Light Refraction 16 bounces (1/5). Color Shotgun 16 shards (1/30). Prism Burst 12 orbs (1/30). Chaotization: speed x2, 75% mines 6 bonus. x15 Luck.",
+   fxFr:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',fxEn:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passive. x15 Luck.',
    recipe:{Zanacharium:1,Nucleonix:1,VoidPlus:2,PetaPlus4:2},
-   abilities:[{name:'Light Refraction',desc:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',chance:'1/5',color:'#ffaaff'},{name:'Color Shotgun',desc:'16 éclats de couleurs, chaque 8e: rafale de 32 éclats en éventail',chance:'1/30',color:'#ffaaff'},{name:'Prism Burst',desc:'12 orbes géants en étoile avec traînée qui mine sur toute la trajectoire',chance:'1/30',color:'#ffaaff'},{name:'Chaotization',desc:'Permanent: vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix+haut+bas',chance:'Passif',color:'#dd88ff'}]},
-  {id:'t11',tier:'T11',label:"Poison Pick",color:'#44ff44',scanMin:1000000,owned:false,equipped:false,
-   desc:"Chaque bloc miné empoisonne la zone: les blocs verts sont détruits 1s après et propagent le poison à 5 blocs voisins en chaîne jusqu'au reset. x500 Luck.",fx:'Poison Chain (Passif). x500 Luck.',
+   abilities:[{nameFr:'Réfraction Lumineuse',nameEn:'Light Refraction',descFr:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',descEn:'Rainbow ray bounces 16 times, mines everything + radius-2 explosion at each bounce',chance:'1/5',color:'#ffaaff'},
+              {nameFr:'Fusil de Couleur',nameEn:'Color Shotgun',descFr:'16 éclats de couleurs, tous les 8e : rafale de 32 éclats en éventail',descEn:'16 colored shards, every 8th: burst of 32 shards in a fan',chance:'1/30',color:'#ffaaff'},
+              {nameFr:'Explosion Prismatique',nameEn:'Prism Burst',descFr:'12 orbes géants en étoile avec traînée qui mine toute la trajectoire',descEn:'12 giant orbs in a star with a trail that mines the whole path',chance:'1/30',color:'#ffaaff'},
+              {nameFr:'Chaotisation',nameEn:'Chaotization',descFr:'Permanent : vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix',descEn:'Permanent: speed x2, each mine has 75% chance to mine 6 bonus blocks in cross',chance:'Passif/Passive',color:'#dd88ff'}]},
+  {id:'t11',tier:'T11',
+   labelFr:"Pioche Poison",labelEn:"Poison Pick",
+   color:'#44ff44',scanMin:1000000,owned:false,equipped:false,
+   descFr:"Chaque bloc miné devient vert et explose 1s plus tard, propageant le poison à 5 blocs voisins (max 10 propagations par coup). x500 Luck.",descEn:"Each mined block turns green and explodes 1s later, spreading poison to 5 adjacent blocks (max 10 spreads per swing). x500 Luck.",
+   fxFr:'Chaîne de Poison (Passif). x500 Luck.',fxEn:'Poison Chain (Passive). x500 Luck.',
    recipe:{NuclearWaste:1500,AbyssSand:1500,ShadowMatter:1500,Energy:1500,LavaRock:1500},
-   abilities:[{name:'Poison Chain',desc:'Chaque bloc miné devient empoisonné (vert), explose 1s plus tard et propage le poison à 5 blocs voisins en chaîne',chance:'Passif',color:'#44ff44'}]},
-  {id:'t12',tier:'T12',label:"Blackhole Pick",color:'#ff8800',scanMin:1000000,owned:false,equipped:false,
-   desc:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs en contact. 1 seul trou noir max, réinitialisé au reset mine. x1000 Luck.",fx:'Blackhole (Passif). x1000 Luck.',
+   abilities:[{nameFr:'Chaîne de Poison',nameEn:'Poison Chain',descFr:'Chaque bloc miné devient vert, explose 1s plus tard et propage le poison à 5 blocs voisins (plafonné à 10 propagations)',descEn:'Each mined block turns green, explodes 1s later and spreads poison to 5 adjacent blocks (capped at 10 spreads)',chance:'Passif/Passive',color:'#44ff44'}]},
+  {id:'t12',tier:'T12',
+   labelFr:"Pioche Trou Noir",labelEn:"Blackhole Pick",
+   color:'#ff8800',scanMin:1000000,owned:false,equipped:false,
+   descFr:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs proches. 1 seul trou noir max, réinitialisé au reset. x1000 Luck.",descEn:"Each mine creates a black hole that grows and sucks in all nearby blocks. 1 max, reset on mine reset. x1000 Luck.",
+   fxFr:'Trou Noir (Passif). x1000 Luck.',fxEn:'Blackhole (Passive). x1000 Luck.',
    recipe:{SPAFF:1,BlueTheFR:1},
-   abilities:[{name:'Singularity',desc:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée (inventaire compté)',chance:'Passif',color:'#ff8800'}]},
+   abilities:[{nameFr:'Singularité',nameEn:'Singularity',descFr:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée',descEn:'A black hole appears at the mined block, grows for 15s and sucks in all blocks in range',chance:'Passif/Passive',color:'#ff8800'}]},
 ];
+// Helpers to read correct language fields at runtime
+function getPickLabel(p){return lang==='fr'?(p.labelFr||p.labelEn):(p.labelEn||p.labelFr);}
+function getPickDesc(p){return lang==='fr'?(p.descFr||p.descEn):(p.descEn||p.descFr);}
+function getPickFx(p){return lang==='fr'?(p.fxFr||p.fxEn):(p.fxEn||p.fxFr);}
+function getAbilityName(a){return lang==='fr'?(a.nameFr||a.nameEn):(a.nameEn||a.nameFr);}
+function getAbilityDesc(a){return lang==='fr'?(a.descFr||a.descEn):(a.descEn||a.descFr);}
+function getAbilityChance(a){
+  const c=a.chance||'';
+  if(!c.includes('/'))return c;
+  // "Passif/Passive" → pick the right half
+  if(c.includes('Passif/Passive'))return lang==='fr'?'Passif':'Passive';
+  if(c.includes('Spécial/400'))return lang==='fr'?'Spécial/400':'Special/400';
+  return c;
+}
 
 // ═══════════ STATE ═══════════
 const W=48,H=32,D=48;
@@ -765,7 +898,7 @@ function buildWorldMesh(){_meshDirty=true;} // lazy: actual rebuild happens in m
 function saveGame(){
   try{
     localStorage.setItem('mrng3d_v6',JSON.stringify({
-      inventory,mined,luck,currentPickId,
+      inventory,mined,luck,currentPickId,useQwerty:_useQwerty,
       picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped}))
     }));
     const el=document.getElementById('save-ind');
@@ -777,6 +910,7 @@ function loadGame(){
     const raw=localStorage.getItem('mrng3d_v6');if(!raw)return false;
     const d=JSON.parse(raw);
     inventory=d.inventory||{};mined=d.mined||0;luck=d.luck||1.0;currentPickId=d.currentPickId||'t0';
+    if(typeof d.useQwerty==='boolean')_useQwerty=d.useQwerty;
     if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
     // Strip poison blocks from old saves (no longer stored in inventory)
     delete inventory['__POISON__'];
@@ -789,7 +923,7 @@ setInterval(saveGame,30000);
 // ═══════════ IMPORT / EXPORT ═══════════
 function getSaveData(){
   return JSON.stringify({
-    inventory,mined,luck,currentPickId,
+    inventory,mined,luck,currentPickId,useQwerty:_useQwerty,
     picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped}))
   },null,2);
 }
@@ -798,6 +932,7 @@ function applySaveData(d){
   mined=d.mined||0;
   luck=d.luck||1.0;
   currentPickId=d.currentPickId||'t0';
+  if(typeof d.useQwerty==='boolean')_useQwerty=d.useQwerty;
   if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
   delete inventory['__POISON__'];
 }
@@ -812,11 +947,11 @@ window.closeSaveMenu=function(){
 window.exportSaveClipboard=function(){
   try{
     navigator.clipboard.writeText(getSaveData()).then(()=>{
-      showImportMsg('Copié!','#60b060');
+      showImportMsg(lang==='fr'?'Copié!':'Copied!','#60b060');
     });
   }catch(e){
     document.getElementById('import-ta').value=getSaveData();
-    showImportMsg('Sélectionnez et copiez le texte','#ffcc44');
+    showImportMsg(lang==='fr'?'Sélectionnez et copiez le texte':'Select and copy the text','#ffcc44');
   }
 };
 window.exportSaveFile=function(){
@@ -829,15 +964,15 @@ window.exportSaveFile=function(){
 };
 window.importSaveText=function(){
   const raw=document.getElementById('import-ta').value.trim();
-  if(!raw){showImportMsg('Rien à importer','#cc3322');return;}
+  if(!raw){showImportMsg(lang==='fr'?'Rien à importer':'Nothing to import','#cc3322');return;}
   try{
     const d=JSON.parse(raw);
     applySaveData(d);
     saveGame();
     updateHUD();buildPickBar();
-    showImportMsg('Importé avec succès!','#60b060');
-    showSpawn('Sauvegarde importée','#60b060',false);
-  }catch(e){showImportMsg('JSON invalide','#cc3322');}
+    showImportMsg(lang==='fr'?'Importé avec succès!':'Imported successfully!','#60b060');
+    showSpawn(lang==='fr'?'Sauvegarde importée':'Save imported','#60b060',false);
+  }catch(e){showImportMsg(lang==='fr'?'JSON invalide':'Invalid JSON','#cc3322');}
 };
 window.importSaveFile=function(e){
   const file=e.target.files[0];if(!file)return;
@@ -848,9 +983,9 @@ window.importSaveFile=function(e){
       applySaveData(d);
       saveGame();
       updateHUD();buildPickBar();
-      showImportMsg('Fichier importé!','#60b060');
-      showSpawn('Sauvegarde importée','#60b060',false);
-    }catch(err){showImportMsg('Fichier invalide','#cc3322');}
+      showImportMsg(lang==='fr'?'Fichier importé!':'File imported!','#60b060');
+      showSpawn(lang==='fr'?'Sauvegarde importée':'Save imported','#60b060',false);
+    }catch(err){showImportMsg(lang==='fr'?'Fichier invalide':'Invalid file','#cc3322');}
   };
   reader.readAsText(file);
 };
@@ -922,7 +1057,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
       if(CAVE_RARITY_SOUNDS[ore.rarity])playCaveSound(ore.rarity,ore);
       else playSound(ore);
       const col=RC[ore.rarity]||ore.color||'#ffffff';
-      showSpawn(ore.spawnMsg+'\n'+ore.name+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
+      showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
       // Force scanner to update immediately when a qualifying ore appears
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;
     }
@@ -966,8 +1101,8 @@ function genWorld(){
 }
 
 // ═══════════ MINE COUNTER (top bar, resets every 10 000 mines) ═══════════
-const MINE_RESET_AT=5000;
-const MINE_RESET_AT_T11T12=69000; // T11/T12 special cap
+const MINE_RESET_AT=60000;
+const MINE_RESET_AT_T11T12=60000; // uniform 60k cap for all picks
 let mineCountdownActive=false;
 let mineCountdownSec=0;
 let mineCountdownInterval=null;
@@ -999,7 +1134,7 @@ function resetMine(){
   _scanCachedBestOre=null;
   _meshDirty=false;
   updateMineTopBar();
-  showSpawn(lang==='fr'?"⛏ Mine regeneree! Teleporte au spawn!":"⛏ Mine reset! Teleported to spawn!",'#60b060',false);
+  showSpawn(lang==="fr"?"⛏ Mine régénérée ! Téléporté au spawn !":"⛏ Mine reset! Teleported to spawn!",'#60b060',false);
 }
 
 function getCurrentMineResetAt(){
@@ -1596,13 +1731,8 @@ function doMine(){
   triggerPickAbility(x,y,z);
   if(!phantomBlock){
     _blocksSinceCave++;
-    // Cave: earliest at 1000/combinedLuck blocks, forced at 5000
-    const _combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
-    const _cMin=Math.max(100,Math.round(1000/Math.max(1,_combinedLuck)));
-    const _cMax=2450;
-    if(_blocksSinceCave>=_cMax||(
-      _blocksSinceCave>=_cMin&&Math.random()<(_blocksSinceCave-_cMin)/Math.max(1,_cMax-_cMin)
-    )){_blocksSinceCave=0;spawnCave(x,y,z);}
+    // Cave spawns every 2450 blocks mined (fixed, no luck scaling)
+    if(_blocksSinceCave>=2450){_blocksSinceCave=0;spawnCave(x,y,z);}
   }
   markMeshDirty();
   // Instant reset at cap — no countdown
@@ -1618,29 +1748,37 @@ function spawnCave(cx,cy,cz){
 
   const r=3+Math.floor(Math.random()*4);
   const newAir=[];
+  const depthDen=Math.max(1,TOP_SOLID_Y);
+
   for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
     if(dx*dx+dy*dy+dz*dz>r*r*0.9)continue;
     const nx=cx+dx,ny=cy+dy,nz=cz+dz;
     if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
     const i=idx(nx,ny,nz);
-    if(chosen.type==='NormalCave'){
-      blocks[i]=0;
-      newAir.push([nx,ny,nz]);
-    }else{
-      const isWall=(dx*dx+dy*dy+dz*dz>r*r*0.55);
-      if(isWall){
-        blocks[i]=1;
+    const isWall=(dx*dx+dy*dy+dz*dz>r*r*0.55);
+    if(isWall){
+      // Wall block: place solid with appropriate base ore
+      blocks[i]=1;
+      const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
+      const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+      if(chosen.type==='NormalCave'){
+        // Normal cave walls get regular ore rolls (same as normal world)
+        const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
+        oreIdx[i]=oI;
+      }else{
+        // Typed cave walls get the cave base block type
         const baseOreIdx=ORES.findIndex(o=>o.name===chosen.blocks[0]);
         oreIdx[i]=baseOreIdx>=0?baseOreIdx:0;
-        oreRevealed[i]=1;
-      }else{
-        blocks[i]=0;
-        newAir.push([nx,ny,nz]);
       }
+      oreRevealed[i]=1;
+    }else{
+      // Interior: air
+      blocks[i]=0;
+      newAir.push([nx,ny,nz]);
     }
   }
 
-  // Roll each wall block against each exclusive ore's actual exact rarity
+  // Roll each wall block against cave exclusives
   for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
     const d2=dx*dx+dy*dy+dz*dz;
     if(d2<r*r*0.5||d2>r*r*0.9)continue;
@@ -1648,35 +1786,34 @@ function spawnCave(cx,cy,cz){
     if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
     const ii=idx(nx,ny,nz);
     if(!blocks[ii])continue;
-    // Roll each exclusive: probability = luck / exact (true rarity)
+    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     for(const exName of chosen.exclusives){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
       const caveOre=ORES[exIdx];
-      // Roll each exclusive: probability = combinedLuck / exact (true rarity)
-      const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
       const spawnProb=combinedLuck/Math.max(1,caveOre.exact);
       if(Math.random()<spawnProb){
         oreIdx[ii]=exIdx;
         oreRevealed[ii]=1;
-        // Fire spawn sound + scanner invalidation for cave exclusives
         if(caveOre.spawnMsg){
           if(CAVE_RARITY_SOUNDS[caveOre.rarity])playCaveSound(caveOre.rarity,caveOre);
           else playSound(caveOre);
           const caveCol=RC[caveOre.rarity]||caveOre.color||'#ffffff';
-          showSpawn(caveOre.spawnMsg+'\n'+caveOre.name+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
+          showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
           if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;
         }
-        break; // one exclusive per block max
+        break;
       }
     }
   }
 
   let salt=0;
   for(const p of newAir)revealAdjacentSolid(p[0],p[1],p[2],salt++^cx^cy^cz);
+  markMeshDirty();
+  _scanCachedBestOre=null;
 
   const typeName=chosen.type.replace('Cave',' Cave');
-  showSpawn((lang==='fr'?'Cave generé: ':'Cave generated: ')+typeName, chosen.color, false, null);
+  showSpawn((lang==='fr'?'Cave generée: ':'Cave generated: ')+typeName, chosen.color, false, null);
 }
 
 // ═══════════ PLACING (PHANTOM) ═══════════
@@ -1972,7 +2109,7 @@ function updateScanner(h){
     document.getElementById('scn-name').textContent='';
     const badge=document.getElementById('scn-rarity-badge');
     badge.style.display='inline-block';
-    badge.textContent=bestOre.rarity;badge.style.color=rc;badge.style.borderColor=rc;badge.style.textShadow=`0 0 6px ${rc}`;
+    badge.textContent=getRarityDisplay(bestOre.rarity);badge.style.color=rc;badge.style.borderColor=rc;badge.style.textShadow=`0 0 6px ${rc}`;
     document.getElementById('scn-exact').style.color='rgba(255,255,255,0.55)';
     document.getElementById('scn-exact').textContent='1/'+fmtExact(bestOre.exact);
   }
@@ -1996,7 +2133,7 @@ function craftPick(id){
   }
   for(const[m,q]of Object.entries(p.recipe)){inventory[m]-=q;if(inventory[m]<=0)delete inventory[m];}
   p.owned=true;equipPick(id);
-  showSpawn(p.tier+' '+p.label+' '+T.crafted,'#c8a030',false);
+  showSpawn(p.tier+' '+getPickLabel(p)+' '+T.crafted,'#c8a030',false);
   markInvDirty();updateHUD();renderShop();saveGame();
 }
 function buildPickBar(){
@@ -2005,7 +2142,7 @@ function buildPickBar(){
   const d=document.createElement('div');d.className='pick-slot';
   const sw=document.createElement('div');sw.className='slot-swatch';sw.style.background=p.color;
   const ti=document.createElement('div');ti.className='slot-tier';ti.textContent=p.tier;
-  const lb=document.createElement('div');lb.className='slot-label';lb.textContent=p.label;
+  const lb=document.createElement('div');lb.className='slot-label';lb.textContent=getPickLabel(p);
   d.append(sw,ti,lb);bar.appendChild(d);
   document.getElementById('s-pick').textContent=p.tier;
   // Build ability panel
@@ -2017,11 +2154,11 @@ function buildPickBar(){
     p.abilities.forEach(a=>{
       const row=document.createElement('div');row.className='ability-row';
       row.innerHTML=`<div class="ability-icon" style="background:${a.color}55;border:1px solid ${a.color}88"></div>`+
-        `<span style="color:${a.color}">${a.name}</span>`+
-        `<span style="font-size:5px;color:#604020;margin-left:auto">${a.chance}</span>`;
+        `<span style="color:${a.color}">${getAbilityName(a)}</span>`+
+        `<span style="font-size:5px;color:#604020;margin-left:auto">${getAbilityChance(a)}</span>`;
       const desc=document.createElement('div');
       desc.className='ability-desc';
-      desc.textContent=a.desc;
+      desc.textContent=getAbilityDesc(a);
       al.appendChild(row);al.appendChild(desc);
     });
   }else{ap.style.display='none';}
@@ -2060,21 +2197,22 @@ function renderShop(){
     const abHtml=p.abilities&&p.abilities.length?p.abilities.map(a=>`
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
         <div style="width:9px;height:9px;border-radius:2px;flex-shrink:0;background:${a.color}44;border:1px solid ${a.color}77"></div>
-        <span style="font-size:6px;color:${a.color}">${a.name}</span>
-        <span style="font-size:5px;color:#503520;margin-left:auto">${a.chance}</span>
+        <span style="font-size:6px;color:${a.color}">${getAbilityName(a)}</span>
+        <span style="font-size:5px;color:#503520;margin-left:auto">${getAbilityChance(a)}</span>
       </div>
-      <div style="font-size:9px;color:#5a4a30;margin-left:15px;font-family:sans-serif;margin-bottom:5px;line-height:1.6">${a.desc}</div>`).join(''):'<div style="font-size:9px;color:#3a2a18;font-family:sans-serif">Aucune capacite speciale.</div>';
+      <div style="font-size:9px;color:#5a4a30;margin-left:15px;font-family:sans-serif;margin-bottom:5px;line-height:1.6">${getAbilityDesc(a)}</div>`).join('')
+      :`<div style="font-size:9px;color:#3a2a18;font-family:sans-serif">${lang==='fr'?'Aucune capacité spéciale.':'No special ability.'}</div>`;
     card.innerHTML=`
       <div class="c-badge" style="background:${p.owned?p.color+'22':'rgba(15,15,25,0.9)'};border:1px solid ${p.owned?p.color+'55':'rgba(40,40,50,0.4)'}">
         <span style="font-size:9px;color:${p.owned?p.color:'#404040'}">${p.tier}</span>
       </div>
       <div class="c-info">
-        <h4>${p.label.toUpperCase()}${scanBadge}</h4>
-        <div class="c-desc">${p.desc}</div>
-        <div class="c-fx">${p.fx}</div>
+        <h4>${getPickLabel(p).toUpperCase()}${scanBadge}</h4>
+        <div class="c-desc">${getPickDesc(p)}</div>
+        <div class="c-fx">${getPickFx(p)}</div>
         <div class="rw">${pills}</div>
         <div style="margin-top:7px;border-top:1px solid rgba(150,120,45,0.2);padding-top:7px">
-          <div style="font-size:5px;color:#b8943a;margin-bottom:5px;letter-spacing:1px">CAPACITES</div>
+          <div style="font-size:5px;color:#b8943a;margin-bottom:5px;letter-spacing:1px">${lang==='fr'?'CAPACITÉS':'ABILITIES'}</div>
           ${abHtml}
         </div>
       </div>
@@ -2134,7 +2272,7 @@ function rebuildInvPanel(){
         const tip=document.getElementById('ore-tip');
         document.getElementById('ot-name').textContent=n;
         const rc2=RC[ore.rarity]||'#aaa';
-        document.getElementById('ot-rare').innerHTML=`<span style="color:${rc2}">${ore.rarity}</span>`;
+        document.getElementById('ot-rare').innerHTML=`<span style="color:${rc2}">${getRarityDisplay(ore.rarity)}</span>`;
         document.getElementById('ot-exact').textContent=T.rare1+fmtExact(ore.exact);
         const rect=row.getBoundingClientRect();
         tip.style.left=(rect.right+6)+'px';tip.style.top=rect.top+'px';tip.style.display='block';
@@ -2163,7 +2301,7 @@ function rebuildInvPanel(){
     row.addEventListener('mouseenter',()=>{
       const tip=document.getElementById('ore-tip');
       document.getElementById('ot-name').textContent=ore.name+(owned?' x'+qty:'');
-      document.getElementById('ot-rare').innerHTML=`<span style="color:${rc}">${ore.rarity}</span>`;
+      document.getElementById('ot-rare').innerHTML=`<span style="color:${rc}">${getRarityDisplay(ore.rarity)}</span>`;
       document.getElementById('ot-exact').textContent=T.rare1+fmtExact(ore.exact);
       const rect=row.getBoundingClientRect();
       tip.style.left=(rect.right+6)+'px';
@@ -2205,20 +2343,23 @@ function abilityMine(wx,wy,wz){
   if(!blocks[i])return false;
   // Never destroy phantom block via abilities — only player direct mining can pick it up
   if(phantomBlock&&phantomBlock.x===wx&&phantomBlock.y===wy&&phantomBlock.z===wz)return false;
+  // Reveal ore first if not yet revealed (so abilities give real ores, not just Stone)
+  if(!oreRevealed[i]){
+    const depthDen=Math.max(1,TOP_SOLID_Y);
+    const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
+    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    oreIdx[i]=rollOreNormal(h3(wx,wy,wz,(mined^i)&65535),depthFrac,combinedLuck);
+    oreRevealed[i]=1;
+  }
   const ore=ORES[oreIdx[i]||0];
   blocks[i]=0;mined++;
   inventory[ore.name]=(inventory[ore.name]||0)+1;
   markInvDirty();
   revealAdjacentSolid(wx,wy,wz,mined);
-  // Cave generation — ability mines count toward cave trigger
+  // Cave generation — ability mines count toward cave trigger (fixed 2450 blocks)
   if(!phantomBlock){
     _blocksSinceCave++;
-    const _abCombLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
-    const _cMin=Math.max(100,Math.round(1000/Math.max(1,_abCombLuck)));
-    const _cMax=2450;
-    if(_blocksSinceCave>=_cMax||(
-      _blocksSinceCave>=_cMin&&Math.random()<(_blocksSinceCave-_cMin)/Math.max(1,_cMax-_cMin)
-    )){_blocksSinceCave=0;spawnCave(wx,wy,wz);}
+    if(_blocksSinceCave>=2450){_blocksSinceCave=0;spawnCave(wx,wy,wz);}
   }
   // Check if ability-mined blocks pushed us over reset cap
   if(mined-lastResetMined>=getCurrentMineResetAt()){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);}
@@ -2280,7 +2421,7 @@ function tryAbilityT3(mx,my,mz){
 let t4Counter=0,t4LuckC=0;
 function tryAbilityT4(mx,my,mz){
   t4Counter++;t4LuckC++;
-  if(t4LuckC%20===0){_luckBoostMult=2;_luckBoostUntil=Date.now()+5000;showSpawn('⚡ Luck Boost x2 — 5s!','#ffcc44',false);}
+  if(t4LuckC%20===0){_luckBoostMult=2;_luckBoostUntil=Date.now()+5000;showSpawn(lang==='fr'?'⚡ Boost Luck x2 — 5s!':'⚡ Luck Boost x2 — 5s!','#ffcc44',false);}
   if(t4Counter%25!==0)return;
   for(let r=0;r<3;r++){
     const radius=1.5+r*1.8;
@@ -2313,7 +2454,7 @@ function tryAbilityT5(mx,my,mz){
 let t6OrbC=0,t6ClrC=0,t6LuckC=0;
 function tryAbilityT6(mx,my,mz){
   t6OrbC++;t6ClrC++;t6LuckC++;
-  if(t6LuckC%40===0){_luckBoostMult=3;_luckBoostUntil=Date.now()+10000;showSpawn('⚡ Luck Boost x3 — 10s!','#aa44ff',false);}
+  if(t6LuckC%40===0){_luckBoostMult=3;_luckBoostUntil=Date.now()+10000;showSpawn(lang==='fr'?'⚡ Boost Luck x3 — 10s!':'⚡ Luck Boost x3 — 10s!','#aa44ff',false);}
   if(t6OrbC%50===0){
     const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
     dirs.forEach(([dx,dz])=>{
@@ -2416,48 +2557,50 @@ function tryAbilityT10(mx,my,mz){
   }
 }
 
-// ── T11: Poison Pick — infinite chain until mine reset ──
-// Find/create poison ore once at startup
+// ── T11: Poison Pick — turn blocks green, mine on explode, cap 10 spread chains ──
+let _poisonSpreadCount=0; // tracks how many spread chains fired this swing
+function tryAbilityT11(mx,my,mz){
+  _poisonSpreadCount=0; // reset cap per mine swing
+  // Poison the mined block + 5 adjacent blocks immediately
+  poisonBlock(mx,my,mz);
+  const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
+  const shuffled=N.sort(()=>Math.random()-0.5).slice(0,5);
+  shuffled.forEach(([dx,dy,dz])=>poisonBlock(mx+dx,my+dy,mz+dz));
+}
+function poisonBlock(x,y,z){
+  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
+  const i=idx(x,y,z);
+  if(!blocks[i])return;
+  if(_poisonedBlocks.has(i))return; // already poisoned
+  _poisonedBlocks.set(i,oreIdx[i]); // store original ore index
+  // Color the block green by overriding its ore to a green solid color ore
+  oreIdx[i]=getPoisonOreIdx();
+  oreRevealed[i]=1;
+  markMeshDirty();
+  // Explode 1 second later using abilityMine, then spread to 5 neighbors (capped)
+  setTimeout(()=>{
+    if(!blocks[i]||!_poisonedBlocks.has(i)){_poisonedBlocks.delete(i);return;}
+    const origOreIdx=_poisonedBlocks.get(i);
+    // Restore original ore before mining so inventory gets the right ore
+    oreIdx[i]=origOreIdx;
+    oreRevealed[i]=1;
+    _poisonedBlocks.delete(i);
+    abilityMine(x,y,z); // uses real ore, triggers cave/luck/reset check
+    markMeshDirty();markInvDirty();
+    // Spread to 5 neighbours — capped at 10 total spreads per swing
+    if(_poisonSpreadCount<10){
+      _poisonSpreadCount++;
+      const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
+      N.sort(()=>Math.random()-0.5).slice(0,5).forEach(([dx,dy,dz])=>poisonBlock(x+dx,y+dy,z+dz));
+    }
+  },1000);
+}
 let _poisonOreIdx=-1;
 function getPoisonOreIdx(){
   if(_poisonOreIdx>=0)return _poisonOreIdx;
   _poisonOreIdx=ORES.findIndex(o=>o.name==='__POISON__');
-  if(_poisonOreIdx<0){ORES.push({name:'__POISON__',rarity:'Poison',exact:1,color:'#00ff44',symbol:'☠'});_poisonOreIdx=ORES.length-1;}
+  if(_poisonOreIdx<0){ORES.push({name:'__POISON__',rarity:'Poison',exact:1,color:'#00ff44',symbol:''});_poisonOreIdx=ORES.length-1;}
   return _poisonOreIdx;
-}
-function tryAbilityT11(mx,my,mz){
-  // Poison the mined block + 3 adjacent blocks immediately on every mine
-  poisonBlock(mx,my,mz);
-  // 3 random adjacent blocks also get poisoned right away
-  const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
-  const shuffled=N.sort(()=>Math.random()-0.5).slice(0,3);
-  shuffled.forEach(([dx,dy,dz])=>poisonBlock(mx+dx,my+dy,mz+dz));
-}
-function poisonBlock(x,y,z){
-  // No depth limit — only _poisonedBlocks Set prevents infinite loops
-  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
-  const i=idx(x,y,z);
-  if(!blocks[i])return;
-  if(_poisonedBlocks.has(i))return; // already poisoned — prevents infinite loop
-  const _origOre=oreIdx[i];
-  _poisonedBlocks.set(i,_origOre); // store original ore index
-  // Keep the original ore display — poison is shown via green outline overlay, not by replacing the ore
-  markMeshDirty();
-  // Explode 1 second later, then spread infinitely
-  setTimeout(()=>{
-    if(!blocks[i]||!_poisonedBlocks.has(i)){_poisonedBlocks.delete(i);return;}
-    const origIdx=_poisonedBlocks.get(i);
-    const ore=ORES[origIdx]||ORES[0];
-    blocks[i]=0;mined++;
-    // Do NOT add __POISON__ to inventory — only the real ore
-    if(ore.name!=='__POISON__')inventory[ore.name]=(inventory[ore.name]||0)+1;
-    _poisonedBlocks.delete(i);
-    markMeshDirty();markInvDirty();
-    revealAdjacentSolid(x,y,z,mined);
-    // Spread to ALL 6 neighbours — infinite until no more solid blocks
-    const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
-    N.forEach(([dx,dy,dz])=>poisonBlock(x+dx,y+dy,z+dz));
-  },1000);
 }
 
 // ── T12: Blackhole Pick — infinite lifetime until mine reset ──
@@ -2977,7 +3120,7 @@ function loop(t=0){
       const ore=getCellOreForUI(x,y,z)||ORES[0];
       const rc=RC[ore.rarity]||ore.color||'#aaa';
       document.getElementById('tooltip').innerHTML=
-        `<span style="color:${rc}">${ore.name}</span> | 1/${fmtExact(ore.exact)} | <span style="color:${rc}">${ore.rarity}</span>`+
+        `<span style="color:${rc}">${ore.name}</span> | 1/${fmtExact(ore.exact)} | <span style="color:${rc}">${getRarityDisplay(ore.rarity)}</span>`+
         (isP?' <span style="color:rgba(255,255,255,0.5)">[PHANTOM]</span>':'');
     }
   }else{
@@ -2991,45 +3134,16 @@ function loop(t=0){
   updateGifTextures();
   tickFX(dt);
   renderer.render(scene,camera);
-  // Draw green outline on poisoned blocks (T11 visual)
-  if(_poisonedBlocks.size>0&&(currentPickId==='t11')){
-    for(const [bi] of _poisonedBlocks){
-      const bx=Math.floor(bi/(H*D));
-      const rem=bi%(H*D);
-      const by=Math.floor(rem/D);
-      const bz=rem%D;
-      // Project all 8 corners and find screen bounding box
-      let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-      let anyVisible=false;
-      for(let cx2=0;cx2<=1;cx2++)for(let cy2=0;cy2<=1;cy2++)for(let cz2=0;cz2<=1;cz2++){
-        const s=worldToScreen(bx+cx2,by+cy2,bz+cz2);
-        if(s){anyVisible=true;minX=Math.min(minX,s.x);minY=Math.min(minY,s.y);maxX=Math.max(maxX,s.x);maxY=Math.max(maxY,s.y);}
-      }
-      if(!anyVisible)continue;
-      const pad=3;
-      fx2d.save();
-      fx2d.strokeStyle='#00ff44';
-      fx2d.lineWidth=2.5;
-      fx2d.shadowColor='#00ff44';
-      fx2d.shadowBlur=6;
-      fx2d.strokeRect(minX-pad,minY-pad,(maxX-minX)+pad*2,(maxY-minY)+pad*2);
-      fx2d.restore();
-    }
-  }
+  // (poison blocks are now visually green via oreIdx override — no overlay needed)
 }
 
 // ═══════════ BOOT ═══════════
-applyI18N();
-const _hmBtn=document.getElementById('hint-move-btn');if(_hmBtn)_hmBtn.textContent=_useQwerty?'WASD : move ↺':'ZQSD : avancer ↺';
-const _hlook=document.getElementById('hint-look');if(_hlook)_hlook.textContent=lang==='fr'?'Souris : regarder':'Mouse : look';
-const _hmine=document.getElementById('hint-mine');if(_hmine)_hmine.textContent=lang==='fr'?'Clic G maintenu : miner':'Hold LMB : mine';
-const _hctrl=document.getElementById('hint-ctrl');if(_hctrl)_hctrl.textContent=lang==='fr'?'Ctrl : liberer souris':'Ctrl : free mouse';
-const _hshop=document.getElementById('hint-shop');if(_hshop)_hshop.textContent=lang==='fr'?'E : boutique':'E : shop';
-const hasSave=loadGame();
+const hasSave=loadGame(); // load first so _useQwerty is restored from save
+applyI18N();             // then apply i18n (uses restored _useQwerty)
 genWorld();
 init3D();
 updateHUD();buildPickBar();updatePlacingInd();checkMineCapacity();
-if(hasSave)showSpawn(lang==='fr'?'Partie chargee':'Game loaded','#60b060',false);
+if(hasSave)showSpawn(lang==='fr'?'Partie chargée':'Game loaded','#60b060',false);
 </script>
 </body>
 </html>
