@@ -334,6 +334,7 @@ function toggleKeyLayout(){
   _useQwerty=!_useQwerty;
   const btn=document.getElementById('hint-move-btn');
   if(btn)btn.textContent=(_useQwerty?'WASD : move ↺':'ZQSD : avancer ↺');
+  showSpawn(_useQwerty?'⌨ Layout: WASD (QWERTY)':'⌨ Layout: ZQSD (AZERTY)','#88aaff',false);
 }
 function isForward(code){return _useQwerty?(code==='KeyW'):(code==='KeyZ');}
 function isBack(code){return code==='KeyS';}
@@ -514,7 +515,7 @@ const ORES=[
   {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:999000000,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true},
 ];
 const ORE_EXTRA={
-Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#000000',imgSrc:'Zanarchium.webp'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,imgSrc:'GENESIS.webp'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.gif'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,imgSrc:'MonolithofOrigin.webp'},Epinephrine:{value:192,symbol:'EP',imgSrc:'Epinephrine.webp'},
+Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#000000',imgSrc:'Zanarchium.gif'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,imgSrc:'GENESIS.gif'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.gif'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,imgSrc:'MonolithofOrigin.gif'},Epinephrine:{value:192,symbol:'EP',imgSrc:'Epinephrine.gif'},
 };
 ORES.forEach(o=>{const e=ORE_EXTRA[o.name];if(e)Object.assign(o,e);});
 // Sort descending by exact for index display (uses raw exact values from ORES data)
@@ -777,6 +778,8 @@ function loadGame(){
     const d=JSON.parse(raw);
     inventory=d.inventory||{};mined=d.mined||0;luck=d.luck||1.0;currentPickId=d.currentPickId||'t0';
     if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
+    // Strip poison blocks from old saves (no longer stored in inventory)
+    delete inventory['__POISON__'];
     // World is never saved — always freshly generated on each load
     return true;
   }catch(e){return false;}
@@ -796,6 +799,7 @@ function applySaveData(d){
   luck=d.luck||1.0;
   currentPickId=d.currentPickId||'t0';
   if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
+  delete inventory['__POISON__'];
 }
 window.openSaveMenu=function(){
   document.getElementById('savemod-ov').style.display='flex';
@@ -963,6 +967,7 @@ function genWorld(){
 
 // ═══════════ MINE COUNTER (top bar, resets every 10 000 mines) ═══════════
 const MINE_RESET_AT=5000;
+const MINE_RESET_AT_T11T12=69000; // T11/T12 special cap
 let mineCountdownActive=false;
 let mineCountdownSec=0;
 let mineCountdownInterval=null;
@@ -976,6 +981,15 @@ function resetMine(){
   _blocksSinceCave=0;
   mineCountdownActive=false;
   if(mineCountdownInterval){clearInterval(mineCountdownInterval);mineCountdownInterval=null;}
+  // Kill ALL active FX particles and abilities
+  FX_PARTICLES.length=0;
+  _blackhole=null;
+  _poisonedBlocks.clear();
+  // Reset all ability counters so nothing fires stale
+  t1Counter=0;t2Counter=0;t3Counter=0;t3RingCount=0;t4Counter=0;t4LuckC=0;
+  t5ShotC=0;t5GrowC=0;t5RainC=0;t6OrbC=0;t6ClrC=0;t6LuckC=0;
+  t7BladeC=0;t7BurstC=0;t7BeamC=0;t8WispC=0;t8SlashC=0;t8VortexC=0;t8VortexAccum=0;
+  t9SpamC=0;t9FireC=0;t9LimitPot=0;t10RefrC=0;t10ShotC=0;t10BurstC=0;t10ChaosBlocks=0;
   // Play ding sound
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.exponentialRampToValueAtTime(1760,ac.currentTime+0.1);g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);o.start();o.stop(ac.currentTime+0.6);}catch(e){}
   genWorld();
@@ -988,6 +1002,10 @@ function resetMine(){
   showSpawn(lang==='fr'?"⛏ Mine regeneree! Teleporte au spawn!":"⛏ Mine reset! Teleported to spawn!",'#60b060',false);
 }
 
+function getCurrentMineResetAt(){
+  return(currentPickId==='t11'||currentPickId==='t12')?MINE_RESET_AT_T11T12:MINE_RESET_AT;
+}
+
 function checkMineCapacity(){
   // Triggered every 200 mines — but actual reset is every 10k via doMine
   updateMineTopBar();
@@ -998,11 +1016,12 @@ function updateMineTopBar(){
   const txt=document.getElementById('mine-top-txt');
   const cd=document.getElementById('mine-top-cd');
   if(!bar)return;
+  const cap=getCurrentMineResetAt();
   const progress=mined-lastResetMined;
-  const pct=progress/MINE_RESET_AT;
+  const pct=progress/cap;
   bar.style.width=(pct*100)+'%';
   bar.style.background=pct>=0.75?`rgba(255,${Math.round(255*(1-(pct-0.75)/0.25))},0,0.8)`:'rgba(255,255,255,0.3)';
-  if(txt)txt.textContent=progress+' / '+MINE_RESET_AT;
+  if(txt)txt.textContent=progress+' / '+cap;
   if(cd){
     if(mineCountdownActive){cd.textContent='RESET: '+mineCountdownSec+'s';cd.style.display='inline';}
     else cd.style.display='none';
@@ -1195,7 +1214,7 @@ function updateGifTextures(){
       e.tex.needsUpdate=true;
     }catch(err){}
   }
-  // Also update phantom scanner canvas if visible
+  // Update phantom scanner canvas if visible
   const scnCanvas=document.getElementById('phantom-scn-canvas');
   if(scnCanvas&&phantomBlock){
     const pOre=ORES[phantomBlock.oi||0];
@@ -1204,6 +1223,14 @@ function updateGifTextures(){
       if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
         try{const ctx2=scnCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
       }
+    }
+  }
+  // Update regular scanner canvas if visible (for GIF ores)
+  const regCanvas=document.getElementById('regular-scn-canvas');
+  if(regCanvas&&_scanOre&&_scanOre.imgSrc){
+    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&e.img.src.includes(_scanOre.imgSrc));
+    if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
+      try{const ctx2=regCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
     }
   }
 }
@@ -1485,10 +1512,10 @@ function movePlayer(dt){
   const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
   const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
   let dx=0,dz=0;
-  if(keys['KeyW']||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
-  if(keys['KeyS']||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
-  if(keys['KeyA']||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
-  if(keys['KeyD']||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
+  if(Object.keys(keys).some(k=>keys[k]&&isForward(k))||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
+  if(Object.keys(keys).some(k=>keys[k]&&isBack(k))||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
+  if(Object.keys(keys).some(k=>keys[k]&&isLeft(k))||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
+  if(Object.keys(keys).some(k=>keys[k]&&isRight(k))||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
   const len=Math.sqrt(dx*dx+dz*dz);
   if(len>0){dx=(dx/len)*spd*dt;dz=(dz/len)*spd*dt;}
   velY+=GRAVITY*dt;
@@ -1569,16 +1596,17 @@ function doMine(){
   triggerPickAbility(x,y,z);
   if(!phantomBlock){
     _blocksSinceCave++;
-    // Cave: earliest at 1000/luck blocks, forced at 5000
-    const _cMin=Math.max(100,Math.round(1000/Math.max(1,luck)));
+    // Cave: earliest at 1000/combinedLuck blocks, forced at 5000
+    const _combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const _cMin=Math.max(100,Math.round(1000/Math.max(1,_combinedLuck)));
     const _cMax=2450;
     if(_blocksSinceCave>=_cMax||(
       _blocksSinceCave>=_cMin&&Math.random()<(_blocksSinceCave-_cMin)/Math.max(1,_cMax-_cMin)
     )){_blocksSinceCave=0;spawnCave(x,y,z);}
   }
   markMeshDirty();
-  // Instant reset at 5000 — no countdown
-  if(mined-lastResetMined>=MINE_RESET_AT){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);return;}
+  // Instant reset at cap — no countdown
+  if(mined-lastResetMined>=getCurrentMineResetAt()){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);return;}
   if(mined%50===0)saveGame();
 }
 
@@ -1625,8 +1653,9 @@ function spawnCave(cx,cy,cz){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
       const caveOre=ORES[exIdx];
-      // luck=1 by default; exact gives the true 1-in-N chance
-      const spawnProb=luck/Math.max(1,caveOre.exact);
+      // Roll each exclusive: probability = combinedLuck / exact (true rarity)
+      const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+      const spawnProb=combinedLuck/Math.max(1,caveOre.exact);
       if(Math.random()<spawnProb){
         oreIdx[ii]=exIdx;
         oreRevealed[ii]=1;
@@ -1915,11 +1944,30 @@ function updateScanner(h){
 
   if(_scanOre!==bestOre||_scanPos!==bestX*10000+bestY*100+bestZ){
     _scanOre=bestOre;_scanPos=bestX*10000+bestY*100+bestZ;
-    // Rarity SVG icon only — no name, no image, just rarity symbol
+    // Rarity SVG icon or ore image
     const blockDiv=document.getElementById('scn-block');
-    const svg=drawRarityIcon(bestOre.rarity,rc);
-    blockDiv.innerHTML=svg?`<div style="filter:drop-shadow(0 0 10px ${rc})">${svg}</div>`
-      :`<div style="width:44px;height:44px;border-radius:50%;background:${bestOre.color}44;border:2px solid ${rc};box-shadow:0 0 12px ${rc}88"></div>`;
+    if(bestOre.imgSrc){
+      // Use animated canvas for GIF/image ores
+      const scnCanvas=document.createElement('canvas');
+      scnCanvas.width=128;scnCanvas.height=128;
+      scnCanvas.id='regular-scn-canvas';
+      scnCanvas.style.cssText=`display:block;width:${rawSize}px;height:${rawSize}px;border-radius:6px;border:2px solid ${rc};box-shadow:0 0 12px ${rc}88;image-rendering:pixelated;`;
+      blockDiv.innerHTML='';
+      blockDiv.appendChild(scnCanvas);
+      const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&e.img.src.includes(bestOre.imgSrc));
+      if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
+        const ctx2=scnCanvas.getContext('2d');ctx2.drawImage(entry.img,0,0,128,128);
+      }else{
+        // Load if not yet loaded
+        const fallImg=new Image();
+        fallImg.onload=()=>{const ctx2=scnCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(fallImg,0,0,128,128);};
+        fallImg.src=bestOre.imgSrc;
+      }
+    }else{
+      const svg=drawRarityIcon(bestOre.rarity,rc);
+      blockDiv.innerHTML=svg?`<div style="filter:drop-shadow(0 0 10px ${rc})">${svg}</div>`
+        :`<div style="width:44px;height:44px;border-radius:50%;background:${bestOre.color}44;border:2px solid ${rc};box-shadow:0 0 12px ${rc}88"></div>`;
+    }
     // Only rarity + exact — NO ore name (surprise!)
     document.getElementById('scn-name').textContent='';
     const badge=document.getElementById('scn-rarity-badge');
@@ -1934,7 +1982,7 @@ function updateScanner(h){
 function equipPick(id){
   const p=PICKAXES.find(p=>p.id===id);if(!p||!p.owned)return;
   PICKAXES.forEach(q=>q.equipped=false);p.equipped=true;currentPickId=id;
-  buildPickBar();markInvDirty();updateHUD();saveGame();if(shopOpen)renderShop();
+  buildPickBar();markInvDirty();updateHUD();updateMineTopBar();saveGame();if(shopOpen)renderShop();
 }
 function unequipPick(id){
   const p=PICKAXES.find(p=>p.id===id);if(!p||p.id==='t0')return;
@@ -2162,6 +2210,18 @@ function abilityMine(wx,wy,wz){
   inventory[ore.name]=(inventory[ore.name]||0)+1;
   markInvDirty();
   revealAdjacentSolid(wx,wy,wz,mined);
+  // Cave generation — ability mines count toward cave trigger
+  if(!phantomBlock){
+    _blocksSinceCave++;
+    const _abCombLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const _cMin=Math.max(100,Math.round(1000/Math.max(1,_abCombLuck)));
+    const _cMax=2450;
+    if(_blocksSinceCave>=_cMax||(
+      _blocksSinceCave>=_cMin&&Math.random()<(_blocksSinceCave-_cMin)/Math.max(1,_cMax-_cMin)
+    )){_blocksSinceCave=0;spawnCave(wx,wy,wz);}
+  }
+  // Check if ability-mined blocks pushed us over reset cap
+  if(mined-lastResetMined>=getCurrentMineResetAt()){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);}
   return true;
 }
 
@@ -2381,8 +2441,7 @@ function poisonBlock(x,y,z){
   if(_poisonedBlocks.has(i))return; // already poisoned — prevents infinite loop
   const _origOre=oreIdx[i];
   _poisonedBlocks.set(i,_origOre); // store original ore index
-  oreIdx[i]=getPoisonOreIdx();
-  oreRevealed[i]=1;
+  // Keep the original ore display — poison is shown via green outline overlay, not by replacing the ore
   markMeshDirty();
   // Explode 1 second later, then spread infinitely
   setTimeout(()=>{
@@ -2390,7 +2449,8 @@ function poisonBlock(x,y,z){
     const origIdx=_poisonedBlocks.get(i);
     const ore=ORES[origIdx]||ORES[0];
     blocks[i]=0;mined++;
-    inventory[ore.name]=(inventory[ore.name]||0)+1;
+    // Do NOT add __POISON__ to inventory — only the real ore
+    if(ore.name!=='__POISON__')inventory[ore.name]=(inventory[ore.name]||0)+1;
     _poisonedBlocks.delete(i);
     markMeshDirty();markInvDirty();
     revealAdjacentSolid(x,y,z,mined);
@@ -2931,6 +2991,31 @@ function loop(t=0){
   updateGifTextures();
   tickFX(dt);
   renderer.render(scene,camera);
+  // Draw green outline on poisoned blocks (T11 visual)
+  if(_poisonedBlocks.size>0&&(currentPickId==='t11')){
+    for(const [bi] of _poisonedBlocks){
+      const bx=Math.floor(bi/(H*D));
+      const rem=bi%(H*D);
+      const by=Math.floor(rem/D);
+      const bz=rem%D;
+      // Project all 8 corners and find screen bounding box
+      let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+      let anyVisible=false;
+      for(let cx2=0;cx2<=1;cx2++)for(let cy2=0;cy2<=1;cy2++)for(let cz2=0;cz2<=1;cz2++){
+        const s=worldToScreen(bx+cx2,by+cy2,bz+cz2);
+        if(s){anyVisible=true;minX=Math.min(minX,s.x);minY=Math.min(minY,s.y);maxX=Math.max(maxX,s.x);maxY=Math.max(maxY,s.y);}
+      }
+      if(!anyVisible)continue;
+      const pad=3;
+      fx2d.save();
+      fx2d.strokeStyle='#00ff44';
+      fx2d.lineWidth=2.5;
+      fx2d.shadowColor='#00ff44';
+      fx2d.shadowBlur=6;
+      fx2d.strokeRect(minX-pad,minY-pad,(maxX-minX)+pad*2,(maxY-minY)+pad*2);
+      fx2d.restore();
+    }
+  }
 }
 
 // ═══════════ BOOT ═══════════
