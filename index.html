@@ -139,7 +139,15 @@ canvas.free{cursor:default}
 .ability-desc{font-size:9px;color:var(--hud-text-dim);margin-left:17px;font-family:sans-serif;margin-bottom:6px;line-height:1.7}
 .ability-icon{width:11px;height:11px;border-radius:2px;flex-shrink:0}
 
-/* ── Mine top bar ── */
+/* ── Event box theme classes ── */
+#event-box.ev-space{color:#e0e0ff;border-color:#aaaaff55;text-shadow:0 0 8px #aaaaff}
+#event-box.ev-ocean{color:#00bfff;border-color:#00bfff55;text-shadow:0 0 8px #00bfff}
+#event-box.ev-nuclear{color:#39ff14;border-color:#39ff1455;text-shadow:0 0 8px #39ff14}
+#event-box.ev-fire{color:#ff6600;border-color:#ff660055;text-shadow:0 0 8px #ff6600}
+#event-box.ev-computer{color:#00ffcc;border-color:#00ffcc55;text-shadow:0 0 8px #00ffcc}
+#event-box.ev-mlp{color:#ff66cc;border-color:#ff66cc55;text-shadow:0 0 8px #ff66cc}
+#event-box.ev-terraria{color:#adff2f;border-color:#adff2f55;text-shadow:0 0 8px #adff2f}
+#event-box.ev-evolie{background:linear-gradient(90deg,#ff000088,#ff880088,#ffff0088,#00ff0088,#0088ff88,#8800ff88,#ff00ff88);-webkit-background-clip:text;color:transparent;border-color:rgba(255,255,255,0.3)}
 #mine-top{position:absolute;top:0;left:0;right:0;height:22px;background:rgba(4,4,8,0.85);display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace}
 #mine-top-track{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
 #mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
@@ -207,6 +215,8 @@ canvas.free{cursor:default}
     <div id="mine-top-track"><div id="mine-top-bar"></div></div>
     <span id="mine-top-cd"></span>
   </div>
+  <!-- Event box: centered, between mine-top and save-menu button -->
+  <div id="event-box" style="position:absolute;top:30px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:20;display:none;padding:4px 18px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(4,4,8,0.88);font-size:8px;white-space:nowrap;text-align:center;letter-spacing:1px;backdrop-filter:blur(4px)"></div>
   <div id="left-col">
     <div class="panel" id="inv-panel">
       <h3 id="lbl-inv">INVENTAIRE</h3>
@@ -225,6 +235,10 @@ canvas.free{cursor:default}
     <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
       <span id="lbl-100m" style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
       <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
+    </div>
+    <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
+      <span style="color:rgba(100,200,100,0.7);font-size:7px" id="lbl-gear">GEAR</span>
+      <span class="stat-v" id="s-gear" style="color:rgba(100,220,100,0.9);font-size:7px">—</span>
     </div>
   </div>
   <div id="scanner" style="display:none"></div>
@@ -294,6 +308,7 @@ canvas.free{cursor:default}
     <div id="shop-tabs">
       <button class="tab-btn on" onclick="setTab('all',this)" id="tab-all-btn">Toutes</button>
       <button class="tab-btn" onclick="setTab('mine',this)" id="tab-mine-btn">Mes pioches</button>
+      <button class="tab-btn" onclick="setTab('gear',this)" id="tab-gear-btn">Gear</button>
     </div>
     <div id="shop-content"></div>
     <button class="shop-close" onclick="closeShop()" id="lbl-close">FERMER [E]</button>
@@ -310,7 +325,7 @@ const T={
   fr:{inv:'INVENTAIRE',idx:'INDEX',stats:'STATS',mined:'Blocs mines',pick:'Pioche',luck:'Luck',
       atelier:'ATELIER DES PIOCHES',craftsub:'Craftez, equipez ou desequipez vos outils',
       all:'Toutes',mine:'Mes pioches',close:'FERMER [E]',shop:'BOUTIQUE [E]',
-      hint:'ZQSD : avancer\nSouris : regarder\nClic G maintenu : miner\nCtrl : liberer souris\nE : boutique',
+      hint:'WASD : avancer\nSouris : regarder\nClic G maintenu : miner\nCtrl : liberer souris\nE : boutique',
       free:'MODE LIBRE\nCtrl pour reverrouiller',placing:'Mode pose : ',
       nospace:'Materiaux insuffisants',crafted:'craftee !',equipped:'Equipee',
       equip:'EQUIPER',unequip:'DESEQUIPER',craft:'CRAFTER',nomat:'Manque mat.',
@@ -320,7 +335,7 @@ const T={
   en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
       atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
       all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
-      hint:'WASD : move\nMouse : look\nHold LMB : mine\nCtrl : free mouse\nE : shop',
+      hint:'ZQSD : move\nMouse : look\nHold LMB : mine\nCtrl : free mouse\nE : shop',
       free:'FREE MODE\nCtrl to re-lock',placing:'Place mode: ',
       nospace:'Not enough materials',crafted:'crafted!',equipped:'Equipped',
       equip:'EQUIP',unequip:'UNEQUIP',craft:'CRAFT',nomat:'Missing mat.',
@@ -334,18 +349,23 @@ function toggleKeyLayout(){
   _useQwerty=!_useQwerty;
   saveGame();
   _applyHintMoveBtn();
-  showSpawn(_useQwerty?'⌨ Layout: WASD (QWERTY)':'⌨ Layout: ZQSD (AZERTY)','#88aaff',false);
+  showSpawn(_useQwerty?'⌨ Layout: ZQSD (ASERTY)':'⌨ Layout: WASD (QWERTY)','#88aaff',false);
 }
 function _applyHintMoveBtn(){
   const btn=document.getElementById('hint-move-btn');
   if(!btn)return;
-  // Always show ZQSD first then WASD when AZERTY, WASD first when QWERTY
-  if(_useQwerty)btn.textContent=lang==='fr'?'WASD : avancer ↺':'WASD : move ↺';
-  else btn.textContent=lang==='fr'?'ZQSD : avancer ↺':'ZQSD : move ↺';
+  // Show current active layout. _useQwerty=false → ZQSD active; _useQwerty=true → WASD active
+  if(!_useQwerty)btn.textContent=lang==='fr'?'WASD : avancer ':'WASD : move ';
+  else btn.textContent=lang==='fr'?'ZQSD : avancer ':'ZQSD : move';
 }
-function isForward(code){return _useQwerty?(code==='KeyW'):(code==='KeyZ');}
+function isForward(code){
+  // _useQwerty=true → WASD layout; _useQwerty=false → ZQSD layout
+  return _useQwerty?(code==='KeyW'):(code==='KeyZ');
+}
 function isBack(code){return code==='KeyS';}
-function isLeft(code){return _useQwerty?(code==='KeyA'):(code==='KeyQ');}
+function isLeft(code){
+  return _useQwerty?(code==='KeyA'):(code==='KeyQ');
+}
 function isRight(code){return code==='KeyD';}
 
 function applyI18N(){
@@ -358,6 +378,7 @@ function applyI18N(){
   document.getElementById('lbl-craft-sub').textContent=T.craftsub;
   document.getElementById('tab-all-btn').textContent=T.all;
   document.getElementById('tab-mine-btn').textContent=T.mine;
+  const _tg=document.getElementById('tab-gear-btn');if(_tg)_tg.textContent=lang==='fr'?'Équipement':'Gear';
   document.getElementById('lbl-close').textContent=T.close;
   document.getElementById('shop-btn').textContent=T.shop;
   document.getElementById('tooltip').textContent=T.clickplay;
@@ -385,6 +406,7 @@ function applyI18N(){
   // Ability panel title
   const _apt=document.getElementById('ability-title');if(_apt)_apt.textContent=lang==='fr'?'CAPACITÉS':'ABILITIES';
   // Stats 100M label
+  const _glbl=document.getElementById('lbl-gear');if(_glbl)_glbl.textContent=lang==='fr'?'ÉQUIPEMENT':'GEAR';
   const _s100=document.getElementById('lbl-100m');if(_s100)_s100.textContent=lang==='fr'?'100M+ TROUVÉS':'100M+ FOUND';
 }
 
@@ -591,6 +613,206 @@ function isCaveExclusiveOre(ore){
   if(r.includes('CaveExclusive'))return true;
   if(r.includes('IceCave')||r.includes('EnergyCave')||r.includes('NuclearCave')||r.includes('ShadowCave')||r.includes('AbyssCave')||r.includes('LavaCave'))return true;
   return false;
+}
+
+// ═══════════ EVENT ORES (added to normal roll pool when event active) ═══════════
+// These spawn in the world during matching events (not cave exclusive)
+const EVENT_ORES=[
+  // Space
+  {name:'Starflare',    rarity:'Exotic',      exact:750000,       color:'#ffd700',symbol:'SF',event:'space'},
+  {name:'NebulonPrime', rarity:'Transcendent',exact:42000000,     color:'#00e5ff',symbol:'NP',event:'space',spawnMsg:'A celestial hum echoes as NebulonPrime forms!',spawnMsgFr:'Un murmure céleste résonne lorsque NebulonPrime se forme !'},
+  {name:'EventHorizonShard',rarity:'Enigmatic',exact:88000000,    color:'#1a1a1a',symbol:'EH',event:'space',spawnMsg:'Space distorts violently!',spawnMsgFr:'L\'espace se distord violemment !'},
+  {name:'SingularityCore',rarity:'Unfathomable',exact:210000000,  color:'#000000',symbol:'SC',event:'space',spawnMsg:'Gravity collapses inward!',spawnMsgFr:'La gravité s\'effondre vers l\'intérieur !'},
+  {name:'AstralOblivion',rarity:'Otherworldly',exact:600000000,   color:'#311b92',symbol:'AO',event:'space',spawnMsg:'The void trembles!',spawnMsgFr:'Le vide tremble !'},
+  {name:'CosmicParallax',rarity:'Imaginary',  exact:1700000000,   color:'#111111',symbol:'CP',event:'space',spawnMsg:'Dimensions overlap!',spawnMsgFr:'Les dimensions se chevauchent !'},
+  {name:'HypernovaX',   rarity:'Zenith',      exact:80000000000,  color:'#ff1744',symbol:'HX',event:'space',spawnMsg:'A supernova detonates!',spawnMsgFr:'Une supernova explose !'},
+  // Ocean
+  {name:'TidalShard',   rarity:'Exotic',      exact:800000,       color:'#00bfff',symbol:'TS',event:'ocean'},
+  {name:'MaelstromCore',rarity:'Transcendent',exact:43000000,     color:'#0077be',symbol:'MC',event:'ocean',spawnMsg:'A vortex spirals wildly!',spawnMsgFr:'Un vortex tourbillonne !'},
+  {name:'LeviathanScale',rarity:'Enigmatic',  exact:92000000,     color:'#003366',symbol:'LS',event:'ocean',spawnMsg:'Ancient waters churn!',spawnMsgFr:'Les eaux anciennes tourbillonnent !'},
+  {name:'OceanicRift',  rarity:'Unfathomable',exact:225000000,    color:'#002244',symbol:'OR',event:'ocean',spawnMsg:'The seabed splits apart!',spawnMsgFr:'Le fond marin se fracture !'},
+  {name:'AbyssalCataclysm',rarity:'Otherworldly',exact:666000000, color:'#001133',symbol:'AC',event:'ocean',spawnMsg:'The ocean roars!',spawnMsgFr:'L\'océan rugit !'},
+  {name:'TsunamiPrime', rarity:'Zenith',      exact:90000000000,  color:'#0099ff',symbol:'TP',event:'ocean',spawnMsg:'A towering wave manifests!',spawnMsgFr:'Une vague colossale se manifeste !'},
+  // Fire
+  {name:'CinderSpark',  rarity:'Exotic',      exact:820000,       color:'#ff6600',symbol:'CS',event:'fire'},
+  {name:'InfernoShard', rarity:'Transcendent',exact:46000000,     color:'#ff0000',symbol:'IS',event:'fire',spawnMsg:'Molten fury solidifies!',spawnMsgFr:'La fureur fondue se solidifie !'},
+  {name:'HellfireCore', rarity:'Enigmatic',   exact:98000000,     color:'#8b0000',symbol:'HC',event:'fire',spawnMsg:'The ground fractures!',spawnMsgFr:'Le sol se fracture !'},
+  {name:'MoltenOblivion',rarity:'Unfathomable',exact:240000000,   color:'#990000',symbol:'MO',event:'fire',spawnMsg:'Volcanic rage manifests!',spawnMsgFr:'La rage volcanique se manifeste !'},
+  {name:'PhoenixEmber', rarity:'Otherworldly',exact:700000000,    color:'#ff1744',symbol:'PE',event:'fire',spawnMsg:'A blazing phoenix cry!',spawnMsgFr:'Le cri d\'un phénix embrasé !'},
+  {name:'SolarInfernum',rarity:'Zenith',      exact:95000000000,  color:'#ff5722',symbol:'SI',event:'fire',spawnMsg:'The sun flares violently!',spawnMsgFr:'Le soleil explose violemment !'},
+  // Computer
+  {name:'Bitcrystal',   rarity:'Exotic',      exact:850000,       color:'#00ffcc',symbol:'BC',event:'computer'},
+  {name:'GlitchShard',  rarity:'Transcendent',exact:47000000,     color:'#00ffff',symbol:'GS',event:'computer',spawnMsg:'Reality flickers!',spawnMsgFr:'La réalité vacille !'},
+  {name:'FirewallRelic',rarity:'Enigmatic',   exact:96000000,     color:'#ff0033',symbol:'FR',event:'computer',spawnMsg:'A digital barrier surges!',spawnMsgFr:'Une barrière numérique surgit !'},
+  {name:'QuantumKernel',rarity:'Unfathomable',exact:260000000,    color:'#00ff66',symbol:'QK',event:'computer',spawnMsg:'Processing beyond comprehension!',spawnMsgFr:'Traitement au-delà de la compréhension !'},
+  {name:'NeuralOverdrive',rarity:'Otherworldly',exact:720000000,  color:'#0033ff',symbol:'NO',event:'computer',spawnMsg:'AI consciousness spikes!',spawnMsgFr:'La conscience IA explose !'},
+  {name:'SimulatedVoid',rarity:'Imaginary',   exact:2600000000,   color:'#000000',symbol:'SV',event:'computer',spawnMsg:'The simulation fractures!',spawnMsgFr:'La simulation se fracture !'},
+  // Nuclear
+  {name:'Radionite',    rarity:'Exotic',      exact:900000,       color:'#7fff00',symbol:'RN',event:'nuclear'},
+  {name:'PlutonShard',  rarity:'Transcendent',exact:50000000,     color:'#33cc33',symbol:'PS',event:'nuclear',spawnMsg:'Unstable atoms collide!',spawnMsgFr:'Des atomes instables entrent en collision !'},
+  {name:'ReactorCoreX', rarity:'Enigmatic',   exact:86000000,     color:'#228b22',symbol:'RC',event:'nuclear',spawnMsg:'Containment fails!',spawnMsgFr:'Le confinement échoue !'},
+  {name:'AtomicCataclysm',rarity:'Unfathomable',exact:280000000,  color:'#00aa00',symbol:'AC',event:'nuclear',spawnMsg:'A chain reaction surges!',spawnMsgFr:'Une réaction en chaîne !'},
+  {name:'FusionOblivion',rarity:'Otherworldly',exact:800000000,   color:'#00ff00',symbol:'FO',event:'nuclear',spawnMsg:'Fusion ignites!',spawnMsgFr:'La fusion s\'enflamme !'},
+  {name:'MeltdownPrime',rarity:'Zenith',      exact:120000000000, color:'#adff2f',symbol:'MP',event:'nuclear',spawnMsg:'A catastrophic surge erupts!',spawnMsgFr:'Un débordement catastrophique !'},
+  // Evolie
+  {name:'Evolite',      rarity:'Exotic',      exact:950000,       color:'#cfa26b',symbol:'EV',event:'evolie'},
+  {name:'Jolteonite',   rarity:'Transcendent',exact:52000000,     color:'#ffff33',symbol:'JL',event:'evolie',spawnMsg:'Electric sparks scatter!',spawnMsgFr:'Des étincelles électriques !'},
+  {name:'Flareonyx',    rarity:'Enigmatic',   exact:84000000,     color:'#ff6600',symbol:'FL',event:'evolie',spawnMsg:'Flames spiral upward!',spawnMsgFr:'Les flammes s\'élèvent en spirale !'},
+  {name:'Espeorite',    rarity:'Unfathomable',exact:290000000,    color:'#cc66ff',symbol:'ES',event:'evolie',spawnMsg:'Psychic waves distort!',spawnMsgFr:'Des ondes psychiques se distordent !'},
+  {name:'Umbreonite',   rarity:'Otherworldly',exact:880000000,    color:'#111133',symbol:'UM',event:'evolie',spawnMsg:'Shadows gather silently!',spawnMsgFr:'Les ombres se rassemblent silencieusement !'},
+  {name:'Glaceorite',   rarity:'Zenith',      exact:130000000000, color:'#99ffff',symbol:'GL',event:'evolie',spawnMsg:'Absolute zero descends!',spawnMsgFr:'Le zéro absolu descend !'},
+  // MLP
+  {name:'SpikeGem',     rarity:'Exotic',      exact:1500000,      color:'#7c4dff',symbol:'SG',event:'mlp'},
+  {name:'ApplejackCore',rarity:'Transcendent',exact:56000000,     color:'#ff9800',symbol:'AJ',event:'mlp',spawnMsg:'Honest strength radiates!',spawnMsgFr:'Une honnête force rayonne !'},
+  {name:'PinkieCrystal',rarity:'Enigmatic',   exact:82000000,     color:'#ff69b4',symbol:'PC',event:'mlp',spawnMsg:'Confetti explodes everywhere!',spawnMsgFr:'Des confettis explosent partout !'},
+  {name:'RarityPrism',  rarity:'Unfathomable',exact:294000000,    color:'#e1bee7',symbol:'RP',event:'mlp',spawnMsg:'Elegant brilliance shines!',spawnMsgFr:'Une brillance élégante rayonne !'},
+  {name:'RainbowDashBolt',rarity:'Otherworldly',exact:800000000,  color:'#00e5ff',symbol:'RD',event:'mlp',spawnMsg:'A sonic boom!',spawnMsgFr:'Un bang supersonique !'},
+  {name:'CelestiaLight',rarity:'Zenith',      exact:150000000000, color:'#cccccc',symbol:'CL',event:'mlp',spawnMsg:'Radiant sunlight descends!',spawnMsgFr:'Une lumière radieuse descend !'},
+  // Terraria
+  {name:'CobaltShard',  rarity:'Exotic',      exact:2500000,      color:'#1e88e5',symbol:'CO',event:'terraria'},
+  {name:'AdamantiteCore',rarity:'Enigmatic',  exact:80000000,     color:'#ff5252',symbol:'AD',event:'terraria',spawnMsg:'Adamantite pulses with power!',spawnMsgFr:'L\'Adamantite pulse de puissance !'},
+  {name:'ChlorophyteRelic',rarity:'Unfathomable',exact:250000000, color:'#69f0ae',symbol:'CH',event:'terraria',spawnMsg:'Nature reclaims the mines!',spawnMsgFr:'La nature reprend les mines !'},
+  {name:'LunarFragment', rarity:'Otherworldly',exact:750000000,   color:'#b388ff',symbol:'LF',event:'terraria',spawnMsg:'The moon shatters!',spawnMsgFr:'La lune se fracasse !'},
+  {name:'MoonlordCore', rarity:'Zenith',      exact:100000000000, color:'#e040fb',symbol:'ML',event:'terraria',spawnMsg:'YOU HAVE AWOKEN THE MOON LORD!',spawnMsgFr:'VOUS AVEZ ÉVEILLÉ LE SEIGNEUR DE LA LUNE !'},
+];
+// Register event ores into ORES list (they are normal-world ores during their event)
+EVENT_ORES.forEach(eo=>{
+  if(!ORES.find(o=>o.name===eo.name))ORES.push(eo);
+});
+
+// ═══════════ GEAR DATA ═══════════
+const GEAR_DATA={
+  G1:{
+    nameFr:'Anneau de Chance',nameEn:'Lucky Ring',
+    descFr:'+2 Luck bonus permanent.',descEn:'+2 Luck bonus permanent.',
+    cost:{Stone:30,Coal:20},color:'#ffdd44',luckBonus:2
+  },
+  G2:{
+    nameFr:'Amulette du Mineur',nameEn:'Miner\'s Amulet',
+    descFr:'+5% chance de dupliquer le minerai miné.',descEn:'+5% chance to duplicate mined ore.',
+    cost:{Iron:30,Coal:15},color:'#aaaaaa',dupChance:0.05
+  },
+  G3:{
+    nameFr:'Gant de Cristal',nameEn:'Crystal Glove',
+    descFr:'25% chance x3 minerai, 50% chance x2 minerai.',descEn:'25% chance for 3× ore, 50% chance for 2× ore.',
+    cost:{Emerald:10,Iron:50},color:'#22aacc',multiChance:true
+  },
+  G4:{
+    nameFr:'Talisman de Luck',nameEn:'Luck Talisman',
+    descFr:'+10 Luck bonus permanent.',descEn:'+10 Luck bonus permanent.',
+    cost:{Ruby:5,Emerald:10},color:'#e91e63',luckBonus:10
+  },
+  G5:{
+    nameFr:'Cœur de Vide',nameEn:'Void Heart',
+    descFr:'+25 Luck. 5% chance d\'améliorer 1 rang de rareté.',descEn:'+25 Luck. 5% chance to upgrade mined ore by 1 rarity tier.',
+    cost:{Peta:1,Tera:1},color:'#9c27b0',luckBonus:25,upgradeChance:0.05
+  },
+  G6:{
+    nameFr:'Sceau de l\'Abîsse',nameEn:'Abyss Seal',
+    descFr:'+50 Luck. Chaque mine a 1% de chance de ×100 le minerai (si valeur ≤ 100K).',descEn:'+50 Luck. 1% chance to multiply ore ×100 if value ≤ 100K.',
+    cost:{OblivionCore:1,Stone:10000000},color:'#1a237e',luckBonus:50,megaMulti:true
+  },
+  G7:{
+    nameFr:'Couronne du Zénith',nameEn:'Zenith Crown',
+    descFr:'+75 Luck. 20% chance d\'améliorer le rang de rareté du minerai miné.',descEn:'+75 Luck. 20% chance to upgrade mined ore rarity by 1 tier.',
+    cost:{Quantumite:20,FrostShard:2},color:'#df03fc',luckBonus:75,upgradeChance:0.20
+  },
+  G8:{
+    nameFr:'Relique de la Création',nameEn:'Creation Relic',
+    descFr:'+100 Luck. Quand vous minez un minerai ≥ 50M : 50% chance de le récolter une 2e fois.',descEn:'+100 Luck. When mining a 50M+ ore: 50% chance to harvest it a 2nd time.',
+    cost:{Infinity:1,AbyssalSingularity:20,ZergHunter:50},color:'#00fbff',luckBonus:100,bonusHarvest:true
+  },
+};
+
+// ═══════════ GEAR LUCK BONUS ═══════════
+function getGearLuckBonus(){
+  let bonus=0;
+  equippedGears.forEach(g=>{
+    const gd=GEAR_DATA[g];
+    if(gd&&gd.luckBonus)bonus+=gd.luckBonus;
+  });
+  return bonus;
+}
+
+// ═══════════ GEAR MINE EFFECT ═══════════
+// Called after a normal block is mined; returns extra inventory to add
+function applyGearMineEffect(ore){
+  const extras={};
+  equippedGears.forEach(g=>{
+    const gd=GEAR_DATA[g];
+    if(!gd)return;
+    // G2: duplicate
+    if(gd.dupChance&&Math.random()<gd.dupChance){
+      extras[ore.name]=(extras[ore.name]||0)+1;
+    }
+    // G3: multi
+    if(gd.multiChance){
+      const r=Math.random();
+      const extra=r<0.25?2:r<0.75?1:0;
+      if(extra>0)extras[ore.name]=(extras[ore.name]||0)+extra;
+    }
+    // G5/G7: upgrade rarity
+    if(gd.upgradeChance&&Math.random()<gd.upgradeChance){
+      const upgraded=getUpgradedOre(ore);
+      if(upgraded)extras[upgraded.name]=(extras[upgraded.name]||0)+1;
+    }
+    // G6: mega multiply for cheap ores
+    if(gd.megaMulti&&ore.exact<=100000&&Math.random()<0.01){
+      extras[ore.name]=(extras[ore.name]||0)+99; // 100x total
+    }
+    // G8: bonus harvest for 50M+ ores
+    if(gd.bonusHarvest&&ore.exact>=50000000&&Math.random()<0.5){
+      extras[ore.name]=(extras[ore.name]||0)+1;
+    }
+  });
+  return extras;
+}
+
+function getUpgradedOre(ore){
+  const rarityOrder=['Common','Uncommon','Rare','Epic','Legendary','Legendary+','Mythic','Mythical','Exotic','Exquisite','Transcendent','Enigmatic','Unfathomable','Otherworldly','Imaginary','Zenith','Eternal'];
+  const ri=rarityOrder.indexOf(ore.rarity);
+  if(ri<0||ri>=rarityOrder.length-1)return null;
+  const nextRarity=rarityOrder[ri+1];
+  // Find a random ore of next rarity
+  const candidates=ORES.filter(o=>o.rarity===nextRarity&&!isCaveExclusiveOre(o)&&o.name!=='__POISON__');
+  if(!candidates.length)return null;
+  return candidates[Math.floor(Math.random()*candidates.length)];
+}
+
+// ═══════════ EVENT SYSTEM ═══════════
+const EVENT_TYPES=['space','ocean','nuclear','fire','evolie','computer','mlp','terraria'];
+const EVENT_DISPLAY={
+  space:   {en:'Strange distortions ripple overhead',      fr:'D\'étranges distorsions ondulent au-dessus',    cls:'ev-space'},
+  ocean:   {en:'A distant tide can be felt',               fr:'Une marée lointaine se fait sentir',            cls:'ev-ocean'},
+  nuclear: {en:'The air vibrates faintly',                 fr:'L\'air vibre faiblement',                       cls:'ev-nuclear'},
+  fire:    {en:'The temperature rises unnaturally',        fr:'La température monte anormalement',              cls:'ev-fire'},
+  evolie:  {en:'Something is evolving',                    fr:'Quelque chose évolue',                          cls:'ev-evolie'},
+  computer:{en:'The system behaves… differently',          fr:'Le système se comporte… différemment',          cls:'ev-computer'},
+  mlp:     {en:'Something magical gallops through the air',fr:'Quelque chose de magique galope dans l\'air',   cls:'ev-mlp'},
+  terraria:{en:'The world shifts into a harder state',     fr:'Le monde bascule dans un état plus dur',        cls:'ev-terraria'},
+};
+
+function startEventSystem(){
+  setTimeout(()=>{rotateEvent();setInterval(rotateEvent,300000);},500);
+}
+
+function rotateEvent(){
+  let newEv;
+  do{newEv=EVENT_TYPES[Math.floor(Math.random()*EVENT_TYPES.length)];}while(newEv===currentEvent);
+  currentEvent=newEv;
+  const box=document.getElementById('event-box');
+  if(!box)return;
+  box.style.display='block';
+  box.className=''; // reset
+  box.classList.add(EVENT_DISPLAY[currentEvent].cls);
+  box.textContent=lang==='fr'?EVENT_DISPLAY[currentEvent].fr:EVENT_DISPLAY[currentEvent].en;
+  showSpawn(lang==='fr'?'✦ Évènement : '+EVENT_DISPLAY[currentEvent].fr:'✦ Event: '+EVENT_DISPLAY[currentEvent].en,'#ffdd44',false);
+}
+
+// Check if an event ore should be eligible for rolling given current event
+function isEventOreActive(ore){
+  if(!ore.event)return true; // not an event ore, always eligible
+  return ore.event===currentEvent; // only eligible during its event
 }
 
 // ═══════════ CAVE TYPES ═══════════
@@ -838,12 +1060,27 @@ const PICKAXES=[
               {nameFr:'Explosion Prismatique',nameEn:'Prism Burst',descFr:'12 orbes géants en étoile avec traînée qui mine toute la trajectoire',descEn:'12 giant orbs in a star with a trail that mines the whole path',chance:'1/30',color:'#ffaaff'},
               {nameFr:'Chaotisation',nameEn:'Chaotization',descFr:'Permanent : vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix',descEn:'Permanent: speed x2, each mine has 75% chance to mine 6 bonus blocks in cross',chance:'Passif/Passive',color:'#dd88ff'}]},
   {id:'t11',tier:'T11',
-   labelFr:"Pioche Poison",labelEn:"Poison Pick",
-   color:'#44ff44',scanMin:1000000,owned:false,equipped:false,
-   descFr:"Chaque bloc miné devient vert et explose 1s plus tard, propageant le poison à 5 blocs voisins (max 10 propagations par coup). x500 Luck.",descEn:"Each mined block turns green and explodes 1s later, spreading poison to 5 adjacent blocks (max 10 spreads per swing). x500 Luck.",
-   fxFr:'Chaîne de Poison (Passif). x500 Luck.',fxEn:'Poison Chain (Passive). x500 Luck.',
+   labelFr:"Pioche Tonnerre",labelEn:"Thunder Pick",
+   color:'#ffe066',scanMin:1000000,owned:false,equipped:false,
+   descFr:"Invoque des éclairs qui rebondissent et détruisent des blocs en chaîne. x500 Luck.",
+   descEn:"Summons thunderbolts that bounce and destroy blocks in chain. x500 Luck.",
+   fxFr:'Tonnerre Bondissant (1/10). Tempête (1/50). Frappe du Tonnerre (1/150). x500 Luck.',
+   fxEn:'Bouncing Bolts (1/10). Storm Strike (1/50). Thunder Strike (1/150). x500 Luck.',
    recipe:{NuclearWaste:1500,AbyssSand:1500,ShadowMatter:1500,Energy:1500,LavaRock:1500},
-   abilities:[{nameFr:'Chaîne de Poison',nameEn:'Poison Chain',descFr:'Chaque bloc miné devient vert, explose 1s plus tard et propage le poison à 5 blocs voisins (plafonné à 10 propagations)',descEn:'Each mined block turns green, explodes 1s later and spreads poison to 5 adjacent blocks (capped at 10 spreads)',chance:'Passif/Passive',color:'#44ff44'}]},
+   abilities:[
+     {nameFr:'Tonnerre Bondissant',nameEn:'Bouncing Bolts',
+      descFr:'5 éclairs bondissent aléatoirement, détruisant 10 blocs chacun. En stoppant, chaque éclair explose en détruisant 10 blocs autour.',
+      descEn:'5 bolts bounce randomly, destroying 10 blocks each. On stop, each bolt explodes destroying 10 blocks around it.',
+      chance:'1/10',color:'#ffe066'},
+     {nameFr:'Tempête',nameEn:'Storm Strike',
+      descFr:'10 éclairs frappent autour du joueur, chacun détruisant 50 blocs.',
+      descEn:'10 bolts strike around the player, each destroying 50 blocks.',
+      chance:'1/50',color:'#ffee99'},
+     {nameFr:'Frappe du Tonnerre',nameEn:'Thunder Strike',
+      descFr:'Un méga-éclair à la position du joueur détruit 500 blocs autour.',
+      descEn:'A mega-bolt at the player position destroys 500 blocks around them.',
+      chance:'1/150',color:'#ffffff'},
+   ]},
   {id:'t12',tier:'T12',
    labelFr:"Pioche Trou Noir",labelEn:"Blackhole Pick",
    color:'#ff8800',scanMin:1000000,owned:false,equipped:false,
@@ -878,12 +1115,16 @@ let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilit
 let lastResetMined=0; // tracks when last mine reset fired
 let shopOpen=false,shopTab='all';
 let isFreeMouse=false;
+// ── Gear state ──
+let ownedGears=[];
+let equippedGears=[]; // max 2
+// ── Event state ──
+let currentEvent=null;
 let selectedInv=null;
 let phantomBlock=null;
 let phantomMesh=null;
 let miningHeld=false;
 let _blocksSinceCave=0; // tracks mines since last cave gen
-let _poisonedBlocks=new Map(); // idx → timeout handle
 let _blackhole=null; // {x,y,z,radius,age} — only 1 at a time
 let mineCd=0;
 const MINE_INTERVAL=0.07;
@@ -899,7 +1140,8 @@ function saveGame(){
   try{
     localStorage.setItem('mrng3d_v6',JSON.stringify({
       inventory,mined,luck,currentPickId,useQwerty:_useQwerty,
-      picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped}))
+      picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped})),
+      ownedGears,equippedGears
     }));
     const el=document.getElementById('save-ind');
     el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);
@@ -912,9 +1154,10 @@ function loadGame(){
     inventory=d.inventory||{};mined=d.mined||0;luck=d.luck||1.0;currentPickId=d.currentPickId||'t0';
     if(typeof d.useQwerty==='boolean')_useQwerty=d.useQwerty;
     if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
-    // Strip poison blocks from old saves (no longer stored in inventory)
+    if(d.ownedGears)ownedGears=d.ownedGears;
+    if(d.equippedGears)equippedGears=d.equippedGears;
+    // Strip poison blocks from old saves
     delete inventory['__POISON__'];
-    // World is never saved — always freshly generated on each load
     return true;
   }catch(e){return false;}
 }
@@ -924,7 +1167,8 @@ setInterval(saveGame,30000);
 function getSaveData(){
   return JSON.stringify({
     inventory,mined,luck,currentPickId,useQwerty:_useQwerty,
-    picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped}))
+    picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped})),
+    ownedGears,equippedGears
   },null,2);
 }
 function applySaveData(d){
@@ -934,6 +1178,8 @@ function applySaveData(d){
   currentPickId=d.currentPickId||'t0';
   if(typeof d.useQwerty==='boolean')_useQwerty=d.useQwerty;
   if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
+  if(d.ownedGears)ownedGears=d.ownedGears;
+  if(d.equippedGears)equippedGears=d.equippedGears;
   delete inventory['__POISON__'];
 }
 window.openSaveMenu=function(){
@@ -1027,9 +1273,13 @@ function rollOreNormal(roll,depthFrac,lk){
   let tot=0;
   const parts=[];
   for(let i=0;i<ORES.length;i++){
-    if(isCaveExclusiveOre(ORES[i]))continue;
-    let w=lk/ORES[i].exact;
-    if(ORES[i].exact>1000)w*=(0.05+depthFrac*0.95);
+    const o=ORES[i];
+    if(isCaveExclusiveOre(o))continue;
+    if(o.name==='__POISON__')continue;
+    // Event ores only appear during their event
+    if(o.event&&o.event!==currentEvent)continue;
+    let w=lk/o.exact;
+    if(o.exact>1000)w*=(0.05+depthFrac*0.95);
     else w*=(1-depthFrac*0.5);
     parts.push({i,w});
     tot+=w;
@@ -1047,7 +1297,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const _lk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const _lk=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
@@ -1119,12 +1369,12 @@ function resetMine(){
   // Kill ALL active FX particles and abilities
   FX_PARTICLES.length=0;
   _blackhole=null;
-  _poisonedBlocks.clear();
+
   // Reset all ability counters so nothing fires stale
   t1Counter=0;t2Counter=0;t3Counter=0;t3RingCount=0;t4Counter=0;t4LuckC=0;
   t5ShotC=0;t5GrowC=0;t5RainC=0;t6OrbC=0;t6ClrC=0;t6LuckC=0;
   t7BladeC=0;t7BurstC=0;t7BeamC=0;t8WispC=0;t8SlashC=0;t8VortexC=0;t8VortexAccum=0;
-  t9SpamC=0;t9FireC=0;t9LimitPot=0;t10RefrC=0;t10ShotC=0;t10BurstC=0;t10ChaosBlocks=0;
+  t9SpamC=0;t9FireC=0;t9LimitPot=0;t10RefrC=0;t10ShotC=0;t10BurstC=0;t10ChaosBlocks=0;t11C=0;
   // Play ding sound
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.exponentialRampToValueAtTime(1760,ac.currentTime+0.1);g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);o.start();o.stop(ac.currentTime+0.6);}catch(e){}
   genWorld();
@@ -1647,10 +1897,16 @@ function movePlayer(dt){
   const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
   const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
   let dx=0,dz=0;
-  if(Object.keys(keys).some(k=>keys[k]&&isForward(k))||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
-  if(Object.keys(keys).some(k=>keys[k]&&isBack(k))||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
-  if(Object.keys(keys).some(k=>keys[k]&&isLeft(k))||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
-  if(Object.keys(keys).some(k=>keys[k]&&isRight(k))||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
+  // ZQSD: _useQwerty=false → forward=Z(KeyZ), left=Q(KeyQ)
+  // WASD: _useQwerty=true  → forward=W(KeyW), left=A(KeyA)
+  const fwdKey=_useQwerty?'KeyW':'KeyZ';
+  const bkKey='KeyS';
+  const ltKey=_useQwerty?'KeyA':'KeyQ';
+  const rtKey='KeyD';
+  if(keys[fwdKey]||keys['ArrowUp']){dx+=fwd.x;dz+=fwd.z;}
+  if(keys[bkKey]||keys['ArrowDown']){dx-=fwd.x;dz-=fwd.z;}
+  if(keys[ltKey]||keys['ArrowLeft']){dx-=rgt.x;dz-=rgt.z;}
+  if(keys[rtKey]||keys['ArrowRight']){dx+=rgt.x;dz+=rgt.z;}
   const len=Math.sqrt(dx*dx+dz*dz);
   if(len>0){dx=(dx/len)*spd*dt;dz=(dz/len)*spd*dt;}
   velY+=GRAVITY*dt;
@@ -1721,6 +1977,9 @@ function doMine(){
   // ── Normal block ──
   blocks[i]=0;mined++;
   inventory[ore.name]=(inventory[ore.name]||0)+1;
+  // Apply gear mine effects (duplication, upgrade, etc.)
+  const _gearExtras=applyGearMineEffect(ore);
+  Object.entries(_gearExtras).forEach(([n,q])=>{inventory[n]=(inventory[n]||0)+q;});
   // luck no longer scales with mining — fixed at 1.0, pick bonus only
   if(ore.epinephrine&&epineBlockPos&&epineBlockPos.x===x&&epineBlockPos.y===y&&epineBlockPos.z===z){
     stopEpineAudio();
@@ -1760,7 +2019,7 @@ function spawnCave(cx,cy,cz){
       // Wall block: place solid with appropriate base ore
       blocks[i]=1;
       const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-      const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+      const combinedLuck=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
       if(chosen.type==='NormalCave'){
         // Normal cave walls get regular ore rolls (same as normal world)
         const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
@@ -1786,7 +2045,7 @@ function spawnCave(cx,cy,cz){
     if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
     const ii=idx(nx,ny,nz);
     if(!blocks[ii])continue;
-    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const combinedLuck=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     for(const exName of chosen.exclusives){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
@@ -2176,6 +2435,7 @@ document.getElementById('shop-btn').addEventListener('click',openShop);
 
 function renderShop(){
   const el=document.getElementById('shop-content');el.innerHTML='';
+  if(shopTab==='gear'){renderGearShop(el);return;}
   const list=shopTab==='mine'?PICKAXES.filter(p=>p.owned):PICKAXES;
   list.forEach(p=>{
     const hasRec=Object.keys(p.recipe).length>0;
@@ -2221,6 +2481,68 @@ function renderShop(){
   });
 }
 
+function renderGearShop(el){
+  const eq0=equippedGears[0]?`<span style="color:rgba(100,220,100,0.9)">${equippedGears[0]}</span>`:`<span style="color:rgba(255,255,255,0.2)">${lang==='fr'?'vide':'empty'}</span>`;
+  const eq1=equippedGears[1]?`<span style="color:rgba(100,220,100,0.9)">${equippedGears[1]}</span>`:`<span style="color:rgba(255,255,255,0.2)">${lang==='fr'?'vide':'empty'}</span>`;
+  const hdr=document.createElement('div');
+  hdr.style.cssText='margin-bottom:12px;font-size:7px;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:8px;';
+  hdr.innerHTML=`${lang==='fr'?'ÉQUIPÉS : ':'EQUIPPED: '}${eq0} · ${eq1} <span style="color:rgba(255,255,255,0.25);font-size:6px">(max 2)</span>`;
+  el.appendChild(hdr);
+  for(const[gid,gd]of Object.entries(GEAR_DATA)){
+    const owned=ownedGears.includes(gid);
+    const equipped=equippedGears.includes(gid);
+    const canBuy=!owned&&Object.entries(gd.cost).every(([m,q])=>(inventory[m]||0)>=q);
+    const costStr=Object.entries(gd.cost).map(([m,q])=>{
+      const h=(inventory[m]||0)>=q;
+      return`<span class="rp ${h?'ok':'no'}">${m} x${q} (${inventory[m]||0}/${q})</span>`;
+    }).join('');
+    const name=lang==='fr'?gd.nameFr:gd.nameEn;
+    const desc=lang==='fr'?gd.descFr:gd.descEn;
+    let act='';
+    if(!owned){
+      act=`<button class="abt" ${canBuy?'':'disabled'} onclick="buyGear('${gid}')">${canBuy?(lang==='fr'?'ACHETER':'BUY'):(lang==='fr'?'Manque mat.':'Missing mat.')}</button>`;
+    }else if(equipped){
+      act=`<button class="abt r" onclick="toggleGear('${gid}')">${lang==='fr'?'DÉSÉQUIPER':'UNEQUIP'}</button>`;
+    }else{
+      act=`<button class="abt g" onclick="toggleGear('${gid}')">${lang==='fr'?'ÉQUIPER':'EQUIP'}</button>`;
+    }
+    const card=document.createElement('div');
+    card.className='pick-card'+(owned?' owned':'')+(equipped?' equipped':'');
+    card.innerHTML=`
+      <div class="c-badge" style="background:${owned?gd.color+'22':'rgba(15,15,25,0.9)'};border:1px solid ${owned?gd.color+'55':'rgba(40,40,50,0.4)'}">
+        <span style="font-size:9px;color:${owned?gd.color:'#404040'}">${gid}</span>
+      </div>
+      <div class="c-info">
+        <h4 style="color:${gd.color};font-size:6px;margin-bottom:4px">${name.toUpperCase()}</h4>
+        <div class="c-desc">${desc}</div>
+        ${owned?'':`<div class="rw">${costStr}</div>`}
+      </div>
+      <div class="c-act">${act}</div>`;
+    el.appendChild(card);
+  }
+}
+window.buyGear=function(gid){
+  const gd=GEAR_DATA[gid];if(!gd||ownedGears.includes(gid))return;
+  if(!Object.entries(gd.cost).every(([m,q])=>(inventory[m]||0)>=q)){showSpawn(T.nospace,'#cc3322',false);return;}
+  Object.entries(gd.cost).forEach(([m,q])=>{inventory[m]-=q;if(inventory[m]<=0)delete inventory[m];});
+  ownedGears.push(gid);
+  toggleGear(gid);
+  markInvDirty();saveGame();renderShop();
+  showSpawn((lang==='fr'?'Gear acheté : ':'Gear bought: ')+(lang==='fr'?gd.nameFr:gd.nameEn),'#64dc64',false);
+};
+window.toggleGear=function(gid){
+  if(!ownedGears.includes(gid))return;
+  if(equippedGears.includes(gid)){
+    equippedGears=equippedGears.filter(g=>g!==gid);
+  }else{
+    if(equippedGears.length>=2)equippedGears.shift();
+    equippedGears.push(gid);
+  }
+  const el=document.getElementById('s-gear');
+  if(el)el.textContent=equippedGears.length?equippedGears.join(' + '):'—';
+  updateHUD();saveGame();if(shopOpen)renderShop();
+};
+
 // ═══════════ HUD ═══════════
 // updateHUD: always updates stats numbers; only rebuilds inventory DOM when dirty or 1/min
 function updateHUD(){
@@ -2228,10 +2550,12 @@ function updateHUD(){
   document.getElementById('s-mined').textContent=mined;
   const el_luck=document.getElementById('s-luck');
   if(el_luck){
-    const pickLuck=getPickLuck();
-    // Luck is BASE luck (from mining) × pickaxe multiplier — don't stack multiplicatively wrong
+    const pickLuck=getPickLuck()+getGearLuckBonus();
     const now2=Date.now();const activeMult=now2<_luckBoostUntil?_luckBoostMult:1;
     const totalLuck=luck*pickLuck*activeMult;
+    // Update gear HUD
+    const _gearEl=document.getElementById('s-gear');
+    if(_gearEl)_gearEl.textContent=equippedGears.length?equippedGears.join(' + '):'—';
     el_luck.textContent='x'+totalLuck.toFixed(2);
     el_luck.style.color=totalLuck>=10?'#df03fc':totalLuck>=5?'#ffeb3b':totalLuck>=2?'#00ff88':'#dddddd';
   }
@@ -2347,7 +2671,7 @@ function abilityMine(wx,wy,wz){
   if(!oreRevealed[i]){
     const depthDen=Math.max(1,TOP_SOLID_Y);
     const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
-    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const combinedLuck=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     oreIdx[i]=rollOreNormal(h3(wx,wy,wz,(mined^i)&65535),depthFrac,combinedLuck);
     oreRevealed[i]=1;
   }
@@ -2557,50 +2881,75 @@ function tryAbilityT10(mx,my,mz){
   }
 }
 
-// ── T11: Poison Pick — turn blocks green, mine on explode, cap 10 spread chains ──
-let _poisonSpreadCount=0; // tracks how many spread chains fired this swing
+// ── T11: Thunder Pick ──
+// Ability 1 (1/10): 5 bouncing bolts, each destroys 10 blocks while bouncing + explodes 10 blocks on stop
+// Ability 2 (1/50): 10 bolts strike around the player, each destroys 50 blocks
+// Ability 3 (1/150): Mega thunder strike at player position, destroys 500 blocks around
+let t11C=0;
 function tryAbilityT11(mx,my,mz){
-  _poisonSpreadCount=0; // reset cap per mine swing
-  // Poison the mined block + 5 adjacent blocks immediately
-  poisonBlock(mx,my,mz);
-  const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
-  const shuffled=N.sort(()=>Math.random()-0.5).slice(0,5);
-  shuffled.forEach(([dx,dy,dz])=>poisonBlock(mx+dx,my+dy,mz+dz));
-}
-function poisonBlock(x,y,z){
-  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
-  const i=idx(x,y,z);
-  if(!blocks[i])return;
-  if(_poisonedBlocks.has(i))return; // already poisoned
-  _poisonedBlocks.set(i,oreIdx[i]); // store original ore index
-  // Color the block green by overriding its ore to a green solid color ore
-  oreIdx[i]=getPoisonOreIdx();
-  oreRevealed[i]=1;
-  markMeshDirty();
-  // Explode 1 second later using abilityMine, then spread to 5 neighbors (capped)
-  setTimeout(()=>{
-    if(!blocks[i]||!_poisonedBlocks.has(i)){_poisonedBlocks.delete(i);return;}
-    const origOreIdx=_poisonedBlocks.get(i);
-    // Restore original ore before mining so inventory gets the right ore
-    oreIdx[i]=origOreIdx;
-    oreRevealed[i]=1;
-    _poisonedBlocks.delete(i);
-    abilityMine(x,y,z); // uses real ore, triggers cave/luck/reset check
-    markMeshDirty();markInvDirty();
-    // Spread to 5 neighbours — capped at 10 total spreads per swing
-    if(_poisonSpreadCount<10){
-      _poisonSpreadCount++;
-      const N=[[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]];
-      N.sort(()=>Math.random()-0.5).slice(0,5).forEach(([dx,dy,dz])=>poisonBlock(x+dx,y+dy,z+dz));
+  t11C++;
+  // Ability 1 — Bouncing Bolts (1/10)
+  if(t11C%10===0){
+    for(let b=0;b<5;b++){
+      spawnThunderBolt(camera.position.x,camera.position.y,camera.position.z,10,10,true);
     }
-  },1000);
+  }
+  // Ability 2 — Storm Strike (1/50)
+  if(t11C%50===0){
+    const px=camera.position.x,py=camera.position.y,pz=camera.position.z;
+    for(let b=0;b<10;b++){
+      const angle=(b/10)*Math.PI*2;
+      const dist=4+Math.random()*4;
+      const tx=px+Math.cos(angle)*dist;
+      const tz=pz+Math.sin(angle)*dist;
+      spawnThunderBolt(tx,py,tz,50,0,false);
+    }
+  }
+  // Ability 3 — Thunder Strike (1/150)
+  if(t11C%150===0){
+    spawnThunderStrike(camera.position.x,camera.position.y,camera.position.z,500);
+  }
 }
-let _poisonOreIdx=-1;
-function getPoisonOreIdx(){
-  if(_poisonOreIdx>=0)return _poisonOreIdx;
-  _poisonOreIdx=ORES.findIndex(o=>o.name==='__POISON__');
-  if(_poisonOreIdx<0){ORES.push({name:'__POISON__',rarity:'Poison',exact:1,color:'#00ff44',symbol:''});_poisonOreIdx=ORES.length-1;}
-  return _poisonOreIdx;
+
+// Spawn a bouncing/striking bolt
+function spawnThunderBolt(sx,sy,sz,blocksToDest,explodeRadius,bouncing){
+  // Direction: random for bouncing, straight down for strike
+  const vx=bouncing?(Math.random()-0.5)*20:0;
+  const vy=bouncing?(Math.random()-0.5)*8-4:-18;
+  const vz=bouncing?(Math.random()-0.5)*20:0;
+  FX_PARTICLES.push({
+    type:'thunder_bolt',color:'#ffe066',
+    px:sx,py:sy,pz:sz,
+    vx,vy,vz,
+    life:2.5,maxLife:2.5,
+    blocksLeft:blocksToDest,
+    explodeRadius,
+    bouncing,
+    bounces:0,maxBounces:8,
+    trailPts:[],age:0
+  });
+}
+
+// Mega thunder strike — immediately mines sphere of radius matching ~500 blocks
+function spawnThunderStrike(cx,cy,cz,count){
+  // VFX: bright flash column
+  for(let i=0;i<20;i++){
+    FX_PARTICLES.push({type:'thunder_flash',color:'#ffffff',
+      px:cx+(Math.random()-0.5)*2,py:cy+Math.random()*6-3,pz:cz+(Math.random()-0.5)*2,
+      vx:0,vy:3,vz:0,life:0.6,maxLife:0.6,trailPts:[]});
+  }
+  // Mine blocks outward in sphere until count reached
+  let mined2=0;
+  const bx=Math.round(cx),by=Math.round(cy),bz=Math.round(cz);
+  outer:for(let r=0;r<=8;r++){
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(dx*dx+dy*dy+dz*dz>r*r)continue;
+      if(dx*dx+dy*dy+dz*dz<(r-1)*(r-1))continue; // shell only
+      if(abilityMine(bx+dx,by+dy,bz+dz))mined2++;
+      if(mined2>=count)break outer;
+    }
+  }
+  markMeshDirty();markInvDirty();
 }
 
 // ── T12: Blackhole Pick — infinite lifetime until mine reset ──
@@ -3092,6 +3441,79 @@ function tickFX(dt){
         }
         break;
       }
+      case'thunder_bolt':{
+        // Move bolt
+        p.px+=p.vx*dt;p.py+=p.vy*dt;p.pz+=p.vz*dt;
+        // Apply gravity when bouncing
+        if(p.bouncing)p.vy-=18*dt;
+        // Mine block at current position
+        const bx2=Math.floor(p.px),by2=Math.floor(p.py),bz2=Math.floor(p.pz);
+        if(bx2>=0&&bx2<W&&by2>=0&&by2<H&&bz2>=0&&bz2<D&&blocks[idx(bx2,by2,bz2)]){
+          if(p.blocksLeft>0&&abilityMine(bx2,by2,bz2)){
+            p.blocksLeft--;
+            markMeshDirty();markInvDirty();
+            // Bounce: reflect velocity off block
+            if(p.bouncing&&p.bounces<p.maxBounces){
+              p.vy=Math.abs(p.vy)*0.7+3;
+              p.vx+=(Math.random()-0.5)*8;
+              p.vz+=(Math.random()-0.5)*8;
+              p.bounces++;
+            }
+          }
+        }
+        // Stop condition: no blocks left OR out of bounces OR fell below world
+        if(p.blocksLeft<=0||(!p.bouncing&&p.life<p.maxLife*0.5)||p.py<0){
+          // Explode: mine sphere around stop position
+          if(p.explodeRadius>0){
+            const ex=Math.round(p.px),ey=Math.round(p.py),ez=Math.round(p.pz);
+            let mined3=0;
+            for(let r=0;r<=4&&mined3<p.explodeRadius;r++){
+              for(let edx=-r;edx<=r;edx++)for(let edy=-r;edy<=r;edy++)for(let edz=-r;edz<=r;edz++){
+                if(edx*edx+edy*edy+edz*edz>r*r)continue;
+                if(abilityMine(ex+edx,ey+edy,ez+edz))mined3++;
+              }
+            }
+            markMeshDirty();markInvDirty();
+          }
+          p.life=0;break;
+        }
+        // Draw bolt: bright yellow zigzag trail
+        if(p.trailPts.length>1){
+          fx2d.beginPath();
+          p.trailPts.forEach(([tx,ty,tz],ti)=>{
+            const ts=worldToScreen(tx,ty,tz);if(!ts){fx2d.beginPath();return;}
+            ti===0?fx2d.moveTo(ts.x,ts.y):fx2d.lineTo(ts.x,ts.y);
+          });
+          fx2d.strokeStyle='#ffe066'+(Math.round(alpha*180).toString(16).padStart(2,'0'));
+          fx2d.lineWidth=3;fx2d.stroke();
+          // Glow
+          fx2d.lineWidth=7;
+          fx2d.strokeStyle='#ffffff'+(Math.round(alpha*60).toString(16).padStart(2,'0'));
+          fx2d.beginPath();
+          p.trailPts.forEach(([tx,ty,tz],ti)=>{
+            const ts=worldToScreen(tx,ty,tz);if(!ts){fx2d.beginPath();return;}
+            ti===0?fx2d.moveTo(ts.x,ts.y):fx2d.lineTo(ts.x,ts.y);
+          });
+          fx2d.stroke();
+        }
+        p.trailPts.push([p.px,p.py,p.pz]);
+        if(p.trailPts.length>10)p.trailPts.shift();
+        const sb=worldToScreen(p.px,p.py,p.pz);
+        if(sb){
+          const gb=fx2d.createRadialGradient(sb.x,sb.y,0,sb.x,sb.y,16);
+          gb.addColorStop(0,'#ffffff');gb.addColorStop(0.3,'#ffe066');gb.addColorStop(1,'#ffe06600');
+          fx2d.beginPath();fx2d.arc(sb.x,sb.y,16,0,Math.PI*2);
+          fx2d.fillStyle=gb;fx2d.fill();
+        }
+        break;
+      }
+      case'thunder_flash':{
+        const sf=worldToScreen(p.px,p.py,p.pz);if(!sf)break;
+        fx2d.beginPath();fx2d.arc(sf.x,sf.y,8*alpha,0,Math.PI*2);
+        fx2d.fillStyle='#ffffff'+(Math.round(alpha*220).toString(16).padStart(2,'0'));
+        fx2d.fill();
+        break;
+      }
     }
   }
 }
@@ -3138,11 +3560,12 @@ function loop(t=0){
 }
 
 // ═══════════ BOOT ═══════════
-const hasSave=loadGame(); // load first so _useQwerty is restored from save
-applyI18N();             // then apply i18n (uses restored _useQwerty)
+const hasSave=loadGame();
+applyI18N();
 genWorld();
 init3D();
 updateHUD();buildPickBar();updatePlacingInd();checkMineCapacity();
+startEventSystem();
 if(hasSave)showSpawn(lang==='fr'?'Partie chargée':'Game loaded','#60b060',false);
 </script>
 </body>
