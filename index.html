@@ -774,7 +774,7 @@ function getUpgradedOre(ore){
   if(ri<0||ri>=rarityOrder.length-1)return null;
   const nextRarity=rarityOrder[ri+1];
   // Find a random ore of next rarity
-  const candidates=ORES.filter(o=>o.rarity===nextRarity&&!isCaveExclusiveOre(o)&&o.name!=='__POISON__');
+  const candidates=ORES.filter(o=>o.rarity===nextRarity&&!isCaveExclusiveOre(o));
   if(!candidates.length)return null;
   return candidates[Math.floor(Math.random()*candidates.length)];
 }
@@ -1156,8 +1156,6 @@ function loadGame(){
     if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
     if(d.ownedGears)ownedGears=d.ownedGears;
     if(d.equippedGears)equippedGears=d.equippedGears;
-    // Strip poison blocks from old saves
-    delete inventory['__POISON__'];
     return true;
   }catch(e){return false;}
 }
@@ -1180,7 +1178,6 @@ function applySaveData(d){
   if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
   if(d.ownedGears)ownedGears=d.ownedGears;
   if(d.equippedGears)equippedGears=d.equippedGears;
-  delete inventory['__POISON__'];
 }
 window.openSaveMenu=function(){
   document.getElementById('savemod-ov').style.display='flex';
@@ -1275,7 +1272,6 @@ function rollOreNormal(roll,depthFrac,lk){
   for(let i=0;i<ORES.length;i++){
     const o=ORES[i];
     if(isCaveExclusiveOre(o))continue;
-    if(o.name==='__POISON__')continue;
     // Event ores only appear during their event
     if(o.event&&o.event!==currentEvent)continue;
     let w=lk/o.exact;
