@@ -307,7 +307,6 @@ canvas.free{cursor:default}
     <div class="shop-sub" id="lbl-craft-sub">Craftez, equipez ou desequipez vos outils</div>
     <div id="shop-tabs">
       <button class="tab-btn on" onclick="setTab('all',this)" id="tab-all-btn">Toutes</button>
-      <button class="tab-btn" onclick="setTab('mine',this)" id="tab-mine-btn">Mes pioches</button>
       <button class="tab-btn" onclick="setTab('gear',this)" id="tab-gear-btn">Gear</button>
     </div>
     <div id="shop-content"></div>
@@ -377,7 +376,6 @@ function applyI18N(){
   document.getElementById('lbl-atelier').textContent=T.atelier;
   document.getElementById('lbl-craft-sub').textContent=T.craftsub;
   document.getElementById('tab-all-btn').textContent=T.all;
-  document.getElementById('tab-mine-btn').textContent=T.mine;
   const _tg=document.getElementById('tab-gear-btn');if(_tg)_tg.textContent=lang==='fr'?'Équipement':'Gear';
   document.getElementById('lbl-close').textContent=T.close;
   document.getElementById('shop-btn').textContent=T.shop;
@@ -1293,7 +1291,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const _lk=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const _lk=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
@@ -1446,9 +1444,8 @@ function getOrCreateSymbolTexture(ore){
     ctx.fillText(sym,sz/2,sz/2);
   }
   const tex=new THREE.CanvasTexture(c);
-  tex.flipY=false;
+  tex.flipY=true;
   tex.needsUpdate=true;
-  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
   SYM_TEX_CACHE[key]=tex;
   return tex;
 }
@@ -1551,9 +1548,7 @@ function getOrCreateTexture(imgSrc,overlayOre){
   ctx.fillRect(0,0,128,128);
 
   const tex=new THREE.CanvasTexture(canvas);
-  tex.flipY=false;
-  tex.wrapS=THREE.RepeatWrapping;
-  tex.wrapT=THREE.RepeatWrapping;
+  tex.flipY=true;
   tex.needsUpdate=true;
   TEX_CACHE[cacheKey]=tex;
 
@@ -1564,8 +1559,8 @@ function getOrCreateTexture(imgSrc,overlayOre){
     mountAnimImageInDom(img);
     try{
       ctx.clearRect(0,0,128,128);
+      // Draw normally — flipY=true handles the vertical flip for Three.js
       ctx.drawImage(img,0,0,128,128);
-      // No text overlay on image textures — keeps animation clean
       tex.needsUpdate=true;
     }catch(e){
       ctx.fillStyle=overlayOre?overlayOre.color||'#888':'#888';
@@ -1600,7 +1595,8 @@ function updateGifTextures(){
   if(scnCanvas&&phantomBlock){
     const pOre=ORES[phantomBlock.oi||0];
     if(pOre&&pOre.imgSrc){
-      const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&e.img.src.includes(pOre.imgSrc));
+      const _pImgName=pOre.imgSrc.split('/').pop();
+      const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(pOre.imgSrc)||e.img.src.endsWith(_pImgName)));
       if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
         try{const ctx2=scnCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
       }
@@ -1609,7 +1605,8 @@ function updateGifTextures(){
   // Update regular scanner canvas if visible (for GIF ores)
   const regCanvas=document.getElementById('regular-scn-canvas');
   if(regCanvas&&_scanOre&&_scanOre.imgSrc){
-    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&e.img.src.includes(_scanOre.imgSrc));
+    const _rName=_scanOre.imgSrc.split('/').pop();
+    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(_scanOre.imgSrc)||e.img.src.endsWith(_rName)));
     if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
       try{const ctx2=regCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
     }
@@ -2015,7 +2012,7 @@ function spawnCave(cx,cy,cz){
       // Wall block: place solid with appropriate base ore
       blocks[i]=1;
       const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-      const combinedLuck=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+      const combinedLuck=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
       if(chosen.type==='NormalCave'){
         // Normal cave walls get regular ore rolls (same as normal world)
         const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
@@ -2041,7 +2038,7 @@ function spawnCave(cx,cy,cz){
     if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
     const ii=idx(nx,ny,nz);
     if(!blocks[ii])continue;
-    const combinedLuck=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const combinedLuck=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
     for(const exName of chosen.exclusives){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
@@ -2051,8 +2048,11 @@ function spawnCave(cx,cy,cz){
         oreIdx[ii]=exIdx;
         oreRevealed[ii]=1;
         if(caveOre.spawnMsg){
-          if(CAVE_RARITY_SOUNDS[caveOre.rarity])playCaveSound(caveOre.rarity,caveOre);
-          else playSound(caveOre);
+          // Always play the appropriate sound for cave exclusives
+          const _caveSound=CAVE_RARITY_SOUNDS[caveOre.rarity];
+          if(_caveSound&&_caveSound!=='EpineAudio'){
+            try{const _el=document.getElementById(_caveSound);if(_el){_el.currentTime=0;_el.play().catch(()=>{});}}catch(e){}
+          }else if(!_caveSound){playSound(caveOre);}
           const caveCol=RC[caveOre.rarity]||caveOre.color||'#ffffff';
           showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
           if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;
@@ -2432,7 +2432,7 @@ document.getElementById('shop-btn').addEventListener('click',openShop);
 function renderShop(){
   const el=document.getElementById('shop-content');el.innerHTML='';
   if(shopTab==='gear'){renderGearShop(el);return;}
-  const list=shopTab==='mine'?PICKAXES.filter(p=>p.owned):PICKAXES;
+  const list=PICKAXES;
   list.forEach(p=>{
     const hasRec=Object.keys(p.recipe).length>0;
     const canCraft=!p.owned&&(!hasRec||Object.entries(p.recipe).every(([m,q])=>(inventory[m]||0)>=q));
@@ -2546,9 +2546,9 @@ function updateHUD(){
   document.getElementById('s-mined').textContent=mined;
   const el_luck=document.getElementById('s-luck');
   if(el_luck){
-    const pickLuck=getPickLuck()+getGearLuckBonus();
+    const pickLuck=getPickLuck();
     const now2=Date.now();const activeMult=now2<_luckBoostUntil?_luckBoostMult:1;
-    const totalLuck=luck*pickLuck*activeMult;
+    const totalLuck=(luck+getGearLuckBonus())*pickLuck*activeMult;
     // Update gear HUD
     const _gearEl=document.getElementById('s-gear');
     if(_gearEl)_gearEl.textContent=equippedGears.length?equippedGears.join(' + '):'—';
@@ -2663,12 +2663,12 @@ function abilityMine(wx,wy,wz){
   if(!blocks[i])return false;
   // Never destroy phantom block via abilities — only player direct mining can pick it up
   if(phantomBlock&&phantomBlock.x===wx&&phantomBlock.y===wy&&phantomBlock.z===wz)return false;
-  // Reveal ore first if not yet revealed (so abilities give real ores, not just Stone)
-  if(!oreRevealed[i]){
+  // Reveal ore if not yet revealed, or if it's a raw cave base block (re-roll to normal ore)
+  if(!oreRevealed[i]||(oreRevealed[i]&&ORES[oreIdx[i]||0]&&ORES[oreIdx[i]||0].caveBase)){
     const depthDen=Math.max(1,TOP_SOLID_Y);
     const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
-    const combinedLuck=luck*(getPickLuck()+getGearLuckBonus())*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
-    oreIdx[i]=rollOreNormal(h3(wx,wy,wz,(mined^i)&65535),depthFrac,combinedLuck);
+    const combinedLuck=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    oreIdx[i]=rollOreNormal(h3(wx,wy,wz,(mined^i^Date.now())&65535),depthFrac,combinedLuck);
     oreRevealed[i]=1;
   }
   const ore=ORES[oreIdx[i]||0];
@@ -2909,21 +2909,48 @@ function tryAbilityT11(mx,my,mz){
 
 // Spawn a bouncing/striking bolt
 function spawnThunderBolt(sx,sy,sz,blocksToDest,explodeRadius,bouncing){
-  // Direction: random for bouncing, straight down for strike
-  const vx=bouncing?(Math.random()-0.5)*20:0;
-  const vy=bouncing?(Math.random()-0.5)*8-4:-18;
-  const vz=bouncing?(Math.random()-0.5)*20:0;
+  // Spawn bolt high above the target, fire downward + outward spread
+  const startY=Math.min(sy+H*0.4, H-2); // start from top of world above target
+  const spread=bouncing?6:0;
+  const offsetX=(Math.random()-0.5)*spread;
+  const offsetZ=(Math.random()-0.5)*spread;
+  // Velocity: mostly downward, small horizontal spread
+  const totalDist=startY-sy+1;
+  const travelTime=0.4+Math.random()*0.3;
+  const vy2=-totalDist/travelTime;
   FX_PARTICLES.push({
     type:'thunder_bolt',color:'#ffe066',
-    px:sx,py:sy,pz:sz,
-    vx,vy,vz,
-    life:2.5,maxLife:2.5,
+    px:sx+offsetX,py:startY,pz:sz+offsetZ,
+    vx:bouncing?(Math.random()-0.5)*4:0,
+    vy:vy2,
+    vz:bouncing?(Math.random()-0.5)*4:0,
+    life:travelTime+0.5,maxLife:travelTime+0.5,
     blocksLeft:blocksToDest,
     explodeRadius,
     bouncing,
-    bounces:0,maxBounces:8,
-    trailPts:[],age:0
+    bounces:0,maxBounces:4,
+    // Store zigzag VFX points for 2D lightning bolt drawing
+    zigzag:generateZigzag(sx+offsetX,startY,sz+offsetZ,sx,sy,sz),
+    trailPts:[],age:0,
+    hitTime:travelTime, // when bolt reaches ground
+    startTime:0
   });
+}
+
+function generateZigzag(x1,y1,z1,x2,y2,z2){
+  // Generate zigzag 3D points between two positions for lightning VFX
+  const pts=[];
+  const steps=6+Math.floor(Math.random()*4);
+  for(let i=0;i<=steps;i++){
+    const t=i/steps;
+    const jitter=i>0&&i<steps?(1-t)*3:0;
+    pts.push([
+      x1+(x2-x1)*t+(Math.random()-0.5)*jitter,
+      y1+(y2-y1)*t,
+      z1+(z2-z1)*t+(Math.random()-0.5)*jitter,
+    ]);
+  }
+  return pts;
 }
 
 // Mega thunder strike — immediately mines sphere of radius matching ~500 blocks
@@ -3438,68 +3465,93 @@ function tickFX(dt){
         break;
       }
       case'thunder_bolt':{
-        // Move bolt
+        p.age+=dt;
         p.px+=p.vx*dt;p.py+=p.vy*dt;p.pz+=p.vz*dt;
-        // Apply gravity when bouncing
-        if(p.bouncing)p.vy-=18*dt;
-        // Mine block at current position
-        const bx2=Math.floor(p.px),by2=Math.floor(p.py),bz2=Math.floor(p.pz);
-        if(bx2>=0&&bx2<W&&by2>=0&&by2<H&&bz2>=0&&bz2<D&&blocks[idx(bx2,by2,bz2)]){
-          if(p.blocksLeft>0&&abilityMine(bx2,by2,bz2)){
-            p.blocksLeft--;
-            markMeshDirty();markInvDirty();
-            // Bounce: reflect velocity off block
-            if(p.bouncing&&p.bounces<p.maxBounces){
-              p.vy=Math.abs(p.vy)*0.7+3;
-              p.vx+=(Math.random()-0.5)*8;
-              p.vz+=(Math.random()-0.5)*8;
-              p.bounces++;
-            }
+
+        // Check if bolt has reached a solid block below it
+        const bx3=Math.round(p.px),bz3=Math.round(p.pz);
+        let hitY=-1;
+        if(!p._struck){
+          // Scan downward from bolt position
+          for(let by3=Math.min(H-1,Math.floor(p.py+0.5));by3>=0;by3--){
+            if(bx3>=0&&bx3<W&&bz3>=0&&bz3<D&&blocks[idx(bx3,by3,bz3)]){hitY=by3;break;}
           }
-        }
-        // Stop condition: no blocks left OR out of bounces OR fell below world
-        if(p.blocksLeft<=0||(!p.bouncing&&p.life<p.maxLife*0.5)||p.py<0){
-          // Explode: mine sphere around stop position
-          if(p.explodeRadius>0){
-            const ex=Math.round(p.px),ey=Math.round(p.py),ez=Math.round(p.pz);
+          // Strike when bolt's Y reaches or passes the block top
+          if(hitY>=0&&p.py<=hitY+1.5){
+            p._struck=true;
+            // Mine blocksLeft blocks in sphere around hit
             let mined3=0;
-            for(let r=0;r<=4&&mined3<p.explodeRadius;r++){
-              for(let edx=-r;edx<=r;edx++)for(let edy=-r;edy<=r;edy++)for(let edz=-r;edz<=r;edz++){
+            const hr=Math.ceil(Math.cbrt(p.blocksLeft*0.75));
+            outer3:for(let r=0;r<=hr;r++){
+              for(let edx=-r;edx<=r;edx++)for(let edy=0;edy>=-r;edy--)for(let edz=-r;edz<=r;edz++){
                 if(edx*edx+edy*edy+edz*edz>r*r)continue;
-                if(abilityMine(ex+edx,ey+edy,ez+edz))mined3++;
+                if(abilityMine(bx3+edx,hitY+edy,bz3+edz)){mined3++;if(mined3>=p.blocksLeft)break outer3;}
+              }
+            }
+            // Explosion on stop (no VFX per spec)
+            if(p.explodeRadius>0){
+              let e3=0;
+              const er=Math.ceil(Math.cbrt(p.explodeRadius*0.75));
+              outer4:for(let r=0;r<=er;r++){
+                for(let edx=-r;edx<=r;edx++)for(let edy=0;edy>=-r;edy--)for(let edz=-r;edz<=r;edz++){
+                  if(edx*edx+edy*edy+edz*edz>r*r)continue;
+                  if(abilityMine(bx3+edx,hitY+edy,bz3+edz)){e3++;if(e3>=p.explodeRadius)break outer4;}
+                }
               }
             }
             markMeshDirty();markInvDirty();
+            // Flash sparks at impact
+            for(let fi=0;fi<10;fi++){
+              FX_PARTICLES.push({type:'thunder_flash',color:'#ffe066',
+                px:bx3+(Math.random()-0.5)*1.5,py:hitY+0.5,pz:bz3+(Math.random()-0.5)*1.5,
+                vx:(Math.random()-0.5)*5,vy:Math.random()*6+1,vz:(Math.random()-0.5)*5,
+                life:0.45,maxLife:0.45,trailPts:[]});
+            }
+            if(p.bouncing&&p.bounces<p.maxBounces){
+              // Bounce: pick new nearby target and generate new zigzag
+              p.bounces++;
+              p._struck=false;
+              const nx2=bx3+(Math.random()-0.5)*10;
+              const nz2=bz3+(Math.random()-0.5)*10;
+              const newTop=Math.min(hitY+8,H-2);
+              p.zigzag=generateZigzag(p.px,newTop,p.pz,nx2,hitY,nz2);
+              p.hitTime=0.3+Math.random()*0.2;
+              p.age=0;
+              p.py=newTop;
+              p.vy=-(newTop-hitY)/p.hitTime;
+              p.vx=(nx2-bx3)/p.hitTime*0.5;
+              p.vz=(nz2-bz3)/p.hitTime*0.5;
+              p.px=bx3;p.pz=bz3;
+            }else{
+              p.life=0;
+            }
           }
-          p.life=0;break;
         }
-        // Draw bolt: bright yellow zigzag trail
-        if(p.trailPts.length>1){
+
+        // Draw zigzag lightning bolt
+        if(p.zigzag&&p.zigzag.length>1&&!p._struck){
+          const progress=Math.min(1,(p.hitTime>0?p.age/p.hitTime:1));
+          const showPts=Math.max(2,Math.ceil(p.zigzag.length*progress));
+          // Glow first (wide)
           fx2d.beginPath();
-          p.trailPts.forEach(([tx,ty,tz],ti)=>{
-            const ts=worldToScreen(tx,ty,tz);if(!ts){fx2d.beginPath();return;}
-            ti===0?fx2d.moveTo(ts.x,ts.y):fx2d.lineTo(ts.x,ts.y);
-          });
-          fx2d.strokeStyle='#ffe066'+(Math.round(alpha*180).toString(16).padStart(2,'0'));
-          fx2d.lineWidth=3;fx2d.stroke();
-          // Glow
-          fx2d.lineWidth=7;
-          fx2d.strokeStyle='#ffffff'+(Math.round(alpha*60).toString(16).padStart(2,'0'));
+          let moved2=false;
+          for(let zi=0;zi<showPts;zi++){
+            const zs=worldToScreen(p.zigzag[zi][0],p.zigzag[zi][1],p.zigzag[zi][2]);
+            if(!zs){moved2=false;continue;}
+            if(!moved2){fx2d.moveTo(zs.x,zs.y);moved2=true;}else fx2d.lineTo(zs.x,zs.y);
+          }
+          fx2d.strokeStyle='#ffe066'+(Math.round(alpha*90).toString(16).padStart(2,'0'));
+          fx2d.lineWidth=9;fx2d.stroke();
+          // Core (bright white)
           fx2d.beginPath();
-          p.trailPts.forEach(([tx,ty,tz],ti)=>{
-            const ts=worldToScreen(tx,ty,tz);if(!ts){fx2d.beginPath();return;}
-            ti===0?fx2d.moveTo(ts.x,ts.y):fx2d.lineTo(ts.x,ts.y);
-          });
-          fx2d.stroke();
-        }
-        p.trailPts.push([p.px,p.py,p.pz]);
-        if(p.trailPts.length>10)p.trailPts.shift();
-        const sb=worldToScreen(p.px,p.py,p.pz);
-        if(sb){
-          const gb=fx2d.createRadialGradient(sb.x,sb.y,0,sb.x,sb.y,16);
-          gb.addColorStop(0,'#ffffff');gb.addColorStop(0.3,'#ffe066');gb.addColorStop(1,'#ffe06600');
-          fx2d.beginPath();fx2d.arc(sb.x,sb.y,16,0,Math.PI*2);
-          fx2d.fillStyle=gb;fx2d.fill();
+          let moved3=false;
+          for(let zi=0;zi<showPts;zi++){
+            const zs=worldToScreen(p.zigzag[zi][0],p.zigzag[zi][1],p.zigzag[zi][2]);
+            if(!zs){moved3=false;continue;}
+            if(!moved3){fx2d.moveTo(zs.x,zs.y);moved3=true;}else fx2d.lineTo(zs.x,zs.y);
+          }
+          fx2d.strokeStyle='#ffffff'+(Math.round(alpha*255).toString(16).padStart(2,'0'));
+          fx2d.lineWidth=2;fx2d.stroke();
         }
         break;
       }
