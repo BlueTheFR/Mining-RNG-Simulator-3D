@@ -1291,7 +1291,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const _lk=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const _lk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
     const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
@@ -1436,15 +1436,20 @@ function getOrCreateSymbolTexture(ore){
   ctx.fillRect(0,0,sz,sz);
   const sym=String(ore.symbol||'').trim();
   if(sym){
+    // Flip vertically so symbol appears right-side up on BoxGeometry with flipY=false
+    ctx.save();
+    ctx.translate(0,sz);
+    ctx.scale(1,-1);
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillStyle=ore.symbolColor||'#ffffff';
     let fs=sym.length<=2?56:sym.length<=4?40:sym.length<=8?28:22;
     ctx.font='bold '+fs+'px Arial,"Segoe UI Emoji","Apple Color Emoji",sans-serif';
     ctx.fillText(sym,sz/2,sz/2);
+    ctx.restore();
   }
   const tex=new THREE.CanvasTexture(c);
-  tex.flipY=true;
+  tex.flipY=false;
   tex.needsUpdate=true;
   SYM_TEX_CACHE[key]=tex;
   return tex;
@@ -1548,7 +1553,7 @@ function getOrCreateTexture(imgSrc,overlayOre){
   ctx.fillRect(0,0,128,128);
 
   const tex=new THREE.CanvasTexture(canvas);
-  tex.flipY=true;
+  tex.flipY=false;
   tex.needsUpdate=true;
   TEX_CACHE[cacheKey]=tex;
 
@@ -1559,8 +1564,13 @@ function getOrCreateTexture(imgSrc,overlayOre){
     mountAnimImageInDom(img);
     try{
       ctx.clearRect(0,0,128,128);
-      // Draw normally — flipY=true handles the vertical flip for Three.js
+      // Flip canvas vertically so Three.js BoxGeometry shows image right-side up
+      // (CanvasTexture with flipY=false needs manual Y-flip for BoxGeometry in r128)
+      ctx.save();
+      ctx.translate(0,128);
+      ctx.scale(1,-1);
       ctx.drawImage(img,0,0,128,128);
+      ctx.restore();
       tex.needsUpdate=true;
     }catch(e){
       ctx.fillStyle=overlayOre?overlayOre.color||'#888':'#888';
@@ -1586,7 +1596,12 @@ function updateGifTextures(){
     try{
       if(e.canvas.width!==128||e.canvas.height!==128){e.canvas.width=128;e.canvas.height=128;}
       e.ctx.clearRect(0,0,128,128);
+      // Flip vertically to match flipY=false on BoxGeometry
+      e.ctx.save();
+      e.ctx.translate(0,128);
+      e.ctx.scale(1,-1);
       e.ctx.drawImage(e.img,0,0,128,128);
+      e.ctx.restore();
       e.tex.needsUpdate=true;
     }catch(err){}
   }
@@ -2012,7 +2027,7 @@ function spawnCave(cx,cy,cz){
       // Wall block: place solid with appropriate base ore
       blocks[i]=1;
       const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-      const combinedLuck=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+      const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
       if(chosen.type==='NormalCave'){
         // Normal cave walls get regular ore rolls (same as normal world)
         const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
@@ -2038,7 +2053,7 @@ function spawnCave(cx,cy,cz){
     if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
     const ii=idx(nx,ny,nz);
     if(!blocks[ii])continue;
-    const combinedLuck=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
+    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
     for(const exName of chosen.exclusives){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
@@ -2548,7 +2563,7 @@ function updateHUD(){
   if(el_luck){
     const pickLuck=getPickLuck();
     const now2=Date.now();const activeMult=now2<_luckBoostUntil?_luckBoostMult:1;
-    const totalLuck=(luck+getGearLuckBonus())*pickLuck*activeMult;
+    const totalLuck=luck*pickLuck*activeMult+getGearLuckBonus();
     // Update gear HUD
     const _gearEl=document.getElementById('s-gear');
     if(_gearEl)_gearEl.textContent=equippedGears.length?equippedGears.join(' + '):'—';
@@ -2664,11 +2679,12 @@ function abilityMine(wx,wy,wz){
   // Never destroy phantom block via abilities — only player direct mining can pick it up
   if(phantomBlock&&phantomBlock.x===wx&&phantomBlock.y===wy&&phantomBlock.z===wz)return false;
   // Reveal ore if not yet revealed, or if it's a raw cave base block (re-roll to normal ore)
-  if(!oreRevealed[i]||(oreRevealed[i]&&ORES[oreIdx[i]||0]&&ORES[oreIdx[i]||0].caveBase)){
+  if(!oreRevealed[i]||(ORES[oreIdx[i]||0]&&ORES[oreIdx[i]||0].caveBase)){
     const depthDen=Math.max(1,TOP_SOLID_Y);
     const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
-    const combinedLuck=(luck+getGearLuckBonus())*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1);
-    oreIdx[i]=rollOreNormal(h3(wx,wy,wz,(mined^i^Date.now())&65535),depthFrac,combinedLuck);
+    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    // Use Math.random() so each ability mine gets a fresh roll (not deterministic by position)
+    oreIdx[i]=rollOreNormal(Math.random(),depthFrac,combinedLuck);
     oreRevealed[i]=1;
   }
   const ore=ORES[oreIdx[i]||0];
