@@ -1270,11 +1270,16 @@ function rollOreNormal(roll,depthFrac,lk){
   for(let i=0;i<ORES.length;i++){
     const o=ORES[i];
     if(isCaveExclusiveOre(o))continue;
-    // Event ores only appear during their event
     if(o.event&&o.event!==currentEvent)continue;
     let w=lk/o.exact;
     if(o.exact>1000)w*=(0.05+depthFrac*0.95);
-    else w*=(1-depthFrac*0.5);
+    else{
+      w*=(1-depthFrac*0.5);
+      // Cap very common ores (Stone, Coal etc.) at lk=1 weight so luck actually
+      // shifts distribution toward rare ores instead of being neutral.
+      const cap=(1/o.exact)*(1-depthFrac*0.5);
+      if(w>cap)w=cap;
+    }
     parts.push({i,w});
     tot+=w;
   }
