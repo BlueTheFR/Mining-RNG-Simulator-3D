@@ -194,73 +194,105 @@ canvas.free{cursor:default}
 .shop-close:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.25)}
 
 /* ── Mobile Controls ── */
-#mobile-controls{display:none;position:absolute;inset:0;pointer-events:none;z-index:40}
-@media (pointer:coarse),(max-width:768px){
-  #mobile-controls{display:block}
-  #hint{display:none!important}
-  #xhair{display:none}
+#mobile-controls{
+  display:none;  /* shown via JS on touch devices */
+  position:absolute;inset:0;pointer-events:none;z-index:40
 }
+#mobile-controls.mob-active{display:block}
 /* Joystick zone — bottom left */
 #joystick-zone{
   position:absolute;bottom:20px;left:20px;
-  width:130px;height:130px;
+  width:140px;height:140px;
   pointer-events:all;
   touch-action:none;
 }
 #joystick-base{
   position:absolute;inset:0;
   border-radius:50%;
-  background:rgba(255,255,255,0.06);
-  border:2px solid rgba(255,255,255,0.18);
+  background:rgba(255,255,255,0.08);
+  border:2px solid rgba(255,255,255,0.25);
 }
 #joystick-knob{
   position:absolute;
-  width:48px;height:48px;
+  width:52px;height:52px;
   border-radius:50%;
-  background:rgba(255,255,255,0.22);
-  border:2px solid rgba(255,255,255,0.5);
+  background:rgba(255,255,255,0.28);
+  border:2px solid rgba(255,255,255,0.6);
   top:50%;left:50%;
   transform:translate(-50%,-50%);
-  transition:background .1s;
 }
 /* Mine button — bottom right */
 #mine-btn{
-  position:absolute;bottom:34px;right:24px;
-  width:80px;height:80px;
+  position:absolute;bottom:30px;right:20px;
+  width:90px;height:90px;
   border-radius:50%;
-  background:rgba(200,80,40,0.3);
-  border:2px solid rgba(255,120,60,0.6);
-  color:rgba(255,200,160,0.9);
+  background:rgba(200,80,40,0.35);
+  border:3px solid rgba(255,120,60,0.7);
+  color:rgba(255,200,160,0.95);
   font-family:'Press Start 2P',monospace;
-  font-size:8px;
+  font-size:9px;
   display:flex;align-items:center;justify-content:center;text-align:center;
   pointer-events:all;
   touch-action:none;
   cursor:pointer;
   user-select:none;
-  line-height:1.5;
+  line-height:1.6;
+  -webkit-tap-highlight-color:transparent;
+  flex-direction:column;
+  gap:2px;
+}
+#mine-btn.active{background:rgba(255,80,20,0.6);border-color:rgba(255,180,80,1);}
+/* Jump button — above mine button */
+#jump-btn{
+  position:absolute;bottom:130px;right:30px;
+  width:60px;height:60px;
+  border-radius:50%;
+  background:rgba(60,140,200,0.3);
+  border:2px solid rgba(100,180,255,0.6);
+  color:rgba(180,220,255,0.9);
+  font-family:'Press Start 2P',monospace;
+  font-size:7px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  pointer-events:all;
+  touch-action:none;
+  cursor:pointer;
+  user-select:none;
   -webkit-tap-highlight-color:transparent;
 }
-#mine-btn.active{background:rgba(255,80,20,0.55);border-color:rgba(255,160,80,0.9);}
-/* Look area — full canvas except joystick and buttons zones */
+#jump-btn.active{background:rgba(80,160,255,0.5);}
+/* Shop button — top right of mobile controls */
+#mob-shop-btn{
+  position:absolute;top:36px;right:10px;
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  background:rgba(4,4,8,0.92);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:3px;color:rgba(255,255,255,0.8);
+  padding:10px 14px;
+  pointer-events:all;
+  touch-action:manipulation;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  z-index:41;
+  display:none; /* shown when mob-active */
+}
+#mobile-controls.mob-active #mob-shop-btn{display:block}
+/* Look area */
 #look-zone{
   position:absolute;
   inset:0;
   pointer-events:all;
   touch-action:none;
 }
-/* Mobile shop btn tweak */
-@media (pointer:coarse),(max-width:768px){
-  #shop-btn{font-size:8px;padding:10px 14px;top:28px}
-  #save-export-btn{display:none}
-  /* Hide ability panel on mobile to save space */
-  #ability-panel{display:none!important}
-  /* Compact left panels */
-  #left-col{max-height:45vh;top:28px}
-  #inv-panel{max-height:120px}
-  #idx-panel{max-height:100px}
-  #stats-panel{display:none}
-}
+/* When mobile active: hide desktop-only UI */
+body.mob-active #hint{display:none!important}
+body.mob-active #xhair{display:none}
+body.mob-active #save-export-btn{display:none}
+body.mob-active #ability-panel{display:none!important}
+body.mob-active #left-col{max-height:40vh;top:28px}
+body.mob-active #inv-panel{max-height:110px}
+body.mob-active #idx-panel{max-height:90px}
+body.mob-active #stats-panel{display:none}
+body.mob-active #shop-btn{display:none}
 </style>
 </head>
 <body>
@@ -350,6 +382,10 @@ canvas.free{cursor:default}
   </div>
   <!-- Mine button -->
   <div id="mine-btn">⛏<br>MINE</div>
+  <!-- Jump button -->
+  <div id="jump-btn">↑<br>JUMP</div>
+  <!-- Mobile shop -->
+  <div id="mob-shop-btn">SHOP</div>
 </div>
 <button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE MENU</button>
 <div id="save-ind" id="save-ind">SAVE</div>
@@ -3712,171 +3748,166 @@ function loop(t=0){
 
 // ═══════════ MOBILE / TOUCH CONTROLS ═══════════
 (function(){
-  const isTouchDevice=()=>('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  if(!isTouchDevice())return;
-
-  // ── State ──
-  const joy={active:false,id:-1,baseX:0,baseY:0,dx:0,dz:0};
-  const look={id:-1,lastX:0,lastY:0};
-  const JRAD=65; // max joystick radius
-  const LOOK_SENS=0.004;
-
-  const zone=document.getElementById('look-zone');
-  const jZone=document.getElementById('joystick-zone');
-  const knob=document.getElementById('joystick-knob');
-  const mineBtn=document.getElementById('mine-btn');
-
-  // ── Joystick ──
-  function joyStart(e){
-    e.preventDefault();
-    const t=e.changedTouches[0];
-    joy.active=true;joy.id=t.identifier;
-    const r=jZone.getBoundingClientRect();
-    joy.baseX=r.left+r.width/2;
-    joy.baseY=r.top+r.height/2;
-    joyMove(e);
+  // Activate immediately on first touch, or if touch points detected
+  function activateMobile(){
+    if(document.body.classList.contains('mob-active'))return;
+    document.body.classList.add('mob-active');
+    document.getElementById('mobile-controls').classList.add('mob-active');
+    initMobileControls();
   }
-  function joyMove(e){
-    if(!joy.active)return;
-    e.preventDefault();
-    let t=null;
-    for(let i=0;i<e.touches.length;i++){if(e.touches[i].identifier===joy.id){t=e.touches[i];break;}}
-    if(!t)return;
-    const rawDx=t.clientX-joy.baseX;
-    const rawDy=t.clientY-joy.baseY;
-    const dist=Math.sqrt(rawDx*rawDx+rawDy*rawDy);
-    const clamp=Math.min(dist,JRAD);
-    const angle=Math.atan2(rawDy,rawDx);
-    const nx=(clamp/JRAD)*Math.cos(angle);
-    const ny=(clamp/JRAD)*Math.sin(angle); // +y = down = backward
-    // Map to world movement: nx→strafe, ny→forward/back
-    joy.dx=nx;
-    joy.dz=ny;
-    knob.style.transform=`translate(calc(-50% + ${nx*JRAD}px), calc(-50% + ${ny*JRAD}px))`;
+
+  // Try to detect touch device right away
+  if(navigator.maxTouchPoints>0||'ontouchstart' in window){
+    activateMobile();
   }
-  function joyEnd(e){
-    for(let i=0;i<e.changedTouches.length;i++){
-      if(e.changedTouches[i].identifier===joy.id){
-        joy.active=false;joy.id=-1;joy.dx=0;joy.dz=0;
-        knob.style.transform='translate(-50%,-50%)';
-        break;
+  // Also activate on first touch event as fallback
+  window.addEventListener('touchstart',activateMobile,{once:true,passive:true});
+
+  function initMobileControls(){
+    // ── State ──
+    const joy={active:false,id:-1,baseX:0,baseY:0,dx:0,dz:0};
+    const look={id:-1,lastX:0,lastY:0};
+    const JRAD=65;
+    const LOOK_SENS=0.005;
+
+    const zone=document.getElementById('look-zone');
+    const jZone=document.getElementById('joystick-zone');
+    const knob=document.getElementById('joystick-knob');
+    const mineBtn=document.getElementById('mine-btn');
+    const jumpBtn=document.getElementById('jump-btn');
+    const mobShop=document.getElementById('mob-shop-btn');
+
+    // ── Mobile shop button ──
+    mobShop.addEventListener('touchstart',e=>{
+      e.preventDefault();e.stopPropagation();
+      shopOpen?closeShop():openShop();
+    },{passive:false});
+
+    // ── Joystick ──
+    jZone.addEventListener('touchstart',e=>{
+      e.preventDefault();e.stopPropagation();
+      if(joy.active)return;
+      const t=e.changedTouches[0];
+      joy.active=true;joy.id=t.identifier;
+      const r=jZone.getBoundingClientRect();
+      joy.baseX=r.left+r.width/2;
+      joy.baseY=r.top+r.height/2;
+      updateJoy(t);
+    },{passive:false});
+
+    jZone.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      for(let i=0;i<e.touches.length;i++){
+        if(e.touches[i].identifier===joy.id){updateJoy(e.touches[i]);break;}
+      }
+    },{passive:false});
+
+    function updateJoy(t){
+      const rawDx=t.clientX-joy.baseX;
+      const rawDy=t.clientY-joy.baseY;
+      const dist=Math.sqrt(rawDx*rawDx+rawDy*rawDy);
+      const clamp=Math.min(dist,JRAD);
+      const angle=Math.atan2(rawDy,rawDx);
+      joy.dx=(clamp/JRAD)*Math.cos(angle);
+      joy.dz=(clamp/JRAD)*Math.sin(angle);
+      knob.style.transform=`translate(calc(-50% + ${joy.dx*JRAD}px), calc(-50% + ${joy.dz*JRAD}px))`;
+    }
+
+    function joyEnd(e){
+      for(let i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===joy.id){
+          joy.active=false;joy.id=-1;joy.dx=0;joy.dz=0;
+          knob.style.transform='translate(-50%,-50%)';
+          break;
+        }
       }
     }
-  }
-  jZone.addEventListener('touchstart',joyStart,{passive:false});
-  jZone.addEventListener('touchmove',joyMove,{passive:false});
-  jZone.addEventListener('touchend',joyEnd,{passive:false});
-  jZone.addEventListener('touchcancel',joyEnd,{passive:false});
+    jZone.addEventListener('touchend',joyEnd,{passive:false});
+    jZone.addEventListener('touchcancel',joyEnd,{passive:false});
 
-  // ── Look zone (drag to rotate camera) ──
-  // Ignore touches that belong to joystick or mine button
-  function lookStart(e){
-    e.preventDefault();
-    for(let i=0;i<e.changedTouches.length;i++){
-      const t=e.changedTouches[i];
-      if(look.id!==-1)continue;
-      // If the touch started in joystick zone, skip
-      const el=document.elementFromPoint(t.clientX,t.clientY);
-      if(el&&(el.closest('#joystick-zone')||el.closest('#mine-btn')))continue;
-      look.id=t.identifier;look.lastX=t.clientX;look.lastY=t.clientY;
-    }
-  }
-  function lookMove(e){
-    e.preventDefault();
-    for(let i=0;i<e.touches.length;i++){
-      const t=e.touches[i];
-      if(t.identifier!==look.id)continue;
-      const dx=t.clientX-look.lastX;
-      const dy=t.clientY-look.lastY;
-      euler.y-=dx*LOOK_SENS;
-      euler.x=Math.max(-Math.PI/2+0.01,Math.min(Math.PI/2-0.01,euler.x-dy*LOOK_SENS));
-      camera.quaternion.setFromEuler(euler);
-      look.lastX=t.clientX;look.lastY=t.clientY;
-    }
-  }
-  function lookEnd(e){
-    for(let i=0;i<e.changedTouches.length;i++){
-      if(e.changedTouches[i].identifier===look.id){look.id=-1;break;}
-    }
-  }
-  zone.addEventListener('touchstart',lookStart,{passive:false});
-  zone.addEventListener('touchmove',lookMove,{passive:false});
-  zone.addEventListener('touchend',lookEnd,{passive:false});
-  zone.addEventListener('touchcancel',lookEnd,{passive:false});
+    // ── Look zone ──
+    zone.addEventListener('touchstart',e=>{
+      e.preventDefault();
+      for(let i=0;i<e.changedTouches.length;i++){
+        const t=e.changedTouches[i];
+        if(look.id!==-1)continue;
+        const el=document.elementFromPoint(t.clientX,t.clientY);
+        if(el&&(el.closest('#joystick-zone')||el.closest('#mine-btn')||el.closest('#jump-btn')||el.closest('#mob-shop-btn')))continue;
+        look.id=t.identifier;look.lastX=t.clientX;look.lastY=t.clientY;
+      }
+    },{passive:false});
 
-  // ── Mine button ──
-  mineBtn.addEventListener('touchstart',e=>{
-    e.preventDefault();miningHeld=true;mineBtn.classList.add('active');
-  },{passive:false});
-  mineBtn.addEventListener('touchend',e=>{
-    e.preventDefault();miningHeld=false;mineBtn.classList.remove('active');
-  },{passive:false});
-  mineBtn.addEventListener('touchcancel',e=>{
-    miningHeld=false;mineBtn.classList.remove('active');
-  });
+    zone.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      for(let i=0;i<e.touches.length;i++){
+        const t=e.touches[i];
+        if(t.identifier!==look.id)continue;
+        const dx=t.clientX-look.lastX;
+        const dy=t.clientY-look.lastY;
+        euler.y-=dx*LOOK_SENS;
+        euler.x=Math.max(-Math.PI/2+0.01,Math.min(Math.PI/2-0.01,euler.x-dy*LOOK_SENS));
+        camera.quaternion.setFromEuler(euler);
+        look.lastX=t.clientX;look.lastY=t.clientY;
+      }
+    },{passive:false});
 
-  // ── Shop button: allow tap without pointer lock ──
-  document.getElementById('shop-btn').addEventListener('touchstart',e=>{
-    e.preventDefault();
-    shopOpen?closeShop():openShop();
-  },{passive:false});
-
-  // ── Override movePlayer to blend joystick input ──
-  const _origMove=movePlayer;
-  window.movePlayer=function(dt){
-    // Run keyboard movement as normal (it reads keys[])
-    _origMove(dt);
-    // Add joystick delta on top
-    if(joy.active&&(joy.dx!==0||joy.dz!==0)){
-      let spd=PSPEED;
-      if(currentPickId==='t10')spd*=2;
-      const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
-      const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
-      // joy.dx = strafe (left/right), joy.dz = forward/back
-      const mx=(fwd.x*(-joy.dz)+rgt.x*joy.dx);
-      const mz=(fwd.z*(-joy.dz)+rgt.z*joy.dx);
-      const len=Math.sqrt(mx*mx+mz*mz);
-      if(len>0){
-        const ndx=(mx/len)*spd*dt;
-        const ndz=(mz/len)*spd*dt;
-        const p=camera.position;
-        const r=moveAABB(p.x,p.y,p.z,ndx,0,ndz);
-        p.x=r.x;p.z=r.z;
+    function lookEnd(e){
+      for(let i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===look.id){look.id=-1;break;}
       }
     }
-  };
+    zone.addEventListener('touchend',lookEnd,{passive:false});
+    zone.addEventListener('touchcancel',lookEnd,{passive:false});
 
-  // ── No pointer lock needed on mobile: always allow mining ──
-  // Patch tickMine to ignore isFreeMouse when touch is controlling
-  const _canvas=document.getElementById('c');
-  _canvas.addEventListener('touchstart',e=>{
-    // Prevent default canvas click-to-lock behaviour on mobile
-    e.stopPropagation();
-  },{passive:false});
+    // ── Mine button ──
+    mineBtn.addEventListener('touchstart',e=>{
+      e.preventDefault();e.stopPropagation();
+      miningHeld=true;mineBtn.classList.add('active');
+    },{passive:false});
+    const mineOff=()=>{miningHeld=false;mineBtn.classList.remove('active');};
+    mineBtn.addEventListener('touchend',mineOff,{passive:false});
+    mineBtn.addEventListener('touchcancel',mineOff);
 
-  // On mobile, isLocked is never set so mining is blocked.
-  // We patch miningHeld to bypass the isLocked requirement.
-  // tickMine already checks miningHeld, but doMine needs isLocked OR free mode.
-  // Re-patch tickMine to work without pointer lock on touch:
-  const _origTick=tickMine;
-  window.tickMine=function(dt){
-    if(miningHeld&&!shopOpen){
-      // bypass isFreeMouse check
-      mineCd-=dt;
-      if(mineCd<=0){mineCd=MINE_INTERVAL;doMine();}
-    }else{
-      mineCd=0;
-    }
-  };
+    // ── Jump button ──
+    jumpBtn.addEventListener('touchstart',e=>{
+      e.preventDefault();e.stopPropagation();
+      jumpBtn.classList.add('active');
+      if(onGround){velY=JUMP;onGround=false;}
+    },{passive:false});
+    jumpBtn.addEventListener('touchend',()=>jumpBtn.classList.remove('active'),{passive:false});
 
-  // ── Add jump button: double-tap mine button ──
-  let lastMineTap=0;
-  mineBtn.addEventListener('touchstart',e=>{
-    const now=Date.now();
-    if(now-lastMineTap<350&&onGround){velY=JUMP;onGround=false;}
-    lastMineTap=now;
-  },{passive:true});
+    // ── Override movePlayer to inject joystick movement ──
+    const _origMove=movePlayer;
+    window.movePlayer=function(dt){
+      _origMove(dt); // handles keyboard
+      if(joy.active&&(joy.dx!==0||joy.dz!==0)){
+        let spd=PSPEED;
+        if(currentPickId==='t10')spd*=2;
+        const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
+        const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
+        const mx=fwd.x*(-joy.dz)+rgt.x*joy.dx;
+        const mz=fwd.z*(-joy.dz)+rgt.z*joy.dx;
+        const len=Math.sqrt(mx*mx+mz*mz);
+        if(len>0){
+          const r=moveAABB(camera.position.x,camera.position.y,camera.position.z,(mx/len)*spd*dt,0,(mz/len)*spd*dt);
+          camera.position.x=r.x;camera.position.z=r.z;
+        }
+      }
+    };
 
+    // ── Override tickMine to bypass pointer lock requirement ──
+    window.tickMine=function(dt){
+      if(miningHeld&&!shopOpen){
+        mineCd-=dt;
+        if(mineCd<=0){mineCd=MINE_INTERVAL;doMine();}
+      }else{
+        mineCd=0;
+      }
+    };
+
+    // Prevent canvas touch from triggering pointer lock
+    document.getElementById('c').addEventListener('touchstart',e=>{e.preventDefault();},{passive:false});
+  }
 })();
 // ═══════════════════════════════════════
 const hasSave=loadGame();
