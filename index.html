@@ -100,17 +100,13 @@ canvas.free{cursor:default}
 }
 #scn-block svg{filter:drop-shadow(0 0 8px currentColor);}
 #scn-block canvas,#scn-block img{display:block;width:100%;height:100%;image-rendering:pixelated}
-#scn-name{display:none!important;}
-#scn-exact{font-size:5px;color:rgba(255,255,255,0.55);margin-top:2px;white-space:nowrap}
-#scn-rarity-badge{
-  font-size:5px;
-  border-radius:3px;
-  padding:1px 5px;
-  margin:2px auto 0;
-  display:inline-block;
-  border:1px solid currentColor;
-  opacity:0.85;
-}
+/* Phantom scanner: show name, rarity, exact, image */
+#scn-name{display:block!important;font-size:7px;color:var(--hud-accent);margin-top:3px;text-align:center;max-width:120px;word-break:break-word}
+#scn-exact{display:block!important;font-size:6px;color:rgba(200,200,200,0.6);text-align:center;margin-top:1px}
+#scn-rarity-badge{display:block!important;font-size:6px;text-align:center;margin-top:1px;padding:1px 5px;border-radius:2px}
+/* Surface / spawn button */
+#surface-btn{position:absolute;top:32px;right:230px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:#60dd60;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
+#surface-btn:hover{opacity:1;border-color:rgba(96,220,96,0.5)}
 
 /* ── Rarity glow effects (unchanged — these are world fx, not HUD) ── */
 @keyframes exoticPulse{0%,100%{box-shadow:0 0 8px 2px #ffeb3b}50%{box-shadow:0 0 18px 6px #ffeb3b}}
@@ -242,6 +238,12 @@ canvas.free{cursor:default}
   gap:2px;
 }
 #mine-btn.active{background:rgba(255,80,20,0.6);border-color:rgba(255,180,80,1);}
+#mine-btn.auto-active{background:rgba(255,140,0,0.7);border-color:#ffcc00;box-shadow:0 0 14px #ffcc0088;animation:autoMinePulse 0.6s infinite alternate;}
+@keyframes autoMinePulse{0%{box-shadow:0 0 8px #ffcc0066}100%{box-shadow:0 0 22px #ffcc00cc}}
+/* SVG ring overlay on mine button for hold-progress */
+#mine-btn-ring{position:absolute;bottom:25px;right:15px;width:100px;height:100px;pointer-events:none;z-index:41;display:none;}
+#mine-btn-ring circle{fill:none;stroke:#ffcc00;stroke-width:4;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transform-origin:50px 50px;transform:rotate(-90deg);transition:stroke-dashoffset 0.05s linear;filter:drop-shadow(0 0 4px #ffcc00);}
+#mine-btn-ring.show{display:block;}
 /* Jump button — above mine button */
 #jump-btn{
   position:absolute;bottom:130px;right:30px;
@@ -387,11 +389,14 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
   </div>
   <!-- Mine button -->
   <div id="mine-btn">⛏<br>MINE</div>
+  <!-- Auto-mine hold progress ring (SVG overlay) -->
+  <svg id="mine-btn-ring" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45"/></svg>
   <!-- Jump button -->
   <div id="jump-btn">↑<br>JUMP</div>
   <!-- Mobile shop -->
   <div id="mob-shop-btn">SHOP</div>
 </div>
+<button id="surface-btn" onclick="goToSurface()" title="Teleport to surface spawn">⬆ SURFACE</button>
 <button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE MENU</button>
 <div id="save-ind" id="save-ind">SAVE</div>
 
@@ -687,19 +692,19 @@ const ORES=[
   {name:'Singularity',rarity:'Imaginary',  exact:2000000000,color:'#000000',spawnMsg:'Time stops. Space collapses. You found the impossible.', spawnMsgFr:'Le temps s\'arrête. L\'espace s\'effondre. Vous avez trouvé l\'impossible.'},
   {name:'AlterDemon',rarity:'Divine',      exact:1000000,   color:'#000000',spawnMsg:'Alters demon is here to catch you',                  spawnMsgFr:'Le démon d\'Alter est là pour vous attraper'},
   {name:'Veritcal',  rarity:'Imaginary',   exact:4444444444, color:'#90d5ff',spawnMsg:"You shouldn't dig straight down",                  spawnMsgFr:"Vous n'auriez pas dû creuser tout droit"},
-  {name:'Zanacharium',rarity:'Zenith',     exact:687500000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...', spawnMsgFr:'Une force inhabituelle se matérialise à la surface de ce monde...'},
+  {name:'Zanacharium',rarity:'Zenith',     exact:6875000000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...', spawnMsgFr:'Une force inhabituelle se matérialise à la surface de ce monde...'},
   {name:'Nucleonix', rarity:'Zenith',      exact:6000000000,color:'#00ff00',spawnMsg:'Radiation hums as Nucleonix pulses with atomic energy!', spawnMsgFr:'La radiation bourdonne alors que Nucleonix pulse d\'énergie atomique !'},
-  {name:'Chronovexium',rarity:'Zenith',    exact:12500000000,color:'#00f0ff',spawnMsg:'Time fractures as Chronovexium emerges from the continuum...', spawnMsgFr:'Le temps se fracture lorsque Chronovexium surgit du continuum...'},
-  {name:'Aqualith',  rarity:'Zenith',      exact:30000000000,color:'#00bfff',spawnMsg:'Ocean currents converge as Aqualith emerges from the deep!', spawnMsgFr:'Les courants océaniques convergent alors qu\'Aqualith surgit des profondeurs !'},
-  {name:'Aetherion', rarity:'Zenith',      exact:35000000000,color:'#ffd700',spawnMsg:'The heavens shimmer as Aetherion descends into existence...', spawnMsgFr:'Les cieux scintillent tandis qu\'Aetherion descend dans l\'existence...'},
-  {name:'Pyrocore',  rarity:'Zenith',      exact:50000000000,color:'#ff4500',spawnMsg:'Flames swirl violently as Pyrocore erupts from the magma!', spawnMsgFr:'Les flammes tourbillonnent violemment lorsque Pyrocore émerge de la lave !'},
-  {name:'Circuitium',rarity:'Zenith',      exact:75000000000,color:'#cccccc',spawnMsg:'Digital sparks fly as Circuitium materializes from the grid!', spawnMsgFr:'Des étincelles numériques jaillissent lorsque Circuitium se matérialise !'},
-  {name:'Paradoxium',rarity:'Eternal',     exact:150000000000,color:'#6a00ff',spawnMsg:'Reality twists into an impossible shape as Paradoxium manifests...', spawnMsgFr:'La réalité se tord en une forme impossible lorsque Paradoxium se manifeste...'},
-  {name:'Genesis',   rarity:'Eternal',     exact:500000000000,color:'#000000',spawnMsg:'Twisting circuitry explodes in a ferocious outburst of electric energy...', spawnMsgFr:'Des circuits torsadés explosent dans un déchaînement d\'énergie électrique...'},
-  {name:'Divinitium',rarity:'Eternal',     exact:700000000000,color:'#bfcadb',spawnMsg:'A blinding radiance heralds the arrival of Divinitium!', spawnMsgFr:'Un éclat aveuglant annonce l\'arrivée de Divinitium !'},
-  {name:'Pyronis',   rarity:'Eternal',     exact:400000000000,color:'#ff6600',spawnMsg:'Flames twist violently as Pyronis bursts forth from molten rock!', spawnMsgFr:'Les flammes se tordent violemment lorsque Pyronis jaillit de la roche en fusion !'},
-  {name:'BlueTheFR', rarity:'Eternal',     exact:1000000000000,color:'#00fbff',spawnMsg:'You meet the creator...',                         spawnMsgFr:'Vous rencontrez le créateur...'},
-  {name:'SPAFF',     rarity:'SPAFF',       exact:100000000000000,color:'#ff9900',spawnMsg:'THE SPAFF IS HERE!!',                           spawnMsgFr:'Le SPAFF est là !!'},
+  {name:'Chronovexium',rarity:'Zenith',    exact:3250000000,color:'#00f0ff',spawnMsg:'Time fractures as Chronovexium emerges from the continuum...', spawnMsgFr:'Le temps se fracture lorsque Chronovexium surgit du continuum...'},
+  {name:'Aqualith',  rarity:'Zenith',      exact:3000000000,color:'#00bfff',spawnMsg:'Ocean currents converge as Aqualith emerges from the deep!', spawnMsgFr:'Les courants océaniques convergent alors qu\'Aqualith surgit des profondeurs !'},
+  {name:'Aetherion', rarity:'Zenith',      exact:3500000000,color:'#ffd700',spawnMsg:'The heavens shimmer as Aetherion descends into existence...', spawnMsgFr:'Les cieux scintillent tandis qu\'Aetherion descend dans l\'existence...'},
+  {name:'Pyrocore',  rarity:'Zenith',      exact:4000000000,color:'#ff4500',spawnMsg:'Flames swirl violently as Pyrocore erupts from the magma!', spawnMsgFr:'Les flammes tourbillonnent violemment lorsque Pyrocore émerge de la lave !'},
+  {name:'Circuitium',rarity:'Zenith',      exact:7500000000,color:'#cccccc',spawnMsg:'Digital sparks fly as Circuitium materializes from the grid!', spawnMsgFr:'Des étincelles numériques jaillissent lorsque Circuitium se matérialise !'},
+  {name:'Paradoxium',rarity:'Eternal',     exact:15000000000,color:'#6a00ff',spawnMsg:'Reality twists into an impossible shape as Paradoxium manifests...', spawnMsgFr:'La réalité se tord en une forme impossible lorsque Paradoxium se manifeste...'},
+  {name:'Genesis',   rarity:'Eternal',     exact:50000000000,color:'#000000',spawnMsg:'Twisting circuitry explodes in a ferocious outburst of electric energy...', spawnMsgFr:'Des circuits torsadés explosent dans un déchaînement d\'énergie électrique...'},
+  {name:'Divinitium',rarity:'Eternal',     exact:70000000000,color:'#bfcadb',spawnMsg:'A blinding radiance heralds the arrival of Divinitium!', spawnMsgFr:'Un éclat aveuglant annonce l\'arrivée de Divinitium !'},
+  {name:'Pyronis',   rarity:'Eternal',     exact:40000000000,color:'#ff6600',spawnMsg:'Flames twist violently as Pyronis bursts forth from molten rock!', spawnMsgFr:'Les flammes se tordent violemment lorsque Pyronis jaillit de la roche en fusion !'},
+  {name:'BlueTheFR', rarity:'Eternal',     exact:100000000000,color:'#00fbff',spawnMsg:'You meet the creator...',                         spawnMsgFr:'Vous rencontrez le créateur...'},
+  {name:'SPAFF',     rarity:'SPAFF',       exact:1000000000000,color:'#ff9900',spawnMsg:'THE SPAFF IS HERE!!',                           spawnMsgFr:'Le SPAFF est là !!'},
   // ── Cave base blocks ──
   {name:'Ice',           rarity:'IceCaveExclusive',             exact:1,           color:'#88eeff',spawnMsg:null,caveBase:true},
   {name:'Energy',        rarity:'EnergyCaveExclusive',          exact:1,           color:'#a327f5',spawnMsg:null,caveBase:true},
@@ -719,14 +724,15 @@ const ORES=[
   {name:'LavaRelic',        rarity:'LavaCaveExclusive-Otherworldly',   exact:38000000,     color:'#ff4500',spawnMsg:'LavaRelic radiates heat from molten rock!',                          spawnMsgFr:'LavaRelic irradie la chaleur de la roche en fusion !'},
   {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!',                  spawnMsgFr:'EternalCrystal brille comme le cœur de la création !'},
   {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...',       spawnMsgFr:'De sa naissance, les étoiles se lèvent et illuminent l\'univers...'},
-  {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:999000000,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true, spawnMsgFr:'Votre adrénaline monte violemment lorsqu\'Epinéphrine éclate !'},
+  {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:99999999,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true, spawnMsgFr:'Votre adrénaline monte violemment lorsqu\'Epinéphrine éclate !'},
 ];
 const ORE_EXTRA={
 Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#aaffff',imgSrc:'Zanarchium.gif'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,symbol:'GEN',symbolColor:'#00ffcc',imgSrc:'GENESIS.gif'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.gif'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,symbol:'MoO',symbolColor:'#ff9100',imgSrc:'MonolithofOrigin.gif'},Epinephrine:{value:192,symbol:'EP',symbolColor:'#ff4500',imgSrc:'Epinephrine.gif'},
 };
 ORES.forEach(o=>{const e=ORE_EXTRA[o.name];if(e)Object.assign(o,e);});
 // Sort descending by exact for index display (uses raw exact values from ORES data)
-const ORES_SORTED=[...ORES].sort((a,b)=>b.exact-a.exact);
+// ORES_SORTED is rebuilt after EVENT_ORES are pushed in (see below)
+let ORES_SORTED=[];
 
 function isCaveExclusiveOre(ore){
   if(!ore||ore.caveBase)return true;
@@ -800,13 +806,15 @@ const EVENT_ORES=[
 EVENT_ORES.forEach(eo=>{
   if(!ORES.find(o=>o.name===eo.name))ORES.push(eo);
 });
+// Build sorted index AFTER event ores are included
+ORES_SORTED=[...ORES].sort((a,b)=>b.exact-a.exact);
 
 // ═══════════ GEAR DATA ═══════════
 const GEAR_DATA={
   G1:{
     nameFr:'Anneau de Chance',nameEn:'Lucky Ring',
-    descFr:'+2 Luck bonus permanent.',descEn:'+2 Luck bonus permanent.',
-    cost:{Stone:30,Coal:20},color:'#ffdd44',luckBonus:2
+    descFr:'+0.5 Luck bonus permanent.',descEn:'+0.5 Luck bonus permanent.',
+    cost:{Stone:30,Coal:20},color:'#ffdd44',luckBonus:0.5
   },
   G2:{
     nameFr:'Amulette du Mineur',nameEn:'Miner\'s Amulet',
@@ -820,28 +828,28 @@ const GEAR_DATA={
   },
   G4:{
     nameFr:'Talisman de Luck',nameEn:'Luck Talisman',
-    descFr:'+10 Luck bonus permanent.',descEn:'+10 Luck bonus permanent.',
-    cost:{Ruby:5,Emerald:10},color:'#e91e63',luckBonus:10
+    descFr:'+2 Luck bonus permanent.',descEn:'+2 Luck bonus permanent.',
+    cost:{Ruby:5,Emerald:10},color:'#e91e63',luckBonus:2
   },
   G5:{
     nameFr:'Cœur de Vide',nameEn:'Void Heart',
-    descFr:'+25 Luck. 5% chance d\'améliorer 1 rang de rareté.',descEn:'+25 Luck. 5% chance to upgrade mined ore by 1 rarity tier.',
-    cost:{Peta:1,Tera:1},color:'#9c27b0',luckBonus:25,upgradeChance:0.05
+    descFr:'+5 Luck. 5% chance d\'améliorer 1 rang de rareté.',descEn:'+5 Luck. 5% chance to upgrade mined ore by 1 rarity tier.',
+    cost:{Peta:1,Tera:1},color:'#9c27b0',luckBonus:5,upgradeChance:0.05
   },
   G6:{
     nameFr:'Sceau de l\'Abîsse',nameEn:'Abyss Seal',
-    descFr:'+50 Luck. Chaque mine a 1% de chance de ×100 le minerai (si valeur ≤ 100K).',descEn:'+50 Luck. 1% chance to multiply ore ×100 if value ≤ 100K.',
-    cost:{OblivionCore:1,Stone:100000},color:'#1a237e',luckBonus:50,megaMulti:true
+    descFr:'+10 Luck. Chaque mine a 1% de chance de ×100 le minerai (si valeur ≤ 100K).',descEn:'+10 Luck. 1% chance to multiply ore ×100 if value ≤ 100K.',
+    cost:{OblivionCore:1,Stone:100000},color:'#1a237e',luckBonus:10,megaMulti:true
   },
   G7:{
     nameFr:'Couronne du Zénith',nameEn:'Zenith Crown',
-    descFr:'+75 Luck. 20% chance d\'améliorer le rang de rareté du minerai miné.',descEn:'+75 Luck. 20% chance to upgrade mined ore rarity by 1 tier.',
-    cost:{Quantumite:20,FrostShard:2},color:'#df03fc',luckBonus:75,upgradeChance:0.20
+    descFr:'+15 Luck. 20% chance d\'améliorer le rang de rareté du minerai miné.',descEn:'+15 Luck. 20% chance to upgrade mined ore rarity by 1 tier.',
+    cost:{Quantumite:20,FrostShard:2},color:'#df03fc',luckBonus:15,upgradeChance:0.20
   },
   G8:{
     nameFr:'Relique de la Création',nameEn:'Creation Relic',
-    descFr:'+100 Luck. Quand vous minez un minerai ≥ 50M : 50% chance de le récolter une 2e fois.',descEn:'+100 Luck. When mining a 50M+ ore: 50% chance to harvest it a 2nd time.',
-    cost:{Infinity:1,AbyssalSingularity:20,ZergHunter:50},color:'#00fbff',luckBonus:100,bonusHarvest:true
+    descFr:'+25 Luck. Quand vous minez un minerai ≥ 50M : 50% chance de le récolter une 2e fois.',descEn:'+25 Luck. When mining a 50M+ ore: 50% chance to harvest it a 2nd time.',
+    cost:{Infinity:1,AbyssalSingularity:20,ZergHunter:50},color:'#00fbff',luckBonus:25,bonusHarvest:true
   },
 };
 
@@ -1077,7 +1085,7 @@ function getAudioId(ore){
   if(ex<286000000)return'Unfathomable';
   if(ex<860000000)return'Otherworldly';
   if(ex<4500000000)return'Imaginary';
-  if(ex<76000000000)return'Zenith';
+  if(ex<15000000000)return'Zenith';
   return'Eternal';
 }
 function playSound(ore){
@@ -1165,7 +1173,7 @@ const PICKAXES=[
    color:'#ff2222',scanMin:250000,owned:false,equipped:false,
    descFr:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (tous les 400). x8 Luck.",descEn:"HACK-HANDS passive. SPAM 35 bits r8 (1/10). FIREWALL 5x5 advances 8 blocks (1/200). LIMIT BREAK column h10 (every 400). x8 Luck.",
    fxFr:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',fxEn:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
-   recipe:{VoidPlus:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
+   recipe:{OblivionStone:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
    abilities:[{nameFr:'HACK-HANDS',nameEn:'HACK-HANDS',descFr:'4 mains glitchées permanentes autour du joueur, minent aléatoirement',descEn:'4 glitched hands permanently active around the player, mine randomly',chance:'Passif/Passive',color:'#ff2222'},
               {nameFr:'SPAM',nameEn:'SPAM',descFr:'35 bits corrompus explosent dans rayon 8, minent tout',descEn:'35 corrupted bits explode in radius 8, mine everything',chance:'1/10',color:'#ff4444'},
               {nameFr:'FIREWALL',nameEn:'FIREWALL',descFr:'Mur 5×5 avance sur 8 blocs en minant tout sur son passage',descEn:'5×5 wall advances 8 blocks mining everything in its path',chance:'1/200',color:'#ff2222'},
@@ -1175,7 +1183,7 @@ const PICKAXES=[
    color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
    descFr:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization : vitesse x2, 75% mine 6 bonus. x15 Luck.",descEn:"Light Refraction 16 bounces (1/5). Color Shotgun 16 shards (1/30). Prism Burst 12 orbs (1/30). Chaotization: speed x2, 75% mines 6 bonus. x15 Luck.",
    fxFr:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',fxEn:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passive. x15 Luck.',
-   recipe:{Zanacharium:1,Nucleonix:1,VoidPlus:2,PetaPlus4:2},
+   recipe:{Hyperion:1,Vortexium:2,NightCore:1,PetaPlus4:1},
    abilities:[{nameFr:'Réfraction Lumineuse',nameEn:'Light Refraction',descFr:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',descEn:'Rainbow ray bounces 16 times, mines everything + radius-2 explosion at each bounce',chance:'1/5',color:'#ffaaff'},
               {nameFr:'Fusil de Couleur',nameEn:'Color Shotgun',descFr:'16 éclats de couleurs, tous les 8e : rafale de 32 éclats en éventail',descEn:'16 colored shards, every 8th: burst of 32 shards in a fan',chance:'1/30',color:'#ffaaff'},
               {nameFr:'Explosion Prismatique',nameEn:'Prism Burst',descFr:'12 orbes géants en étoile avec traînée qui mine toute la trajectoire',descEn:'12 giant orbs in a star with a trail that mines the whole path',chance:'1/30',color:'#ffaaff'},
@@ -1225,11 +1233,129 @@ function getAbilityChance(a){
   return c;
 }
 
-// ═══════════ STATE ═══════════
-const W=48,H=32,D=48;
+// ═══════════ CHUNK SYSTEM ═══════════
+// Infinite world: blocks generated per-chunk, only near-player chunks are rendered.
+const H=100;
+const TOP_SOLID_Y=H-3; // highest solid block Y
+const CHUNK_SIZE=16; // blocks per chunk edge (XZ only)
+const RENDER_DIST=2; // chunks around player rendered (5×5 = 25 chunks)
+// W and D are kept as aliases = CHUNK_SIZE*RENDER_DIST*2+CHUNK_SIZE for legacy compatibility
+const W=CHUNK_SIZE*(RENDER_DIST*2+1);
+const D=W;
+
+// Chunk data store: chunkKey->"cx:cz" → {blocks:Uint8Array, oreIdx:Uint8Array, oreRevealed:Uint8Array}
+const _chunks=new Map();
+// Origin offset (so camera.position still roughly maps to block coords)
+let _chunkOriginCX=0, _chunkOriginCZ=0; // top-left chunk CX,CZ of the rendered window
+
+// Flat arrays for the current rendered window (W×H×D)
 let blocks=new Uint8Array(W*H*D);
-let oreIdx=new Uint8Array(W*H*D); // index into ORES (0=Stone default)
-let oreRevealed=new Uint8Array(W*H*D); // 0=pierre seule (non tiré), 1=minerai affiché
+let oreIdx=new Uint8Array(W*H*D);
+let oreRevealed=new Uint8Array(W*H*D);
+
+function _chunkKey(cx,cz){return cx+'x'+cz;}
+
+function _getOrCreateChunk(cx,cz){
+  const k=_chunkKey(cx,cz);
+  if(_chunks.has(k))return _chunks.get(k);
+  const sz=CHUNK_SIZE*H*CHUNK_SIZE;
+  const ch={blocks:new Uint8Array(sz),oreIdx:new Uint8Array(sz),oreRevealed:new Uint8Array(sz),cx,cz};
+  // Fill with solid rock up to TOP_SOLID_Y
+  for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
+    const li=lx*H*CHUNK_SIZE+y*CHUNK_SIZE+lz;
+    ch.blocks[li]=1;
+  }
+  _chunks.set(k,ch);
+  return ch;
+}
+
+// Convert local chunk block index to flat chunk array index
+function _chunkIdx(lx,y,lz){return lx*H*CHUNK_SIZE+y*CHUNK_SIZE+lz;}
+
+// Rebuild flat window arrays from the chunks covering the render window
+function _rebuildWindowFromChunks(){
+  blocks.fill(0);oreIdx.fill(0);oreRevealed.fill(0);
+  const side=RENDER_DIST*2+1;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
+    const cx=_chunkOriginCX+ci,cz=_chunkOriginCZ+ck;
+    const ch=_chunks.has(_chunkKey(cx,cz))?_chunks.get(_chunkKey(cx,cz)):null;
+    if(!ch)continue;
+    const wxBase=ci*CHUNK_SIZE, wzBase=ck*CHUNK_SIZE;
+    for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<H;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
+      const li=_chunkIdx(lx,y,lz);
+      const wi=idx(wxBase+lx,y,wzBase+lz);
+      blocks[wi]=ch.blocks[li];
+      oreIdx[wi]=ch.oreIdx[li];
+      oreRevealed[wi]=ch.oreRevealed[li];
+    }
+  }
+}
+
+// Write back a single block change to the underlying chunk
+function _writeBlockToChunk(wx,wy,wz,bVal,oiVal,orVal){
+  const side=RENDER_DIST*2+1;
+  const ci=Math.floor(wx/CHUNK_SIZE), ck=Math.floor(wz/CHUNK_SIZE);
+  if(ci<0||ci>=side||ck<0||ck>=side)return;
+  const cx=_chunkOriginCX+ci, cz=_chunkOriginCZ+ck;
+  const ch=_getOrCreateChunk(cx,cz);
+  const lx=wx-ci*CHUNK_SIZE, lz=wz-ck*CHUNK_SIZE;
+  const li=_chunkIdx(lx,wy,lz);
+  ch.blocks[li]=bVal; ch.oreIdx[li]=oiVal; ch.oreRevealed[li]=orVal;
+}
+
+// World → chunk absolute coordinates
+function _worldToAbsChunk(wx,wz){
+  const side=RENDER_DIST*2+1;
+  const ci=Math.floor(wx/CHUNK_SIZE), ck=Math.floor(wz/CHUNK_SIZE);
+  return{cx:_chunkOriginCX+ci, cz:_chunkOriginCZ+ck, lx:wx-ci*CHUNK_SIZE, lz:wz-ck*CHUNK_SIZE, valid:ci>=0&&ci<side&&ck>=0&&ck<side};
+}
+
+// Called every frame: shift chunk window if player moved to a new chunk
+// Returns true if the window shifted (needs mesh rebuild)
+function _updateChunkWindow(){
+  if(!camera)return false;
+  // Player chunk in absolute chunk coords
+  const px=camera.position.x, pz=camera.position.z;
+  // Map player world pos to absolute chunk
+  const absCX=Math.floor(px/CHUNK_SIZE)+_chunkOriginCX - Math.floor(W/2/CHUNK_SIZE);
+  const absCZ=Math.floor(pz/CHUNK_SIZE)+_chunkOriginCZ - Math.floor(D/2/CHUNK_SIZE);
+  // Center of window should follow player
+  const side=RENDER_DIST*2+1;
+  const playerAbsCX=_chunkOriginCX+Math.floor(px/CHUNK_SIZE);
+  const playerAbsCZ=_chunkOriginCZ+Math.floor(pz/CHUNK_SIZE);
+  // Desired origin so player is near center
+  const desiredOriginCX=playerAbsCX-RENDER_DIST;
+  const desiredOriginCZ=playerAbsCZ-RENDER_DIST;
+  if(desiredOriginCX===_chunkOriginCX&&desiredOriginCZ===_chunkOriginCZ)return false;
+  // Shift
+  const dCX=desiredOriginCX-_chunkOriginCX;
+  const dCZ=desiredOriginCZ-_chunkOriginCZ;
+  _chunkOriginCX=desiredOriginCX;
+  _chunkOriginCZ=desiredOriginCZ;
+  // Ensure new chunks exist (generate them)
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
+    _ensureChunkGenerated(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+  }
+  // Update player position offset by chunk shift (so physics stays consistent)
+  if(camera){
+    camera.position.x-=dCX*CHUNK_SIZE;
+    camera.position.z-=dCZ*CHUNK_SIZE;
+  }
+  // Also update phantom block coords
+  if(phantomBlock){
+    phantomBlock.x-=dCX*CHUNK_SIZE;
+    phantomBlock.z-=dCZ*CHUNK_SIZE;
+  }
+  _rebuildWindowFromChunks();
+  return true;
+}
+
+// Generate a chunk if not yet generated (fill with rock, no ores yet)
+function _ensureChunkGenerated(cx,cz){
+  _getOrCreateChunk(cx,cz); // creates with rock if missing
+}
+
+// ═══════════ STATE ═══════════
 let inventory={};
 let mined=0,luck=1.0,currentPickId='t0';
 let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilities
@@ -1251,7 +1377,12 @@ let mineCd=0;
 const MINE_INTERVAL=0.07;
 let _invDirty=true;
 let _lastHudUpdate=0;
-let _meshDirty=false; // set true when blocks change, rebuilt once per frame in loop
+let _meshDirty=false;
+// ── Auto-mine state ──
+let _autoMine=false;          // true = auto-mine is locked on
+let _holdMineTimer=0;         // seconds held down so far
+const AUTO_MINE_HOLD=5.0;     // seconds to hold to activate auto-mine
+let _holdingMineBtn=false;    // is the button physically held right now // set true when blocks change, rebuilt once per frame in loop
 function markMeshDirty(){_meshDirty=true;}
 function markInvDirty(){_invDirty=true;}
 function buildWorldMesh(){_meshDirty=true;} // lazy: actual rebuild happens in main loop
@@ -1361,6 +1492,11 @@ function showImportMsg(txt,color){
 
 // ═══════════ WORLD GEN ═══════════
 function idx(x,y,z){return x*H*D+y*D+z}
+// After a block is set in the flat array, sync it back to the chunk store
+function _syncBlockWrite(wx,wy,wz){
+  const i=idx(wx,wy,wz);
+  _writeBlockToChunk(wx,wy,wz,blocks[i],oreIdx[i],oreRevealed[i]);
+}
 
 function getCellOreForUI(x,y,z){
   const i=idx(x,y,z);
@@ -1374,16 +1510,13 @@ function h3(x,y,z,seed){
   return(v&0xffff)/0xffff;
 }
 
-// Monde plein : blocs y=0..TOP_SOLID_Y ; deux couches d'air en haut (respiration + spawn fiable).
-const TOP_SOLID_Y=H-3;
-
 const N6=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 
 function getPickLuck(){
   const pick=PICKAXES.find(p=>p.id===currentPickId);
   if(!pick)return 1;
   // Balanced luck progression — T10 strongest
-  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:8,t10:15,t11:500,t12:1000};
+  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:8,t10:15,t11:30,t12:50};
   return luckMap[pick.id]||1;
 }
 
@@ -1423,13 +1556,15 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
+    _syncBlockWrite(nx,ny,nz); // persist to chunk
     // Play sound + show message when a rare ore spawns into view
     const ore=ORES[oI];
     if(ore&&ore.exact>=250000&&ore.spawnMsg){
       if(CAVE_RARITY_SOUNDS[ore.rarity])playCaveSound(ore.rarity,ore);
       else playSound(ore);
       const col=RC[ore.rarity]||ore.color||'#ffffff';
-      showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
+      const _st=getOreTag(ore);const _sl=_st?' ['+_st.label+']':'';
+      showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+_sl+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
       // Force scanner to update immediately when a qualifying ore appears
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;
     }
@@ -1461,15 +1596,22 @@ function carveSpawnShaft(){
 }
 
 function genWorld(){
-  blocks.fill(0);
-  oreIdx.fill(0);
-  oreRevealed.fill(0);
-  for(let x=0;x<W;x++)for(let z=0;z<D;z++){
-    for(let y=0;y<=TOP_SOLID_Y;y++){
-      blocks[idx(x,y,z)]=1;
-    }
+  // Clear all chunk data and reset window origin to center
+  _chunks.clear();
+  _chunkOriginCX=0; _chunkOriginCZ=0;
+  // Generate all chunks in the initial window
+  const side=RENDER_DIST*2+1;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
+    _ensureChunkGenerated(_chunkOriginCX+ci, _chunkOriginCZ+ck);
   }
-  carveSpawnShaft();
+  _rebuildWindowFromChunks();
+  // Reveal the top surface layer around spawn so player can see what's beneath their feet
+  const cx2=Math.floor(W/2),cz2=Math.floor(D/2);
+  for(let ox=-2;ox<=2;ox++)for(let oz=-2;oz<=2;oz++){
+    const rx=cx2+ox,rz=cz2+oz;
+    if(rx<0||rx>=W||rz<0||rz>=D)continue;
+    revealAdjacentSolid(rx,TOP_SOLID_Y+1,rz,ox*31+oz*17);
+  }
 }
 
 // ═══════════ MINE COUNTER (top bar, resets every 10 000 mines) ═══════════
@@ -1500,7 +1642,7 @@ function resetMine(){
   // Play ding sound
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.exponentialRampToValueAtTime(1760,ac.currentTime+0.1);g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);o.start();o.stop(ac.currentTime+0.6);}catch(e){}
   genWorld();
-  // Real rebuild — call actual buildWorldMesh (defined below)
+  // Chunk-aware: genWorld already rebuilt window from fresh chunks
   _buildWorldMeshReal();
   spawnPlayer();
   _scanCachedBestOre=null;_scanCachedTopOres=null;
@@ -1634,11 +1776,25 @@ function needsAnimCanvasPath(src){
   return /\.(gif|webp|png|jpg|jpeg)(\?|#|$)/i.test(src||'');
 }
 
+// Container for GIF source images — must be visible (not display:none, opacity > ~0.01)
+// for browsers to advance GIF animation frames.
+let _gifContainer=null;
+function _getGifContainer(){
+  if(_gifContainer)return _gifContainer;
+  _gifContainer=document.createElement('div');
+  // 1px-tall strip at bottom edge: clipped to 1px but fully opaque inside.
+  // Each image is 2px wide so they don't overlap (overlapping GIFs may not all animate).
+  _gifContainer.style.cssText='position:fixed;bottom:0;left:0;height:1px;overflow:hidden;pointer-events:none;z-index:1;display:flex;flex-direction:row;';
+  document.body.appendChild(_gifContainer);
+  return _gifContainer;
+}
+
 function mountAnimImageInDom(img){
   if(img.parentNode)return;
-  // opacity:0 keeps GPU compositing alive → browser advances GIF/WEBP animation frames
-  img.style.cssText='position:fixed;right:1px;bottom:1px;width:64px;height:64px;opacity:0.001;pointer-events:none;z-index:0;';
-  document.body.appendChild(img);
+  // Each image is placed in a visible-but-tiny 1px-high container.
+  // The browser MUST see it as rendered+visible to advance GIF frames each tick.
+  img.style.cssText='width:2px;height:64px;flex-shrink:0;object-fit:cover;';
+  _getGifContainer().appendChild(img);
 }
 
 function drawAnimOverlay(ctx,cw,ch,ore){
@@ -1774,8 +1930,8 @@ const PLAYER_PHYSICS_H=0.92;
 
 function solid(x,y,z){
   const bx=Math.floor(x),by=Math.floor(y),bz=Math.floor(z);
-  if(bx<0||bx>=W||bz<0||bz>=D)return false;
-  if(by<0)return true;if(by>=H)return false;
+  if(bx<0||bx>=W||bz<0||bz>=D)return false; // out of world = air
+  if(by<0||by>=H)return false; // below void or above world = air (fall into void)
   return blocks[idx(bx,by,bz)]!==0;
 }
 
@@ -1822,8 +1978,7 @@ function moveAABB(ox,oy,oz,dx,dy,dz){
     for(const cx of[x-PW,x+PW])if(solid(cx,y0,bzn)||solid(cx,y1,bzn)){hit=true;break;}
     if(hit)z=oz;
   }
-  x=Math.max(PW+0.01,Math.min(W-PW-0.01,x));
-  z=Math.max(PW+0.01,Math.min(D-PW-0.01,z));
+  // No x/z boundary clamp — player can walk off the platform
   return{x,y,z};
 }
 
@@ -1858,79 +2013,120 @@ function spawnPlayer(){
   const feetY=solidTop+1.02;
   camera.position.set(sx+0.5,feetY+CAM_H,sz+0.5);
   velY=0;onGround=true;
-  euler.set(-0.15,Math.PI,0);
+  euler.set(-0.3,Math.PI,0);
   camera.quaternion.setFromEuler(euler);
 }
 
-// _buildWorldMeshReal: immediate synchronous rebuild (used by resetMine and init3D)
+// Teleport back to the surface spawn (resets chunk window to origin)
+function goToSurface(){
+  // Reset chunk window so spawn is back at center
+  const prevCX=_chunkOriginCX, prevCZ=_chunkOriginCZ;
+  _chunkOriginCX=0; _chunkOriginCZ=0;
+  // Ensure spawn chunks exist
+  const side=RENDER_DIST*2+1;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
+    _ensureChunkGenerated(ci,ck);
+  }
+  _rebuildWindowFromChunks();
+  _scanCachedBestOre=null;_scanCachedTopOres=null;
+  markMeshDirty();
+  spawnPlayer();
+  showSpawn(lang==='fr'?'⬆ Téléporté à la surface !':'⬆ Teleported to surface!','#60dd60',false);
+}
+
+// ── Material pool: reuse materials instead of creating/disposing each rebuild ──
+const _matPool=new Map(); // hex→MeshBasicMaterial, tex→MeshBasicMaterial
+function _getColorMat(hex){
+  if(_matPool.has(hex))return _matPool.get(hex);
+  const cc=new THREE.Color(hex);
+  const m=new THREE.MeshBasicMaterial({color:cc.getHex()});
+  _matPool.set(hex,m);
+  return m;
+}
+function _getTexMat(tex){
+  const k='__tex__'+tex.uuid;
+  if(_matPool.has(k))return _matPool.get(k);
+  const m=new THREE.MeshBasicMaterial({map:tex});
+  _matPool.set(k,m);
+  return m;
+}
+
+// _buildWorldMeshReal: rebuild only the visible Y-slab around the player (massive perf win)
 function _buildWorldMeshReal(){
-  if(worldMesh){scene.remove(worldMesh);worldMesh.geometry.dispose();worldMesh.material.dispose();worldMesh=null;}
-  IMG_MESHES.forEach(m=>{
-    scene.remove(m);
-    // Do NOT dispose _BOX_GEO — it's shared/reused
-    // Do NOT dispose textures — they live in TEX_CACHE/GIF_TEX_ENTRIES
-    if(m.material){
-      if(Array.isArray(m.material))m.material.forEach(mat=>{if(mat){mat.map=null;mat.dispose();}});
-      else{m.material.map=null;m.material.dispose();}
-    }
-  });
+  if(worldMesh){scene.remove(worldMesh);worldMesh.geometry.dispose();worldMesh.material=null;worldMesh=null;}
+  // Remove old instanced meshes from scene but DON'T dispose materials (pooled) or geometry (shared)
+  IMG_MESHES.forEach(m=>{scene.remove(m);});
   IMG_MESHES.length=0;
 
-  // (colored blocks use BoxGeometry directly, no vertex bucket needed)
+  if(!_BOX_GEO)_BOX_GEO=new THREE.BoxGeometry(1,1,1);
+  const _dummy=new THREE.Object3D();
 
-  const FACES=[
-    {n:[0,0,-1],vs:[[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5],[0.5,0.5,-0.5],[-0.5,0.5,-0.5]],sh:0.78},
-    {n:[0,0,1], vs:[[0.5,-0.5,0.5],[-0.5,-0.5,0.5],[-0.5,0.5,0.5],[0.5,0.5,0.5]],sh:0.78},
-    {n:[-1,0,0],vs:[[-0.5,-0.5,0.5],[-0.5,-0.5,-0.5],[-0.5,0.5,-0.5],[-0.5,0.5,0.5]],sh:0.68},
-    {n:[1,0,0], vs:[[0.5,-0.5,-0.5],[0.5,-0.5,0.5],[0.5,0.5,0.5],[0.5,0.5,-0.5]],sh:0.68},
-    {n:[0,-1,0],vs:[[-0.5,-0.5,0.5],[0.5,-0.5,0.5],[0.5,-0.5,-0.5],[-0.5,-0.5,-0.5]],sh:0.50},
-    {n:[0,1,0], vs:[[-0.5,0.5,-0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]],sh:1.00},
-  ];
+  // ── Y-slab culling: only render blocks the camera can plausibly see ──
+  // Player eye is at camera.position.y; render RENDER_Y_ABOVE above and RENDER_Y_BELOW below
+  const RENDER_Y_ABOVE=8;
+  const RENDER_Y_BELOW=32; // look down into tunnels
+  const camY=camera?Math.floor(camera.position.y):TOP_SOLID_Y;
+  const yMin=Math.max(0,camY-RENDER_Y_BELOW);
+  const yMax=Math.min(H-1,camY+RENDER_Y_ABOVE);
 
   function air(x,y,z){
     if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return true;
     return!blocks[idx(x,y,z)];
   }
-
   function isPhantom(x,y,z){return phantomBlock&&phantomBlock.x===x&&phantomBlock.y===y&&phantomBlock.z===z;}
 
-  // Shared geometry for all boxes (reused, never recreated)
-  if(!_BOX_GEO)_BOX_GEO=new THREE.BoxGeometry(1,1,1);
-  const _dummy=new THREE.Object3D();
-  const cc=new THREE.Color();
+  // Check 6 neighbours inline (no FACES array allocation per block)
+  const NX=[1,-1,0,0,0,0];
+  const NY=[0,0,1,-1,0,0];
+  const NZ=[0,0,0,0,1,-1];
 
-  // Collect blocks by type: colored (hex→positions) and textured (tex→positions)
-  const colorMap={}; // hex → [x,y,z ...]
-  const texMap=new Map(); // tex → [{x,y,z,isPhantom}]
-  const phantomColorMap={}; // for phantom colored blocks
+  const colorMap={}; // hex → Float32Array-backed positions list
+  const texMap=new Map(); // tex → positions list
 
-  for(let x=0;x<W;x++)for(let y=0;y<H;y++)for(let z=0;z<D;z++){
-    if(!blocks[idx(x,y,z)])continue;
+  for(let x=0;x<W;x++)for(let y=yMin;y<=yMax;y++)for(let z=0;z<D;z++){
     const ci=idx(x,y,z);
-    const ore=oreRevealed[ci]?ORES[oreIdx[ci]||0]:ORES[0];
-    const phantom=isPhantom(x,y,z);
-    const hasFace=FACES.some(f=>air(x+f.n[0],y+f.n[1],z+f.n[2]));
+    if(!blocks[ci])continue;
+    // Quick face check: skip fully buried blocks
+    let hasFace=false;
+    for(let f=0;f<6;f++){
+      if(air(x+NX[f],y+NY[f],z+NZ[f])){hasFace=true;break;}
+    }
     if(!hasFace)continue;
+    const ore=oreRevealed[ci]?ORES[oreIdx[ci]||0]:ORES[0];
     const hasImg=!!ore.imgSrc;
     const hasSym=ore.symbol!=null&&String(ore.symbol).trim()!=='';
     if(hasImg||hasSym){
       const tex=getOreFaceTexture(ore);
       if(!tex)continue;
       if(!texMap.has(tex))texMap.set(tex,[]);
-      texMap.get(tex).push({x,y,z,phantom});
+      texMap.get(tex).push(x,y,z);
     }else{
-      const key=(ore.color||'#888888')+(phantom?'_p':'');
-      if(!colorMap[key])colorMap[key]={color:ore.color||'#888888',phantom,positions:[]};
-      colorMap[key].positions.push(x,y,z);
+      const key=ore.color||'#888888';
+      if(!colorMap[key])colorMap[key]=[];
+      colorMap[key].push(x,y,z);
     }
   }
 
-  // Build InstancedMesh per color (massive perf win vs individual meshes)
-  for(const {color,phantom,positions} of Object.values(colorMap)){
+  // Build InstancedMeshes
+  for(const [hex,positions] of Object.entries(colorMap)){
     const count=positions.length/3;
     if(!count)continue;
-    cc.set(color);
-    const mat=new THREE.MeshBasicMaterial({color:cc.getHex()});
+    const mat=_getColorMat(hex);
+    const im=new THREE.InstancedMesh(_BOX_GEO,mat,count);
+    im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    for(let k=0;k<count;k++){
+      _dummy.position.set(positions[k*3]+0.5,positions[k*3+1]+0.5,positions[k*3+2]+0.5);
+      _dummy.updateMatrix();
+      im.setMatrixAt(k,_dummy.matrix);
+    }
+    im.instanceMatrix.needsUpdate=true;
+    scene.add(im);
+    IMG_MESHES.push(im);
+  }
+  for(const [tex,positions] of texMap){
+    const count=positions.length/3;
+    if(!count)continue;
+    const mat=_getTexMat(tex);
     const im=new THREE.InstancedMesh(_BOX_GEO,mat,count);
     im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     for(let k=0;k<count;k++){
@@ -1943,34 +2139,17 @@ function _buildWorldMeshReal(){
     IMG_MESHES.push(im);
   }
 
-  // Build InstancedMesh per texture (textured blocks)
-  for(const [tex,blocks2] of texMap){
-    const mat=new THREE.MeshBasicMaterial({map:tex});
-    const im=new THREE.InstancedMesh(_BOX_GEO,mat,blocks2.length);
-    im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    blocks2.forEach(({x,y,z},k)=>{
-      _dummy.position.set(x+0.5,y+0.5,z+0.5);
-      _dummy.updateMatrix();
-      im.setMatrixAt(k,_dummy.matrix);
-    });
-    im.instanceMatrix.needsUpdate=true;
-    scene.add(im);
-    IMG_MESHES.push(im);
-  }
-
-  // All blocks now rendered as individual BoxGeometry meshes (tracked in IMG_MESHES)
-  // worldMesh is no longer used for colored blocks
-  _scanCachedBestOre=null;_scanCachedTopOres=null; // invalidate scanner cache on world change
+  _scanCachedBestOre=null;_scanCachedTopOres=null;
 }
 
 function init3D(){
   scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x0b1220);
-  scene.fog=new THREE.Fog(0x0b1220,20,60);
+  scene.background=new THREE.Color(0x87ceeb); // open sky
+  scene.fog=new THREE.Fog(0x87ceeb,50,130);
   camera=new THREE.PerspectiveCamera(75,1,0.05,120);
   renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  scene.add(new THREE.AmbientLight(0x6677aa,0.6));
+  scene.add(new THREE.AmbientLight(0xaabbcc,1.0));
   const sun=new THREE.DirectionalLight(0xffe8cc,1.1);sun.position.set(10,18,8);scene.add(sun);
   raycaster=new THREE.Raycaster();
   raycaster.near=0.08;
@@ -1997,17 +2176,16 @@ function init3D(){
   });
   document.addEventListener('mousedown',e=>{
     if(e.button===0){
-      // LMB: request lock if not locked; in free mode just mine if hovering block
       if(!isLocked&&!isFreeMouse&&!shopOpen){cv.requestPointerLock();return;}
+      if(_autoMine){_cancelAutoMine();return;} // tap cancels auto-mine
       miningHeld=true;
     }
     if(e.button===2){
       e.preventDefault();
-      // RMB always places phantom regardless of lock state (as long as not in shop)
       if(!shopOpen)doPlace();
     }
   });
-  document.addEventListener('mouseup',e=>{if(e.button===0)miningHeld=false;});
+  document.addEventListener('mouseup',e=>{if(e.button===0){miningHeld=false;}});
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('keydown',e=>{
     keys[e.code]=true;
@@ -2061,6 +2239,8 @@ function movePlayer(dt){
   const p=camera.position;
   const r=moveAABB(p.x,p.y,p.z,dx,velY*dt,dz);
   p.set(r.x,r.y,r.z);
+  // Void death: fell off platform
+  if(p.y < -5){ spawnPlayer(); return; }
   const feet=p.y-CAM_H;
   const cap=minCeilingAbove(p.x,feet,p.z);
   const maxEye=cap-0.1;
@@ -2092,11 +2272,66 @@ function hitPos(h,inside){
 
 // ═══════════ MINING ═══════════
 function tickMine(dt){
-  if(!miningHeld||isFreeMouse||shopOpen){mineCd=0;return;}
+  // Determine if the mine action should fire this tick
+  const shouldMine=(_autoMine||miningHeld)&&!isFreeMouse&&!shopOpen;
+
+  // ── Hold-to-auto-mine progress ──
+  if(miningHeld&&!_autoMine&&!isFreeMouse&&!shopOpen){
+    _holdMineTimer+=dt;
+    _updateMineRing(_holdMineTimer/AUTO_MINE_HOLD);
+    if(_holdMineTimer>=AUTO_MINE_HOLD){
+      // Activate auto-mine
+      _autoMine=true;
+      _holdMineTimer=0;
+      _updateMineRing(0);
+      _setMineBtnAutoActive(true);
+      showSpawn(lang==='fr'?'⛏ Auto-mine ACTIVÉ — cliquez pour arrêter':'⛏ Auto-mine ON — click to stop','#ffcc00',false);
+    }
+  } else if(!miningHeld&&!_autoMine){
+    // Reset hold timer when released without reaching threshold
+    if(_holdMineTimer>0){
+      _holdMineTimer=0;
+      _updateMineRing(0);
+    }
+  }
+
+  if(!shouldMine){mineCd=0;return;}
   mineCd-=dt;
   if(mineCd>0)return;
   mineCd=MINE_INTERVAL;
   doMine();
+}
+
+function _updateMineRing(frac){
+  const ring=document.getElementById('mine-btn-ring');
+  if(!ring)return;
+  const circle=ring.querySelector('circle');
+  if(!circle)return;
+  if(frac<=0){ring.classList.remove('show');return;}
+  ring.classList.add('show');
+  // stroke-dasharray=283 (≈2π×45), offset goes from 283 (empty) to 0 (full)
+  circle.style.strokeDashoffset=Math.round(283*(1-frac));
+}
+
+function _setMineBtnAutoActive(on){
+  const btn=document.getElementById('mine-btn');
+  if(!btn)return;
+  if(on){
+    btn.classList.add('auto-active');
+    btn.innerHTML='⛏<br><span style="font-size:6px;color:#ffcc00">AUTO</span>';
+  }else{
+    btn.classList.remove('auto-active');
+    btn.innerHTML='⛏<br>MINE';
+  }
+}
+
+// Toggle auto-mine off (called on tap/click when auto is active)
+function _cancelAutoMine(){
+  _autoMine=false;
+  _holdMineTimer=0;
+  _updateMineRing(0);
+  _setMineBtnAutoActive(false);
+  showSpawn(lang==='fr'?'⛏ Auto-mine DÉSACTIVÉ':'⛏ Auto-mine OFF','#aaaaaa',false);
 }
 
 function doMine(){
@@ -2104,12 +2339,16 @@ function doMine(){
   const{x,y,z}=hitPos(h,true);
   if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
   const i=idx(x,y,z);if(!blocks[i])return;
+  // Bedrock: bottom layer cannot be mined (prevent mining into void)
+  // Note: no longer clamp X/Z — players can walk anywhere
+  if(y===0)return;
   const oI=oreIdx[i]||0;
   const ore=ORES[oI];
 
   // ── Phantom block pickup — handle first and return early ──
   if(phantomBlock&&phantomBlock.x===x&&phantomBlock.y===y&&phantomBlock.z===z){
     blocks[i]=0;
+    _syncBlockWrite(x,y,z); // sync removal to chunk
     if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
     const pName=phantomBlock.name;
     phantomBlock=null;
@@ -2123,6 +2362,7 @@ function doMine(){
 
   // ── Normal block ──
   blocks[i]=0;mined++;
+  _syncBlockWrite(x,y,z); // persist block removal to chunk
   inventory[ore.name]=(inventory[ore.name]||0)+1;
   // Apply gear mine effects (duplication, upgrade, etc.)
   const _gearExtras=applyGearMineEffect(ore);
@@ -2177,9 +2417,11 @@ function spawnCave(cx,cy,cz){
         oreIdx[i]=baseOreIdx>=0?baseOreIdx:0;
       }
       oreRevealed[i]=1;
+      _syncBlockWrite(nx,ny,nz);
     }else{
       // Interior: air
       blocks[i]=0;
+      _syncBlockWrite(nx,ny,nz);
       newAir.push([nx,ny,nz]);
     }
   }
@@ -2201,6 +2443,7 @@ function spawnCave(cx,cy,cz){
       if(Math.random()<spawnProb){
         oreIdx[ii]=exIdx;
         oreRevealed[ii]=1;
+        _syncBlockWrite(nx,ny,nz);
         if(caveOre.spawnMsg){
           // Always play the appropriate sound for cave exclusives
           const _caveSound=CAVE_RARITY_SOUNDS[caveOre.rarity];
@@ -2208,7 +2451,8 @@ function spawnCave(cx,cy,cz){
             try{const _el=document.getElementById(_caveSound);if(_el){_el.currentTime=0;_el.play().catch(()=>{});}}catch(e){}
           }else if(!_caveSound){playSound(caveOre);}
           const caveCol=RC[caveOre.rarity]||caveOre.color||'#ffffff';
-          showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
+          const _ct=getOreTag(caveOre);const _cl=_ct?' ['+_ct.label+']':'';
+          showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+_cl+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
           if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;
         }
         break;
@@ -2234,7 +2478,7 @@ function removePrevPhantom(){
   const{x,y,z,oi}=phantomBlock;
   if(blocks[idx(x,y,z)]&&oreIdx[idx(x,y,z)]===oi){
     blocks[idx(x,y,z)]=0;
-    // Rebuild mesh will happen after
+    _syncBlockWrite(x,y,z);
   }
   // Remove 3D phantom mesh
   if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
@@ -2258,26 +2502,8 @@ function doPlace(){
     const pos=hitPos(h,false);
     x=pos.x;y=pos.y;z=pos.z;
   }else{
-    // No block in range — raycast forward and clamp to world border
-    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
-    const origin=camera.position;
-    // Step along ray until we hit world boundary or find empty air cell at border
-    let found=false;
-    for(let d=0.5;d<=range;d+=0.5){
-      const tx=origin.x+dir.x*d;
-      const ty=origin.y+dir.y*d;
-      const tz=origin.z+dir.z*d;
-      const bx=Math.floor(tx),by=Math.floor(ty),bz=Math.floor(tz);
-      // Check if we've reached the world edge
-      const atEdge=(bx<=0||bx>=W-1||by<=0||by>=H-1||bz<=0||bz>=D-1);
-      if(atEdge){
-        x=Math.max(0,Math.min(W-1,bx));
-        y=Math.max(0,Math.min(H-1,by));
-        z=Math.max(0,Math.min(D-1,bz));
-        found=true;break;
-      }
-    }
-    if(!found)return;
+    // No hit — can't place in open air
+    return;
   }
   if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
   if(blocks[idx(x,y,z)])return;
@@ -2295,6 +2521,7 @@ function doPlace(){
   blocks[pi]=1;
   oreIdx[pi]=oI;
   oreRevealed[pi]=1;
+  _syncBlockWrite(x,y,z); // persist to chunk
   phantomBlock={x,y,z,oi:oI,name:selectedInv};
   _scanOre=null;_scanPos=null;
   if(ORES[oI].epinephrine)startEpineAudio(x,y,z);
@@ -2395,8 +2622,8 @@ const _scnDivs=[];
 function _getOrCreateScnDiv(i){
   if(_scnDivs[i])return _scnDivs[i];
   const d=document.createElement('div');
-  d.style.cssText='position:absolute;pointer-events:none;text-align:center;z-index:25;display:none;transform:translate(-50%,-50%);transition:opacity 0.15s ease;';
-  d.innerHTML='<div class="scn-block-m" style="margin:0 auto"></div><div class="scn-rarity-badge-m" style="font-size:5px;border-radius:3px;padding:1px 5px;margin:2px auto 0;display:none;border:1px solid currentColor;opacity:0.85;"></div><div class="scn-exact-m" style="font-size:5px;color:rgba(255,255,255,0.55);margin-top:2px;white-space:nowrap;"></div>';
+  d.style.cssText='position:absolute;pointer-events:none;text-align:center;z-index:25;display:none;transform:translate(-50%,-50%);';
+  d.innerHTML='<div class="scn-icon-m"></div>';
   document.getElementById('hud').appendChild(d);
   _scnDivs[i]=d;
   return d;
@@ -2455,12 +2682,53 @@ function updateScanner(h){
       if(_scanOre!==pOre||_scanPos!=='phantom'){
         _scanOre=pOre;_scanPos='phantom';
         blockDiv.innerHTML='';
-        blockDiv.appendChild(_buildOreBlockEl(pOre,prc,pSize));
-        document.getElementById('scn-rarity-badge').style.display='none';
-        document.getElementById('scn-exact').textContent='[PHANTOM] '+pOre.name;
-        document.getElementById('scn-exact').style.color=prc;
+        // Show ore image/GIF if available
+        if(pOre.imgSrc){
+          const c=document.createElement('canvas');c.width=128;c.height=128;
+          c.id='phantom-scn-canvas';
+          c.style.cssText='display:block;width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;image-rendering:pixelated;';
+          // Draw immediately if loaded
+          const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(pOre.imgSrc)||e.img.src.endsWith(pOre.imgSrc.split('/').pop())));
+          if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
+            try{const ctx2=c.getContext('2d');ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
+          } else {
+            const fallImg=new Image();
+            fallImg.onload=()=>{try{const ctx2=c.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(fallImg,0,0,128,128);}catch(e){}};
+            fallImg.src=pOre.imgSrc;
+          }
+          blockDiv.appendChild(c);
+        } else if(pOre.symbol){
+          // Symbol block
+          const sc=document.createElement('canvas');sc.width=64;sc.height=64;
+          const ctx=sc.getContext('2d');
+          ctx.fillStyle=pOre.color||'#888';ctx.fillRect(0,0,64,64);
+          ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=pOre.symbolColor||'#fff';
+          ctx.font='bold '+(pOre.symbol.length>2?18:28)+'px Arial';ctx.fillText(String(pOre.symbol),32,32);
+          sc.style.cssText='display:block;width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;';
+          blockDiv.appendChild(sc);
+        } else {
+          // Color block with rarity icon overlay
+          const pSvg=drawRarityIcon(pOre.rarity,prc);
+          if(pSvg){blockDiv.innerHTML='<div style="filter:drop-shadow(0 0 10px '+prc+')">'+pSvg+'</div>';}
+          else{
+            const cblk=document.createElement('div');
+            cblk.style.cssText='width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;background:'+pOre.color+'44;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;margin:auto;display:flex;align-items:center;justify-content:center;';
+            const inner=document.createElement('div');
+            inner.style.cssText='width:'+(pSize*0.5)+'px;height:'+(pSize*0.5)+'px;border-radius:50%;background:'+prc+'66;border:2px solid '+prc+';';
+            cblk.appendChild(inner);blockDiv.appendChild(cblk);
+          }
+        }
+        // Name label
+        const nameEl=document.getElementById('scn-name');
+        nameEl.textContent=pOre.name;nameEl.style.color=prc;
+        // Rarity badge
+        const badgeEl=document.getElementById('scn-rarity-badge');
+        badgeEl.textContent=getRarityDisplay(pOre.rarity);
+        badgeEl.style.color=prc;badgeEl.style.background=prc+'22';badgeEl.style.border='1px solid '+prc+'55';
+        // Exact rarity
+        const exactEl=document.getElementById('scn-exact');
+        exactEl.textContent=T.rare1+fmtExact(pOre.exact);
       }
-      blockDiv.style.width=pSize+'px';blockDiv.style.height=pSize+'px';
       _hideAllScnDivs();
       return;
     }
@@ -2468,7 +2736,7 @@ function updateScanner(h){
 
   ov.style.display='none';_scanOre=null;_scanPos=null;
 
-  // ── Regular scanner (pick T4+) — shows top N rarest ores simultaneously ──
+  // ── Regular scanner (pick T4+) — shows ALL qualifying ores simultaneously ──
   if(!pick||pick.scanMin===0){_hideAllScnDivs();return;}
 
   _scanFrameCount++;
@@ -2479,14 +2747,10 @@ function updateScanner(h){
       if(!blocks[ci]||!oreRevealed[ci])continue;
       const ore=ORES[oreIdx[ci]||0];
       if(!ore||ore.exact<pick.scanMin)continue;
-      if(found.length<SCN_MAX){
-        found.push({ore,x,y,z});
-        found.sort((a,b)=>b.ore.exact-a.ore.exact);
-      }else if(ore.exact>found[found.length-1].ore.exact){
-        found[found.length-1]={ore,x,y,z};
-        found.sort((a,b)=>b.ore.exact-a.ore.exact);
-      }
+      found.push({ore,x,y,z});
     }
+    // Sort by rarity (rarest first)
+    found.sort((a,b)=>b.ore.exact-a.ore.exact);
     _scanCachedTopOres=found;
     if(found.length>0){_scanCachedBestOre=found[0].ore;_scanCachedBestX=found[0].x;_scanCachedBestY=found[0].y;_scanCachedBestZ=found[0].z;}
     else{_scanCachedBestOre=null;_scanCachedTopOres=null;}
@@ -2496,15 +2760,20 @@ function updateScanner(h){
   let aimedX=-1,aimedY=-1,aimedZ=-1;
   if(h){const aimed=hitPos(h,true);aimedX=aimed.x;aimedY=aimed.y;aimedZ=aimed.z;}
 
-  for(let i=0;i<SCN_MAX;i++){
-    const d=_getOrCreateScnDiv(i);
-    if(i>=topOres.length){d.style.display='none';continue;}
+  // Ensure we have enough scn divs
+  while(_scnDivs.length<topOres.length)_getOrCreateScnDiv(_scnDivs.length);
+  // Hide all first
+  for(let i=0;i<_scnDivs.length;i++){if(_scnDivs[i])_scnDivs[i].style.display='none';}
+
+  let shown=0;
+  for(let i=0;i<topOres.length;i++){
     const {ore,x,y,z}=topOres[i];
-    if(x===aimedX&&y===aimedY&&z===aimedZ){d.style.display='none';continue;}
+    if(x===aimedX&&y===aimedY&&z===aimedZ)continue;
+    const d=_getOrCreateScnDiv(shown);
     const worldCenter=new THREE.Vector3(x+0.5,y+0.5,z+0.5);
     const dist=camera.position.distanceTo(worldCenter);
     const v=worldCenter.clone().project(camera);
-    if(v.z>1){d.style.display='none';continue;}
+    if(v.z>1){d.style.display='none';shown++;continue;}
     const sx=(v.x+1)/2*window.innerWidth;
     const sy=(1-v.y)/2*window.innerHeight;
     const rawSize=Math.round(Math.min(90,Math.max(24,dist*5)));
@@ -2515,21 +2784,15 @@ function updateScanner(h){
     const posKey=x*10000+y*100+z;
     if(d._ore!==ore||d._posKey!==posKey){
       d._ore=ore;d._posKey=posKey;
-      const blockDiv=d.querySelector('.scn-block-m');
-      blockDiv.innerHTML='';
-      blockDiv.appendChild(_buildOreBlockEl(ore,rc,rawSize));
-      blockDiv.style.width=rawSize+'px';blockDiv.style.height=rawSize+'px';
-      const badge=d.querySelector('.scn-rarity-badge-m');
-      badge.style.display='inline-block';
-      badge.textContent=getRarityDisplay(ore.rarity);badge.style.color=rc;badge.style.borderColor=rc;badge.style.textShadow='0 0 6px '+rc;
-      const exact=d.querySelector('.scn-exact-m');
-      exact.textContent='1/'+fmtExact(ore.exact);
-    }else{
-      const blockDiv=d.querySelector('.scn-block-m');
-      blockDiv.style.width=rawSize+'px';blockDiv.style.height=rawSize+'px';
-      const el=blockDiv.firstElementChild;
-      if(el){el.style.width=rawSize+'px';el.style.height=rawSize+'px';}
+      const iconDiv=d.querySelector('.scn-icon-m');
+      const svg=drawRarityIcon(ore.rarity,rc);
+      if(svg){
+        iconDiv.innerHTML='<div style="filter:drop-shadow(0 0 10px '+rc+')">'+svg+'</div>';
+      }else{
+        iconDiv.innerHTML='<div style="width:22px;height:22px;border-radius:50%;background:'+rc+'44;border:2px solid '+rc+';box-shadow:0 0 8px '+rc+';margin:auto"></div>';
+      }
     }
+    shown++;
   }
 }
 
@@ -2736,6 +2999,82 @@ function updateHudStatsOnly(){
   updateMineTopBar();
 }
 
+
+// ═══════════ ORE TAG HELPER ═══════════
+// Returns {label, color} tag for event ores and cave ores, null for normal ores.
+const EVENT_TAG_COLORS={
+  space:'#aaaaff', ocean:'#00bfff', nuclear:'#39ff14', fire:'#ff6600',
+  computer:'#00ffcc', mlp:'#ff66cc', terraria:'#adff2f', evolie:'#9c6a28'
+};
+const EVENT_TAG_LABELS={
+  space:'SPACE', ocean:'OCEAN', nuclear:'NUCLEAR', fire:'FIRE',
+  computer:'COMPUTER', mlp:'MLP', terraria:'TERRARIA', evolie:'EVOLIE'
+};
+
+// Map cave rarity prefix → cave display info
+const CAVE_RARITY_TAG={
+  'IceCaveExclusive':    {label:'ICE CAVE',     color:'#88eeff'},
+  'EnergyCaveExclusive': {label:'ENERGY CAVE',  color:'#a327f5'},
+  'NuclearCaveExclusive':{label:'NUCLEAR CAVE', color:'#46f527'},
+  'ShadowCaveExclusive': {label:'SHADOW CAVE',  color:'#555955'},
+  'AbyssCaveExclusive':  {label:'ABYSS CAVE',   color:'#3355ff'},
+  'LavaCaveExclusive':   {label:'LAVA CAVE',    color:'#ff4400'},
+  'NormalCaveExclusive': {label:'CAVE',         color:'#888888'},
+};
+// Cave exclusives (non-base) — ores found only in a certain cave type
+function getCaveTagForOre(ore){
+  if(!ore)return null;
+  // caveBase ores are the cave floor blocks — still show their cave tag
+  // Check if rarity ends with CaveExclusive
+  const r=ore.rarity||'';
+  for(const prefix of Object.keys(CAVE_RARITY_TAG)){
+    if(r===prefix||r.startsWith(prefix)){
+      return CAVE_RARITY_TAG[prefix];
+    }
+  }
+  // Check if the ore appears as an exclusive in a CAVE_TYPES entry
+  for(const ct of CAVE_TYPES){
+    if(ct.exclusives&&ct.exclusives.includes(ore.name)){
+      // Map cave type to tag
+      const caveMap={
+        NormalCave: {label:'CAVE',         color:'#888888'},
+        IceCave:    {label:'ICE CAVE',     color:'#88eeff'},
+        EnergyCave: {label:'ENERGY CAVE',  color:'#a327f5'},
+        NuclearCave:{label:'NUCLEAR CAVE', color:'#46f527'},
+        ShadowCave: {label:'SHADOW CAVE',  color:'#555955'},
+        AbyssCave:  {label:'ABYSS CAVE',   color:'#3355ff'},
+        LavaCave:   {label:'LAVA CAVE',    color:'#ff4400'},
+      };
+      return caveMap[ct.type]||null;
+    }
+  }
+  return null;
+}
+
+function getOreTag(ore){
+  if(!ore)return null;
+  // Event tag — check ore.event directly
+  if(ore.event&&EVENT_TAG_COLORS[ore.event]){
+    return{label:EVENT_TAG_LABELS[ore.event],color:EVENT_TAG_COLORS[ore.event]};
+  }
+  // Fallback: look up in EVENT_ORES by name in case the field was lost
+  if(ore.name){
+    const eo=EVENT_ORES.find(e=>e.name===ore.name);
+    if(eo&&eo.event&&EVENT_TAG_COLORS[eo.event]){
+      return{label:EVENT_TAG_LABELS[eo.event],color:EVENT_TAG_COLORS[eo.event]};
+    }
+  }
+  // Cave tag
+  return getCaveTagForOre(ore);
+}
+
+function oreTagHTML(ore,fontSize){
+  const tag=getOreTag(ore);
+  if(!tag)return'';
+  const fs=fontSize||'5px';
+  return`<span style="font-size:${fs};color:${tag.color};background:${tag.color}18;border:1px solid ${tag.color}55;border-radius:2px;padding:0 3px;margin-left:3px;white-space:nowrap;letter-spacing:0.5px;vertical-align:middle">[${tag.label}]</span>`;
+}
+
 function rebuildInvPanel(){
   const list=document.getElementById('inv-list');
   const entries=Object.entries(inventory).filter(([,q])=>q>0)
@@ -2749,13 +3088,14 @@ function rebuildInvPanel(){
       const rc=ore?(RC[ore.rarity]||ore.color||'#ddd'):'#ddd';
       const row=document.createElement('div');
       row.className='ore-row'+(selectedInv===n?' sel':'');
-      row.innerHTML=`<div class="ore-dot" style="background:${ore?ore.color:'#888'}"></div><span style="color:${rc}">${n}</span><span class="ore-qty">x${q}</span>`;
+      row.innerHTML=`<div class="ore-dot" style="background:${ore?ore.color:'#888'}"></div><span style="color:${rc}">${n}</span>${oreTagHTML(ore,'4.5px')}<span class="ore-qty">x${q}</span>`;
       row.addEventListener('mouseenter',()=>{
         if(!ore)return;
         const tip=document.getElementById('ore-tip');
         document.getElementById('ot-name').textContent=n;
         const rc2=RC[ore.rarity]||'#aaa';
-        document.getElementById('ot-rare').innerHTML=`<span style="color:${rc2}">${getRarityDisplay(ore.rarity)}</span>`;
+        const tag2=getOreTag(ore);
+        document.getElementById('ot-rare').innerHTML=`<span style="color:${rc2}">${getRarityDisplay(ore.rarity)}</span>`+(tag2?` <span style="color:${tag2.color};background:${tag2.color}18;border:1px solid ${tag2.color}55;border-radius:2px;padding:0 3px;font-size:5px">[${tag2.label}]</span>`:'');
         document.getElementById('ot-exact').textContent=T.rare1+fmtExact(ore.exact);
         const rect=row.getBoundingClientRect();
         tip.style.left=(rect.right+6)+'px';tip.style.top=rect.top+'px';tip.style.display='block';
@@ -2780,11 +3120,13 @@ function rebuildInvPanel(){
     row.innerHTML=
       `<div class="idx-dot" style="background:${owned?ore.color:'#1a1a1a'}"></div>`+
       `<span style="color:${owned?rc:'rgba(255,255,255,0.18)'}">${ore.name}</span>`+
+      `${oreTagHTML(ore,'4px')}`+
       `<span class="idx-exact" style="color:${owned?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.1)'}">1/${fmtExact(ore.exact)}</span>`;
     row.addEventListener('mouseenter',()=>{
       const tip=document.getElementById('ore-tip');
       document.getElementById('ot-name').textContent=ore.name+(owned?' x'+qty:'');
-      document.getElementById('ot-rare').innerHTML=`<span style="color:${rc}">${getRarityDisplay(ore.rarity)}</span>`;
+      const tagI=getOreTag(ore);
+      document.getElementById('ot-rare').innerHTML=`<span style="color:${rc}">${getRarityDisplay(ore.rarity)}</span>`+(tagI?` <span style="color:${tagI.color};background:${tagI.color}18;border:1px solid ${tagI.color}55;border-radius:2px;padding:0 3px;font-size:5px">[${tagI.label}]</span>`:'');
       document.getElementById('ot-exact').textContent=T.rare1+fmtExact(ore.exact);
       const rect=row.getBoundingClientRect();
       tip.style.left=(rect.right+6)+'px';
@@ -2838,6 +3180,7 @@ function abilityMine(wx,wy,wz){
   const ore=ORES[oreIdx[i]||0];
   blocks[i]=0;mined++;
   inventory[ore.name]=(inventory[ore.name]||0)+1;
+  _syncBlockWrite(wx,wy,wz); // persist removal to chunk
   markInvDirty();
   revealAdjacentSolid(wx,wy,wz,mined);
   // Cave generation — ability mines count toward cave trigger (fixed 2450 blocks)
@@ -3738,6 +4081,12 @@ function loop(t=0){
   if(!shopOpen&&!isFreeMouse)movePlayer(dt);
   tickMine(dt);
 
+  // Update chunk window (shift if player moved to new chunk)
+  if(_updateChunkWindow()){
+    _meshDirty=true;
+    _scanCachedBestOre=null;_scanCachedTopOres=null;
+  }
+
   // Update stats display once per second (not every frame)
   if(t-lastHudTick>1000){lastHudTick=t;updateHUD();}
 
@@ -3887,9 +4236,13 @@ function loop(t=0){
     // ── Mine button ──
     mineBtn.addEventListener('touchstart',e=>{
       e.preventDefault();e.stopPropagation();
+      if(_autoMine){_cancelAutoMine();return;} // tap cancels auto-mine
       miningHeld=true;mineBtn.classList.add('active');
     },{passive:false});
-    const mineOff=()=>{miningHeld=false;mineBtn.classList.remove('active');};
+    const mineOff=()=>{
+      miningHeld=false;
+      if(!_autoMine)mineBtn.classList.remove('active');
+    };
     mineBtn.addEventListener('touchend',mineOff,{passive:false});
     mineBtn.addEventListener('touchcancel',mineOff);
 
@@ -3922,12 +4275,29 @@ function loop(t=0){
 
     // ── Override tickMine to bypass pointer lock requirement ──
     window.tickMine=function(dt){
-      if(miningHeld&&!shopOpen){
-        mineCd-=dt;
-        if(mineCd<=0){mineCd=MINE_INTERVAL;doMine();}
-      }else{
-        mineCd=0;
+      const shouldMine=(_autoMine||miningHeld)&&!shopOpen;
+
+      // Hold-to-auto progress (mobile)
+      if(miningHeld&&!_autoMine&&!shopOpen){
+        _holdMineTimer+=dt;
+        _updateMineRing(_holdMineTimer/AUTO_MINE_HOLD);
+        if(_holdMineTimer>=AUTO_MINE_HOLD){
+          _autoMine=true;
+          _holdMineTimer=0;
+          _updateMineRing(0);
+          _setMineBtnAutoActive(true);
+          miningHeld=false; // release physical hold — auto takes over
+          mineBtn.classList.remove('active');
+          showSpawn(lang==='fr'?'⛏ Auto-mine ACTIVÉ — tapez pour arrêter':'⛏ Auto-mine ON — tap to stop','#ffcc00',false);
+        }
+      } else if(!miningHeld&&!_autoMine&&_holdMineTimer>0){
+        _holdMineTimer=0;
+        _updateMineRing(0);
       }
+
+      if(!shouldMine){mineCd=0;return;}
+      mineCd-=dt;
+      if(mineCd<=0){mineCd=MINE_INTERVAL;doMine();}
     };
 
     // Prevent canvas touch from triggering pointer lock
