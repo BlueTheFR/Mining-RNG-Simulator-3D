@@ -2470,7 +2470,7 @@ function spawnCave(cx,cy,cz){
       const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
       if(chosen.type==='NormalCave'){
         // Normal cave walls get regular ore rolls (same as normal world)
-        const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),,combinedLuck);
+        const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),combinedLuck);
         oreIdx[i]=oI;
       }else{
         // Typed cave walls get the cave base block type
