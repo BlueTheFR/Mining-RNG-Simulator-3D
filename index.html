@@ -1572,7 +1572,7 @@ function rollOreNormal(roll,depthFrac,lk){
     let w=lk/o.exact;
     if(o.event&&o.event===currentEvent){
       // Active event ores: massively boosted so luck meaningfully affects them
-      w*=500*(1+lk*0.5);
+      w*=1*(1+lk*0.5);
     } else if(o.exact>1000){
       w*=(0.05+depthFrac*0.95);
     }else{
