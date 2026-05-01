@@ -1577,8 +1577,8 @@ function rollOreNormal(roll, lk){
 
     // Event modifier (kept)
     if(o.event && o.event === currentEvent){
-      w *= 0.5 * (1 + lk * 0.5);
-    }
+	w = Math.max(w, 1 / o.exact);
+}
 
     parts.push({ i, w });
     tot += w;
