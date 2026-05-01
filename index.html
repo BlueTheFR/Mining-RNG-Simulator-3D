@@ -1582,18 +1582,10 @@ function rollOreNormal(roll, depthFrac, lk) {
 
     // event is just a bonus layer, not a different system
     if (o.event) {
-      rarityModifier *= 1.2;
+      rarityModifier *= 1;
     }
 
     let w = base * depthCurve * lk * rarityModifier;
-
-    // optional unified cap (applies to everything equally)
-    const cap = base * (2 + depthFrac); 
-    if (w > cap) w = cap;
-
-    parts.push({ i, w });
-    tot += w;
-  }
 
   let r = roll * tot;
 
