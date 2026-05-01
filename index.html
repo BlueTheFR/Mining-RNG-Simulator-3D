@@ -759,7 +759,7 @@ function isCaveExclusiveOre(ore){
 // These spawn in the world during matching events (not cave exclusive)
 const EVENT_ORES=[
   // Space
-  {name:'Starflare',    rarity:'Exotic',      exact:750000,       color:'#ffd700',symbol:'SF',event:'space'},
+  {name:'Starflare',    rarity:'Exotic',      exact:750000,       color:'#ffd700',symbol:'SF',event:'space',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'NebulonPrime', rarity:'Transcendent',exact:42000000,     color:'#00e5ff',symbol:'NP',event:'space',spawnMsg:'A celestial hum echoes as NebulonPrime forms!',spawnMsgFr:'Un murmure céleste résonne lorsque NebulonPrime se forme !'},
   {name:'EventHorizonShard',rarity:'Enigmatic',exact:88000000,    color:'#1a1a1a',symbol:'EH',event:'space',spawnMsg:'Space distorts violently!',spawnMsgFr:'L\'espace se distord violemment !'},
   {name:'SingularityCore',rarity:'Unfathomable',exact:210000000,  color:'#000000',symbol:'SC',event:'space',spawnMsg:'Gravity collapses inward!',spawnMsgFr:'La gravité s\'effondre vers l\'intérieur !'},
@@ -767,49 +767,49 @@ const EVENT_ORES=[
   {name:'CosmicParallax',rarity:'Imaginary',  exact:1700000000,   color:'#111111',symbol:'CP',event:'space',spawnMsg:'Dimensions overlap!',spawnMsgFr:'Les dimensions se chevauchent !'},
   {name:'HypernovaX',   rarity:'Zenith',      exact:8000000000,  color:'#ff1744',symbol:'HX',event:'space',spawnMsg:'A supernova detonates!',spawnMsgFr:'Une supernova explose !'},
   // Ocean
-  {name:'TidalShard',   rarity:'Exotic',      exact:800000,       color:'#00bfff',symbol:'TS',event:'ocean'},
+  {name:'TidalShard',   rarity:'Exotic',      exact:800000,       color:'#00bfff',symbol:'TS',event:'ocean',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'MaelstromCore',rarity:'Transcendent',exact:43000000,     color:'#0077be',symbol:'MC',event:'ocean',spawnMsg:'A vortex spirals wildly!',spawnMsgFr:'Un vortex tourbillonne !'},
   {name:'LeviathanScale',rarity:'Enigmatic',  exact:92000000,     color:'#003366',symbol:'LS',event:'ocean',spawnMsg:'Ancient waters churn!',spawnMsgFr:'Les eaux anciennes tourbillonnent !'},
   {name:'OceanicRift',  rarity:'Unfathomable',exact:225000000,    color:'#002244',symbol:'OR',event:'ocean',spawnMsg:'The seabed splits apart!',spawnMsgFr:'Le fond marin se fracture !'},
   {name:'AbyssalCataclysm',rarity:'Otherworldly',exact:666000000, color:'#001133',symbol:'AC',event:'ocean',spawnMsg:'The ocean roars!',spawnMsgFr:'L\'océan rugit !'},
   {name:'TsunamiPrime', rarity:'Zenith',      exact:9000000000,  color:'#0099ff',symbol:'TP',event:'ocean',spawnMsg:'A towering wave manifests!',spawnMsgFr:'Une vague colossale se manifeste !'},
   // Fire
-  {name:'CinderSpark',  rarity:'Exotic',      exact:820000,       color:'#ff6600',symbol:'CS',event:'fire'},
+  {name:'CinderSpark',  rarity:'Exotic',      exact:820000,       color:'#ff6600',symbol:'CS',event:'fire',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'InfernoShard', rarity:'Transcendent',exact:46000000,     color:'#ff0000',symbol:'IS',event:'fire',spawnMsg:'Molten fury solidifies!',spawnMsgFr:'La fureur fondue se solidifie !'},
   {name:'HellfireCore', rarity:'Enigmatic',   exact:98000000,     color:'#8b0000',symbol:'HC',event:'fire',spawnMsg:'The ground fractures!',spawnMsgFr:'Le sol se fracture !'},
   {name:'MoltenOblivion',rarity:'Unfathomable',exact:240000000,   color:'#990000',symbol:'MO',event:'fire',spawnMsg:'Volcanic rage manifests!',spawnMsgFr:'La rage volcanique se manifeste !'},
   {name:'PhoenixEmber', rarity:'Otherworldly',exact:700000000,    color:'#ff1744',symbol:'PE',event:'fire',spawnMsg:'A blazing phoenix cry!',spawnMsgFr:'Le cri d\'un phénix embrasé !'},
   {name:'SolarInfernum',rarity:'Zenith',      exact:9500000000,  color:'#ff5722',symbol:'SI',event:'fire',spawnMsg:'The sun flares violently!',spawnMsgFr:'Le soleil explose violemment !'},
   // Computer
-  {name:'Bitcrystal',   rarity:'Exotic',      exact:850000,       color:'#00ffcc',symbol:'BC',event:'computer'},
+  {name:'Bitcrystal',   rarity:'Exotic',      exact:850000,       color:'#00ffcc',symbol:'BC',event:'computer',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'GlitchShard',  rarity:'Transcendent',exact:47000000,     color:'#00ffff',symbol:'GS',event:'computer',spawnMsg:'Reality flickers!',spawnMsgFr:'La réalité vacille !'},
   {name:'FirewallRelic',rarity:'Enigmatic',   exact:96000000,     color:'#ff0033',symbol:'FR',event:'computer',spawnMsg:'A digital barrier surges!',spawnMsgFr:'Une barrière numérique surgit !'},
   {name:'QuantumKernel',rarity:'Unfathomable',exact:260000000,    color:'#00ff66',symbol:'QK',event:'computer',spawnMsg:'Processing beyond comprehension!',spawnMsgFr:'Traitement au-delà de la compréhension !'},
   {name:'NeuralOverdrive',rarity:'Otherworldly',exact:720000000,  color:'#0033ff',symbol:'NO',event:'computer',spawnMsg:'AI consciousness spikes!',spawnMsgFr:'La conscience IA explose !'},
   {name:'SimulatedVoid',rarity:'Imaginary',   exact:260000000,   color:'#000000',symbol:'SV',event:'computer',spawnMsg:'The simulation fractures!',spawnMsgFr:'La simulation se fracture !'},
   // Nuclear
-  {name:'Radionite',    rarity:'Exotic',      exact:900000,       color:'#7fff00',symbol:'RN',event:'nuclear'},
+  {name:'Radionite',    rarity:'Exotic',      exact:900000,       color:'#7fff00',symbol:'RN',event:'nuclear',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'PlutonShard',  rarity:'Transcendent',exact:50000000,     color:'#33cc33',symbol:'PS',event:'nuclear',spawnMsg:'Unstable atoms collide!',spawnMsgFr:'Des atomes instables entrent en collision !'},
   {name:'ReactorCoreX', rarity:'Enigmatic',   exact:86000000,     color:'#228b22',symbol:'RC',event:'nuclear',spawnMsg:'Containment fails!',spawnMsgFr:'Le confinement échoue !'},
   {name:'AtomicCataclysm',rarity:'Unfathomable',exact:280000000,  color:'#00aa00',symbol:'AC',event:'nuclear',spawnMsg:'A chain reaction surges!',spawnMsgFr:'Une réaction en chaîne !'},
   {name:'FusionOblivion',rarity:'Otherworldly',exact:800000000,   color:'#00ff00',symbol:'FO',event:'nuclear',spawnMsg:'Fusion ignites!',spawnMsgFr:'La fusion s\'enflamme !'},
   {name:'MeltdownPrime',rarity:'Zenith',      exact:12000000000, color:'#adff2f',symbol:'MP',event:'nuclear',spawnMsg:'A catastrophic surge erupts!',spawnMsgFr:'Un débordement catastrophique !'},
   // Evolie
-  {name:'Evolite',      rarity:'Exotic',      exact:950000,       color:'#cfa26b',symbol:'EV',event:'evolie'},
+  {name:'Evolite',      rarity:'Exotic',      exact:950000,       color:'#cfa26b',symbol:'EV',event:'evolie',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'Jolteonite',   rarity:'Transcendent',exact:52000000,     color:'#ffff33',symbol:'JL',event:'evolie',spawnMsg:'Electric sparks scatter!',spawnMsgFr:'Des étincelles électriques !'},
   {name:'Flareonyx',    rarity:'Enigmatic',   exact:84000000,     color:'#ff6600',symbol:'FL',event:'evolie',spawnMsg:'Flames spiral upward!',spawnMsgFr:'Les flammes s\'élèvent en spirale !'},
   {name:'Espeorite',    rarity:'Unfathomable',exact:290000000,    color:'#cc66ff',symbol:'ES',event:'evolie',spawnMsg:'Psychic waves distort!',spawnMsgFr:'Des ondes psychiques se distordent !'},
   {name:'Umbreonite',   rarity:'Otherworldly',exact:880000000,    color:'#111133',symbol:'UM',event:'evolie',spawnMsg:'Shadows gather silently!',spawnMsgFr:'Les ombres se rassemblent silencieusement !'},
   {name:'Glaceorite',   rarity:'Zenith',      exact:13000000000, color:'#99ffff',symbol:'GL',event:'evolie',spawnMsg:'Absolute zero descends!',spawnMsgFr:'Le zéro absolu descend !'},
   // MLP
-  {name:'SpikeGem',     rarity:'Exotic',      exact:1500000,      color:'#7c4dff',symbol:'SG',event:'mlp'},
+  {name:'SpikeGem',     rarity:'Exotic',      exact:1500000,      color:'#7c4dff',symbol:'SG',event:'mlp',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'ApplejackCore',rarity:'Transcendent',exact:56000000,     color:'#ff9800',symbol:'AJ',event:'mlp',spawnMsg:'Honest strength radiates!',spawnMsgFr:'Une honnête force rayonne !'},
   {name:'PinkieCrystal',rarity:'Enigmatic',   exact:82000000,     color:'#ff69b4',symbol:'PC',event:'mlp',spawnMsg:'Confetti explodes everywhere!',spawnMsgFr:'Des confettis explosent partout !'},
   {name:'RarityPrism',  rarity:'Unfathomable',exact:294000000,    color:'#e1bee7',symbol:'RP',event:'mlp',spawnMsg:'Elegant brilliance shines!',spawnMsgFr:'Une brillance élégante rayonne !'},
   {name:'RainbowDashBolt',rarity:'Otherworldly',exact:800000000,  color:'#00e5ff',symbol:'RD',event:'mlp',spawnMsg:'A sonic boom!',spawnMsgFr:'Un bang supersonique !'},
   {name:'CelestiaLight',rarity:'Zenith',      exact:15000000000, color:'#cccccc',symbol:'CL',event:'mlp',spawnMsg:'Radiant sunlight descends!',spawnMsgFr:'Une lumière radieuse descend !'},
   // Terraria
-  {name:'CobaltShard',  rarity:'Exotic',      exact:2500000,      color:'#1e88e5',symbol:'CO',event:'terraria'},
+  {name:'CobaltShard',  rarity:'Exotic',      exact:2500000,      color:'#1e88e5',symbol:'CO',event:'terraria',spawnMsg:'A chill goes down your spine!',                       spawnMsgFr:'Un frisson vous parcourt l\'échine !'},
   {name:'AdamantiteCore',rarity:'Enigmatic',  exact:80000000,     color:'#ff5252',symbol:'AD',event:'terraria',spawnMsg:'Adamantite pulses with power!',spawnMsgFr:'L\'Adamantite pulse de puissance !'},
   {name:'ChlorophyteRelic',rarity:'Unfathomable',exact:250000000, color:'#69f0ae',symbol:'CH',event:'terraria',spawnMsg:'Nature reclaims the mines!',spawnMsgFr:'La nature reprend les mines !'},
   {name:'LunarFragment', rarity:'Otherworldly',exact:750000000,   color:'#b388ff',symbol:'LF',event:'terraria',spawnMsg:'The moon shatters!',spawnMsgFr:'La lune se fracasse !'},
@@ -857,12 +857,12 @@ const GEAR_DATA={
   G7:{
     nameFr:'Couronne du Zénith',nameEn:'Zenith Crown',
     descFr:'+100% vitesse et saut, +2 Luck.',descEn:'+100% speed & jump, +2 Luck.',
-    cost:{Quantumite:20,FrostShard:2},color:'#df03fc',speedMult:2.0,jumpMult:2.0,luckBonus:2
+    cost:{Quantumite:20,AbyssGem:2},color:'#df03fc',speedMult:2.0,jumpMult:2.0,luckBonus:2
   },
   G8:{
     nameFr:'Relique de la Création',nameEn:'Creation Relic',
     descFr:'1 chance sur 500 de déclencher une explosion de 150 blocs. +2 Luck.',descEn:'1 in 500 chance to explode 150 blocks around player. +2 Luck.',
-    cost:{Infinity:1,AbyssalSingularity:20,ZergHunter:50},color:'#00fbff',luckBonus:2,explosionChance:1/500,explosionRadius:150
+    cost:{EmberPhantom:100,Celestium:20,Lunarium:50},color:'#00fbff',luckBonus:2,explosionChance:1/500,explosionRadius:150
   },
 };
 
@@ -1192,8 +1192,8 @@ const PICKAXES=[
   {id:'t9',tier:'T9',
    labelFr:"MURD-ERROR",labelEn:"MURD-ERROR",
    color:'#ff2222',scanMin:250000,owned:false,equipped:false,
-   descFr:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (tous les 400). x8 Luck.",descEn:"HACK-HANDS passive. SPAM 35 bits r8 (1/10). FIREWALL 5x5 advances 8 blocks (1/200). LIMIT BREAK column h10 (every 400). x8 Luck.",
-   fxFr:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',fxEn:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x8 Luck.',
+   descFr:"HACK-HANDS passif. SPAM 35 bits r8 (1/10). FIREWALL 5x5 avance 8 blocs (1/200). LIMIT BREAK colonne h10 (tous les 400). x7.5 Luck.",descEn:"HACK-HANDS passive. SPAM 35 bits r8 (1/10). FIREWALL 5x5 advances 8 blocks (1/200). LIMIT BREAK column h10 (every 400). x8 Luck.",
+   fxFr:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x7.5 Luck.',fxEn:'SPAM (1/10). FIREWALL (1/200). LIMIT BREAK (400). x7.5 Luck.',
    recipe:{OblivionStone:1,PetaPlus4:1,PetaPlus3:2,PetaPlus1:10},
    abilities:[{nameFr:'HACK-HANDS',nameEn:'HACK-HANDS',descFr:'4 mains glitchées permanentes autour du joueur, minent aléatoirement',descEn:'4 glitched hands permanently active around the player, mine randomly',chance:'Passif/Passive',color:'#ff2222'},
               {nameFr:'SPAM',nameEn:'SPAM',descFr:'35 bits corrompus explosent dans rayon 8, minent tout',descEn:'35 corrupted bits explode in radius 8, mine everything',chance:'1/10',color:'#ff4444'},
@@ -1202,8 +1202,8 @@ const PICKAXES=[
   {id:'t10',tier:'T10',
    labelFr:"Prisme du Chaos",labelEn:"Prism of Chaos",
    color:'#ffaaff',scanMin:250000,owned:false,equipped:false,
-   descFr:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization : vitesse x2, 75% mine 6 bonus. x15 Luck.",descEn:"Light Refraction 16 bounces (1/5). Color Shotgun 16 shards (1/30). Prism Burst 12 orbs (1/30). Chaotization: speed x2, 75% mines 6 bonus. x15 Luck.",
-   fxFr:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',fxEn:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passive. x15 Luck.',
+   descFr:"Light Refraction 16 rebonds (1/5). Color Shotgun 16 éclats (1/30). Prism Burst 12 orbes (1/30). Chaotization : vitesse x2, 75% mine 6 bonus. x11 Luck.",descEn:"Light Refraction 16 bounces (1/5). Color Shotgun 16 shards (1/30). Prism Burst 12 orbs (1/30). Chaotization: speed x2, 75% mines 6 bonus. x15 Luck.",
+   fxFr:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passif. x15 Luck.',fxEn:'Refraction (1/5). Shotgun (1/30). Burst (1/30). Chaotization Passive. x11 Luck.',
    recipe:{Hyperion:1,Vortexium:2,NightCore:1,PetaPlus4:1},
    abilities:[{nameFr:'Réfraction Lumineuse',nameEn:'Light Refraction',descFr:'Rayon arc-en-ciel rebondit 16 fois, mine tout + explosion rayon 2 à chaque rebond',descEn:'Rainbow ray bounces 16 times, mines everything + radius-2 explosion at each bounce',chance:'1/5',color:'#ffaaff'},
               {nameFr:'Fusil de Couleur',nameEn:'Color Shotgun',descFr:'16 éclats de couleurs, tous les 8e : rafale de 32 éclats en éventail',descEn:'16 colored shards, every 8th: burst of 32 shards in a fan',chance:'1/30',color:'#ffaaff'},
@@ -1211,11 +1211,11 @@ const PICKAXES=[
               {nameFr:'Chaotisation',nameEn:'Chaotization',descFr:'Permanent : vitesse x2, chaque mine a 75% de chance de miner 6 blocs bonus en croix',descEn:'Permanent: speed x2, each mine has 75% chance to mine 6 bonus blocks in cross',chance:'Passif/Passive',color:'#dd88ff'}]},
   {id:'t11',tier:'T11',
    labelFr:"Pioche Tonnerre",labelEn:"Thunder Pick",
-   color:'#ffe066',scanMin:1000000,owned:false,equipped:false,
-   descFr:"Invoque des éclairs qui rebondissent et détruisent des blocs en chaîne. x500 Luck.",
-   descEn:"Summons thunderbolts that bounce and destroy blocks in chain. x500 Luck.",
-   fxFr:'Tonnerre Bondissant (1/10). Tempête (1/50). Frappe du Tonnerre (1/150). x500 Luck.',
-   fxEn:'Bouncing Bolts (1/10). Storm Strike (1/50). Thunder Strike (1/150). x500 Luck.',
+   color:'#ffe066',scanMin:250000,owned:false,equipped:false,
+   descFr:"Invoque des éclairs qui rebondissent et détruisent des blocs en chaîne. x21 Luck.",
+   descEn:"Summons thunderbolts that bounce and destroy blocks in chain. x21 Luck.",
+   fxFr:'Tonnerre Bondissant (1/10). Tempête (1/50). Frappe du Tonnerre (1/150). x21 Luck.',
+   fxEn:'Bouncing Bolts (1/10). Storm Strike (1/50). Thunder Strike (1/150). x21 Luck.',
    recipe:{NuclearWaste:1500,AbyssSand:1500,ShadowMatter:1500,Energy:1500,LavaRock:1500},
    abilities:[
      {nameFr:'Tonnerre Bondissant',nameEn:'Bouncing Bolts',
@@ -1233,9 +1233,9 @@ const PICKAXES=[
    ]},
   {id:'t12',tier:'T12',
    labelFr:"Pioche Trou Noir",labelEn:"Blackhole Pick",
-   color:'#ff8800',scanMin:1000000,owned:false,equipped:false,
-   descFr:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs proches. 1 seul trou noir max, réinitialisé au reset. x1000 Luck.",descEn:"Each mine creates a black hole that grows and sucks in all nearby blocks. 1 max, reset on mine reset. x1000 Luck.",
-   fxFr:'Trou Noir (Passif). x1000 Luck.',fxEn:'Blackhole (Passive). x1000 Luck.',
+   color:'#ff8800',scanMin:250000,owned:false,equipped:false,
+   descFr:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs proches. 1 seul trou noir max, réinitialisé au reset. x50 Luck.",descEn:"Each mine creates a black hole that grows and sucks in all nearby blocks. 1 max, reset on mine reset. x1000 Luck.",
+   fxFr:'Trou Noir (Passif). x50 Luck.',fxEn:'Blackhole (Passive). x50 Luck.',
    recipe:{SPAFF:1,BlueTheFR:1},
    abilities:[{nameFr:'Singularité',nameEn:'Singularity',descFr:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée',descEn:'A black hole appears at the mined block, grows for 15s and sucks in all blocks in range',chance:'Passif/Passive',color:'#ff8800'}]},
 ];
@@ -1558,7 +1558,7 @@ function getPickLuck(){
   const pick=PICKAXES.find(p=>p.id===currentPickId);
   if(!pick)return 1;
   // Balanced luck progression — T10 strongest
-  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:8,t10:15,t11:30,t12:50};
+  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:7.5,t10:11,t11:21,t12:50};
   return luckMap[pick.id]||1;
 }
 
