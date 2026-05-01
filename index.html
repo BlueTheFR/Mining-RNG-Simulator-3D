@@ -2457,12 +2457,7 @@ function spawnCave(cx,cy,cz){
   const r=3+Math.floor(Math.random()*4);
   const newAir=[];
   const depthDen=Math.max(1,TOP_SOLID_Y);
-	function noise3(x, y, z, seed){
-  let h = x * 374761393 + y * 668265263 + z * 2147483647 + seed * 1274126177;
-  h = (h ^ (h >> 13)) * 1274126177;
-  h = h ^ (h >> 16);
-  return (h >>> 0) / 4294967295; // 0 → 1
-}
+	
   for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
     if(dx*dx+dy*dy+dz*dz>r*r*0.9)continue;
     const nx=cx+dx,ny=cy+dy,nz=cz+dz;
@@ -2472,16 +2467,11 @@ function spawnCave(cx,cy,cz){
     if(isWall){
       // Wall block: place solid with appropriate base ore
       blocks[i]=1;
+	  const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
       const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
       if(chosen.type==='NormalCave'){
         // Normal cave walls get regular ore rolls (same as normal world)
-        const n = noise3(nx, ny, nz, (cy ^ cx ^ cz) & 65535);
-
-// Add slight variation (THIS is your "noise")
-const variedLuck = combinedLuck * (0.85 + n * 0.3);
-// → luck varies between 85% and 115%
-
-const oI = rollOreNormal(n, variedLuck);
+        const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
         oreIdx[i]=oI;
       }else{
         // Typed cave walls get the cave base block type
