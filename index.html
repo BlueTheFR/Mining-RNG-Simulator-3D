@@ -3234,10 +3234,10 @@ function abilityMine(wx,wy,wz){
   _syncBlockWrite(wx,wy,wz); // persist removal to chunk
   markInvDirty();
   revealAdjacentSolid(wx,wy,wz,mined);
-  // Cave generation — ability mines count toward cave trigger (fixed 2450 blocks)
+  // Cave generation — ability mines count toward cave trigger (fixed 5000 blocks)
   if(!phantomBlock){
     _blocksSinceCave++;
-    if(_blocksSinceCave>=2450){_blocksSinceCave=0;spawnCave(wx,wy,wz);}
+    if(_blocksSinceCave>=5000){_blocksSinceCave=0;spawnCave(wx,wy,wz);}
   }
   // Check if ability-mined blocks pushed us over reset cap
   if(mined-lastResetMined>=getCurrentMineResetAt()){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);}
