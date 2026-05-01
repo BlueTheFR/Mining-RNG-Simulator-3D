@@ -238,6 +238,7 @@ canvas.free{cursor:default}
   gap:2px;
 }
 #mine-btn.active{background:rgba(255,80,20,0.6);border-color:rgba(255,180,80,1);}
+#gif-anim-pool{position:fixed;left:-1000px;top:0;width:800px;display:flex;flex-wrap:wrap;pointer-events:none;overflow:visible;}
 #mine-btn.auto-active{background:rgba(255,140,0,0.7);border-color:#ffcc00;box-shadow:0 0 14px #ffcc0088;animation:autoMinePulse 0.6s infinite alternate;}
 @keyframes autoMinePulse{0%{box-shadow:0 0 8px #ffcc0066}100%{box-shadow:0 0 22px #ffcc00cc}}
 /* SVG ring overlay on mine button for hold-progress */
@@ -730,8 +731,6 @@ const ORES=[
   {name:'BlueTheFR', rarity:'Eternal',     exact:100000000000,color:'#00fbff',spawnMsg:'You meet the creator...',                         spawnMsgFr:'Vous rencontrez le créateur...'},
   {name:'SPAFF',     rarity:'SPAFF',       exact:1000000000000,color:'#ff9900',spawnMsg:'THE SPAFF IS HERE!!',                           spawnMsgFr:'Le SPAFF est là !!'},
   // ── Cave base blocks ──
-  // ── BEDROCK / BARRIER (indestructible bottom layer, hidden from index/inventory) ──
-  {name:'Bedrock', rarity:'Barrier', exact:1, color:'#111111', symbol:'▓', symbolColor:'#333333', caveBase:false, isBarrier:true, hidden:true},
   {name:'Energy',        rarity:'EnergyCaveExclusive',          exact:1,           color:'#a327f5',spawnMsg:null,caveBase:true},
   {name:'NuclearWaste',  rarity:'NuclearCaveExclusive',         exact:1,           color:'#46f527',spawnMsg:null,caveBase:true},
   {name:'ShadowMatter',  rarity:'ShadowCaveExclusive',          exact:1,           color:'#313831',spawnMsg:null,caveBase:true},
@@ -834,9 +833,11 @@ const ORES=[
   {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!',                  spawnMsgFr:'EternalCrystal brille comme le cœur de la création !'},
   {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...',       spawnMsgFr:'De sa naissance, les étoiles se lèvent et illuminent l\'univers...'},
   {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:99999999,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true, spawnMsgFr:'Votre adrénaline monte violemment lorsqu\'Epinéphrine éclate !'},
+  // ── BEDROCK / BARRIER — must be LAST so index 0 stays Stone (default unrevealed ore) ──
+  {name:'Bedrock', rarity:'Barrier', exact:100000, color:'#111111', symbol:'▓', symbolColor:'#333333', caveBase:false, isBarrier:true, hidden:true},
 ];
 const ORE_EXTRA={
-Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#aaffff',imgSrc:'Zanarchium.gif'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,symbol:'GEN',symbolColor:'#00ffcc',imgSrc:'GENESIS.gif'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.gif'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,symbol:'MoO',symbolColor:'#ff9100',imgSrc:'MonolithofOrigin.gif'},Epinephrine:{value:192,symbol:'EP',symbolColor:'#ff4500',imgSrc:'Epinephrine.gif'},
+Stone:{value:1},Coal:{value:2},Iron:{value:3},Emerald:{value:4,symbol:'E'},Ruby:{value:5,symbol:'R'},Sapphire:{value:6,symbol:'S'},Topaz:{value:7,symbol:'T'},Diamond:{value:8,symbol:'D'},Void:{value:9,symbol:'V'},Gold:{value:10,symbol:'G'},Mega:{value:11,symbol:'M'},UltraMega:{value:12,symbol:'U'},HyperMega:{value:13,symbol:'H'},Giga:{value:14,symbol:'G'},Smiley:{value:15,symbol:'😊'},Tera:{value:16,symbol:'T'},TeraPlus:{value:17,symbol:'TP'},Peta:{value:18,symbol:'P'},PetaPlus1:{value:19,symbol:'PP1'},PetaPlus2:{value:20,symbol:'PP2'},PetaPlus3:{value:21,symbol:'PP3'},PetaPlus4:{value:22,symbol:'PP4'},VoidPlus:{value:23,symbol:'VP'},VoidUltra:{value:24,symbol:'VU'},Infinity:{value:25,symbol:'∞',symbolColor:'#ffffff'},NovaShard:{value:26,symbol:'NS'},Celestium:{value:27,symbol:'CE'},Astralite:{value:28,symbol:'AS'},Luminite:{value:29,symbol:'LU'},EclipseCore:{value:30,symbol:'EC'},OblivionShard:{value:31,symbol:'OS'},PhantomCrystal:{value:32,symbol:'PC'},AbyssalCore:{value:33,symbol:'AC'},DarkMatter:{value:34,symbol:'DM'},CosmicRelic:{value:35,symbol:'CR',symbolColor:'#00ffff'},Singularity:{value:36,symbol:'Ω',symbolColor:'#ff00ff'},AlterDemon:{value:37,symbol:'AD',symbolColor:'#ff0000'},Veritcal:{value:38,symbol:'Vert',symbolColor:'#000000',imgSrc:'Vert.png'},Zanacharium:{value:39,symbol:'?',symbolColor:'#aaffff',imgSrc:'Zanarchium.webm'},Chronovexium:{value:40,symbol:'⏳',symbolColor:'#000000'},Aetherion:{value:41,symbol:'✶',symbolColor:'#000000'},Paradoxium:{value:42,symbol:'Ψ',symbolColor:'#ffffff'},Genesis:{value:43,symbol:'GEN',symbolColor:'#00ffcc',imgSrc:'GENESIS.webm'},BlueTheFR:{value:44,symbol:'Blue',symbolColor:'#ffffff',imgSrc:'Blue.png'},Nebulium:{value:45,symbol:'N'},Stellarium:{value:46,symbol:'St'},Lunarium:{value:47,symbol:'L'},Solarium:{value:48,symbol:'So'},Aetherium:{value:49,symbol:'Ae'},Chronium:{value:50,symbol:'Ch'},Quantumite:{value:51,symbol:'Q'},Hyperion:{value:52,symbol:'Hy'},Vortexium:{value:53,symbol:'Vx'},Ecliptium:{value:54,symbol:'Ec'},OblivionCore:{value:55,symbol:'OC'},Abyssion:{value:56,symbol:'Ab'},Eternium:{value:57,symbol:'Et'},Voidessence:{value:58,symbol:'Ve'},Cosmosite:{value:59,symbol:'Co'},Singulite:{value:60,symbol:'Si'},ZergHunter:{value:61,symbol:'ZH',imgSrc:'Zerghunter.png'},VoidShard:{value:62,symbol:'VS'},FrostWraith:{value:63,symbol:'FW'},SoulGlacier:{value:64,symbol:'SG'},EmberPhantom:{value:65,symbol:'EP'},CrimsonEclipse:{value:66,symbol:'CE'},AbyssalSingularity:{value:67,symbol:'AS'},AstralCataclysm:{value:68,symbol:'AC'},VoidRequiem:{value:69,symbol:'VR'},EternalParadox:{value:70,symbol:'EPX'},EclipseShard:{value:71,symbol:'ES'},ShadowFragment:{value:72,symbol:'SF'},TwilightGem:{value:73,symbol:'TG'},OblivionStone:{value:74,symbol:'OS'},NightCore:{value:75,symbol:'NC'},SpecterGem:{value:76,symbol:'SG'},AbyssGem:{value:77,symbol:'AG'},FrostShard:{value:78,symbol:'FS'},GlacierHeart:{value:79,symbol:'GH'},IceboundCore:{value:80,symbol:'IC'},Lugubre:{value:81,symbol:'LU'},AbyssHeart:{value:82,symbol:'AH'},VoidTitan:{value:83,symbol:'VT'},CelestiteNova:{value:84,symbol:'CN'},AuroriteShard:{value:85,symbol:'AS'},LuminaraGem:{value:86,symbol:'LG'},EclipseraCore:{value:87,symbol:'EC'},EventideStar:{value:88,symbol:'EvS'},QuantumCore:{value:89,symbol:'CPU'},CosmoNova:{value:90,symbol:'CNV'},VoidEclipse:{value:91,symbol:'VE'},Nucleonix:{value:92,symbol:'NU'},Pyrocore:{value:93,symbol:'PY'},Aqualith:{value:94,symbol:'AQ'},Circuitium:{value:95,symbol:'CI'},Divinitium:{value:96,symbol:'DV'},Atomarion:{value:97,symbol:'AT'},Infernium:{value:98,symbol:'IF'},Pyronis:{value:99,symbol:'PY'},SPAFF:{value:100,symbol:'SPAFF',imgSrc:'SPAFF.png'},CrystalFrost:{value:101,symbol:'CF'},Ice:{value:102},GlowingNova:{value:103,symbol:'GN'},ZenithShard:{value:104,symbol:'ZS'},Energy:{value:105},RadiantCore:{value:106,symbol:'RC'},NuclearWaste:{value:107},ShadowGem:{value:108,symbol:'SG'},VoidOrb:{value:109,symbol:'VO'},ShadowMatter:{value:110},AbyssCrystal:{value:111,symbol:'AC'},AbyssFish:{value:112,symbol:'Fish',imgSrc:'fish.webm'},AbyssSand:{value:113},LavaRelic:{value:114,symbol:'LR'},LavaRock:{value:115},EternalCrystal:{value:116,symbol:'EC'},MonolithofOrigin:{value:117,symbol:'MoO',symbolColor:'#ff9100',imgSrc:'MonolithofOrigin.webm'},Epinephrine:{value:192,symbol:'EP',symbolColor:'#ff4500',imgSrc:'Epinephrine.webm'},
 };
 ORES.forEach(o=>{const e=ORE_EXTRA[o.name];if(e)Object.assign(o,e);});
 // Sort descending by exact for index display (uses raw exact values from ORES data)
@@ -1824,7 +1825,6 @@ function updateMineHUD(){updateMineTopBar();}
 // ═══════════ THREE.JS ═══════════
 let scene,camera,renderer,raycaster,selMesh,worldMesh;
 // Texture cache for imgSrc ores
-const TEX_CACHE={};
 let _BOX_GEO=null; // shared BoxGeometry for all blocks (InstancedMesh)
 const SYM_TEX_CACHE={};
 const GIF_TEX_ENTRIES=[]; // {tex,img,canvas,ctx} — mis à jour chaque frame
@@ -1917,135 +1917,162 @@ function needsAnimCanvasPath(src){
   return /\.(gif|webp|png|jpg|jpeg)(\?|#|$)/i.test(src||'');
 }
 
-// GIF animation fix: images must be truly rendered (not clipped/hidden) for browsers to advance frames.
-// We place them in a div that's translated far off-screen but still in the render tree.
-let _gifContainer=null;
-function _getGifContainer(){
-  if(_gifContainer)return _gifContainer;
-  _gifContainer=document.createElement('div');
-  // position:fixed, translated 9999px to the left — off-screen but NOT hidden.
-  // Browsers animate GIFs in elements that are rendered, even off-screen.
-  // clip-path, visibility:hidden, display:none, opacity:0 all stop GIF animation.
-  _gifContainer.style.cssText='position:fixed;top:0;left:0;transform:translateX(-9999px);display:flex;flex-direction:row;flex-wrap:wrap;width:256px;pointer-events:none;z-index:-1;';
-  document.body.appendChild(_gifContainer);
-  return _gifContainer;
+// =====================================================
+// GLOBAL CACHE (UPDATED)
+// =====================================================
+let TEX_CACHE = {};
+let VIDEO_CACHE = {};
+let VIDEO_ENTRIES = [];
+
+// =====================================================
+// VIDEO CONTAINER (replaces GIF container)
+// =====================================================
+let _videoContainer = null;
+
+function _getVideoContainer(){
+  if(_videoContainer) return _videoContainer;
+
+  _videoContainer = document.createElement('div');
+  _videoContainer.id = 'video-anim-pool';
+
+  // Must stay "alive" in DOM for autoplay stability
+  _videoContainer.style.cssText = `
+    position:fixed;
+    left:0;
+    top:0;
+    width:1px;
+    height:1px;
+    opacity:0.01;
+    pointer-events:none;
+  `;
+
+  document.body.appendChild(_videoContainer);
+  return _videoContainer;
 }
 
-function mountAnimImageInDom(img){
-  if(img.parentNode)return;
-  img.style.cssText='width:64px;height:64px;flex-shrink:0;object-fit:cover;display:block;';
-  _getGifContainer().appendChild(img);
-  void img.offsetWidth; // force layout so browser registers the image
+function mountAnimVideo(video){
+  if (video._mounted) return;
+
+  video.style.cssText = 'width:64px;height:64px;';
+  _getVideoContainer().appendChild(video);
+  video._mounted = true;
 }
 
+// =====================================================
+// OVERLAY (UNCHANGED)
+// =====================================================
 function drawAnimOverlay(ctx,cw,ch,ore){
-  if(!ore)return;
-  const sym=String(ore.symbol||'').trim();
-  if(!sym)return;
-  const sx=cw/2,sy=ch-8;
-  ctx.textAlign='center';
-  ctx.textBaseline='bottom';
-  const fs=Math.min(22,Math.max(14,cw/6));
-  ctx.font='bold '+fs+'px Arial,"Segoe UI Emoji",sans-serif';
-  ctx.strokeStyle='rgba(0,0,0,0.8)';
-  ctx.lineWidth=Math.max(2,fs/8);
-  ctx.strokeText(sym,sx,sy);
-  ctx.fillStyle=ore.symbolColor||'#ffffff';
-  ctx.fillText(sym,sx,sy);
+  if(!ore) return;
+
+  const sym = String(ore.symbol || '').trim();
+  if(!sym) return;
+
+  const sx = cw/2;
+  const sy = ch - 8;
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+
+  const fs = Math.min(22, Math.max(14, cw/6));
+  ctx.font = 'bold ' + fs + 'px Arial,"Segoe UI Emoji",sans-serif';
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+  ctx.lineWidth = Math.max(2, fs/8);
+  ctx.strokeText(sym, sx, sy);
+
+  ctx.fillStyle = ore.symbolColor || '#ffffff';
+  ctx.fillText(sym, sx, sy);
 }
 
+// =====================================================
+// FACE TEXTURE DISPATCH (UPDATED)
+// =====================================================
 function getOreFaceTexture(ore){
-  const hasImg=!!ore.imgSrc;
-  const hasSym=ore.symbol!=null&&String(ore.symbol).trim()!=='';
-  // For image ores: never add text overlay — it corrupts animation and clutters the block
-  if(hasImg)return getOrCreateTexture(ore.imgSrc,null);
-  if(hasSym)return getOrCreateSymbolTexture(ore);
+  const hasImg = !!ore.imgSrc;
+  const hasSym = ore.symbol != null && String(ore.symbol).trim() !== '';
+
+  if (hasImg) return getOrCreateTexture(ore.imgSrc, null);
+  if (hasSym) return getOrCreateSymbolTexture(ore);
+
   return null;
 }
 
-function getOrCreateTexture(imgSrc,overlayOre){
-  const cacheKey=overlayOre?imgSrc+'\x00'+overlayOre.name:imgSrc;
-  if(TEX_CACHE[cacheKey])return TEX_CACHE[cacheKey];
+// =====================================================
+// MAIN TEXTURE SYSTEM (WEBM VERSION)
+// =====================================================
+function getOrCreateTexture(src, overlayOre){
+  const isVideo = /\.webm($|\?)/i.test(src);
 
-  const canvas=document.createElement('canvas');
-  canvas.width=128;canvas.height=128;
-  const ctx=canvas.getContext('2d');
+  const cacheKey = overlayOre
+    ? src + '\x00' + overlayOre.name
+    : src;
 
-  // Fill with ore color immediately so block isn't transparent while loading
-  ctx.fillStyle=overlayOre?overlayOre.color||'#888888':'#888888';
-  ctx.fillRect(0,0,128,128);
+  if (TEX_CACHE[cacheKey]) return TEX_CACHE[cacheKey];
 
-  const tex=new THREE.CanvasTexture(canvas);
-  tex.flipY=false;
-  tex.needsUpdate=true;
-  TEX_CACHE[cacheKey]=tex;
+  // =====================================================
+  // STATIC IMAGE PATH (UNCHANGED LOGIC)
+  // =====================================================
+  if (!isVideo) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
 
-  const img=new Image();
-  if(/^https?:\/\//i.test(imgSrc))img.crossOrigin='anonymous';
+    const ctx = canvas.getContext('2d');
 
-  img.onload=()=>{
-    mountAnimImageInDom(img);
-    try{
-      ctx.clearRect(0,0,128,128);
-      // Flip canvas vertically so Three.js BoxGeometry shows image right-side up
-      // (CanvasTexture with flipY=false needs manual Y-flip for BoxGeometry in r128)
-      ctx.save();
-      ctx.translate(0,128);
-      ctx.scale(1,-1);
-      ctx.drawImage(img,0,0,128,128);
-      ctx.restore();
-      tex.needsUpdate=true;
-    }catch(e){
-      ctx.fillStyle=overlayOre?overlayOre.color||'#888':'#888';
-      ctx.fillRect(0,0,128,128);
-      tex.needsUpdate=true;
-    }
-  };
-  img.onerror=()=>{
-    ctx.fillStyle=overlayOre?overlayOre.color||'#663311':'#663311';
+    ctx.fillStyle = overlayOre?.color || '#888888';
     ctx.fillRect(0,0,128,128);
-    tex.needsUpdate=true;
-  };
-  img.src=imgSrc;
 
-  // Register for per-frame redraw (animates GIFs; updates webp/png correctly)
-  GIF_TEX_ENTRIES.push({tex,img,canvas,ctx,overlay:overlayOre||null});
-  return tex;
-}
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.flipY = false;
 
-function updateGifTextures(){
-  const now=performance.now();
-  for(const e of GIF_TEX_ENTRIES){
-    if(!e.img||!e.img.complete||e.img.naturalWidth<1)continue;
-    if(!e.img.parentNode)mountAnimImageInDom(e.img); // ensure mounted
-    try{
-      if(e.canvas.width!==128||e.canvas.height!==128){e.canvas.width=128;e.canvas.height=128;}
-      e.ctx.clearRect(0,0,128,128);
-      e.ctx.save();
-      e.ctx.translate(0,128);
-      e.ctx.scale(1,-1);
-      e.ctx.drawImage(e.img,0,0,128,128);
-      e.ctx.restore();
-      e.tex.needsUpdate=true; // always mark dirty so Three.js uploads new frame
-    }catch(err){}
+    const img = new Image();
+    if (/^https?:\/\//i.test(src)) img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      try {
+        ctx.clearRect(0,0,128,128);
+        ctx.drawImage(img,0,0,128,128);
+        tex.needsUpdate = true;
+      } catch(e){}
+    };
+
+    img.onerror = () => {
+      ctx.fillStyle = overlayOre?.color || '#663311';
+      ctx.fillRect(0,0,128,128);
+      tex.needsUpdate = true;
+    };
+
+    img.src = src;
+
+    TEX_CACHE[cacheKey] = tex;
+    return tex;
   }
-  // Update ALL gif-scn-canvas elements (scanner overlays)
-  const gifScnCanvases=document.querySelectorAll('.gif-scn-canvas, #phantom-scn-canvas');
-  gifScnCanvases.forEach(c=>{
-    const oreName=c.dataset.oreName||(phantomBlock&&c.id==='phantom-scn-canvas'?(ORES[phantomBlock.oi||0]||{}).name:null);
-    if(!oreName)return;
-    const ore=ORES.find(o=>o.name===oreName);
-    if(!ore||!ore.imgSrc)return;
-    const fname=ore.imgSrc.split('/').pop();
-    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(ore.imgSrc)||e.img.src.endsWith(fname)));
-    if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
-      try{
-        const ctx2=c.getContext('2d');
-        ctx2.clearRect(0,0,c.width,c.height);
-        ctx2.drawImage(entry.img,0,0,c.width,c.height);
-      }catch(e){}
-    }
+
+  // =====================================================
+  // WEBM VIDEO PATH (NEW CORE FIX)
+  // =====================================================
+  const video = document.createElement('video');
+
+  video.src = src;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.autoplay = true;
+  video.crossOrigin = 'anonymous';
+
+  mountAnimVideo(video);
+
+  const tex = new THREE.VideoTexture(video);
+  tex.flipY = false;
+
+  video.play().catch(() => {
+    document.addEventListener('click', () => video.play(), { once:true });
   });
+
+  TEX_CACHE[cacheKey] = tex;
+  VIDEO_ENTRIES.push({ video, tex });
+
+  return tex;
 }
 let euler=new THREE.Euler(0,0,0,'YXZ');
 let isLocked=false,keys={},velY=0,onGround=false;
@@ -2167,17 +2194,21 @@ window.setRenderDist=function(preset){
 
 // Teleport back to the surface spawn (resets chunk window to origin)
 function goToSurface(){
-  // Reset chunk window so spawn is back at center
-  const prevCX=_chunkOriginCX, prevCZ=_chunkOriginCZ;
+  // Reset chunk window to origin
   _chunkOriginCX=0; _chunkOriginCZ=0;
-  // Ensure spawn chunks exist
+  // Ensure all spawn-area chunks exist
   const side=RENDER_DIST*2+1;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
     _ensureChunkGenerated(ci,ck);
   }
   _rebuildWindowFromChunks();
+  // Immediately rebuild mesh (not lazy) so spawnPlayer sees correct block data
+  _buildWorldMeshReal();
+  // Place camera at window center before spawnPlayer reads block columns
+  if(camera){
+    camera.position.set(W/2+0.5, TOP_SOLID_Y+3, D/2+0.5);
+  }
   _scanCachedBestOre=null;_scanCachedTopOres=null;
-  markMeshDirty();
   spawnPlayer();
   showSpawn(lang==='fr'?'⬆ Téléporté à la surface !':'⬆ Teleported to surface!','#60dd60',false);
 }
@@ -2838,34 +2869,75 @@ function _getOrCreateScnDiv(i){
   _scnDivs[i]=d;
   return d;
 }
-function _hideAllScnDivs(){for(let i=0;i<SCN_MAX;i++){if(_scnDivs[i])_scnDivs[i].style.display='none';}}
-function _buildOreBlockEl(ore,rc,size){
-  const wrapper=document.createElement('div');
-  if(ore.imgSrc){
-    // Use a canvas so GIFs animate: updateGifTextures will redraw it each frame
-    const c=document.createElement('canvas');c.width=128;c.height=128;
-    c.style.cssText='display:block;width:'+size+'px;height:'+size+'px;border-radius:6px;border:2px solid '+rc+';box-shadow:0 0 12px '+rc+'88;image-rendering:pixelated;';
-    c.dataset.oreName=ore.name; // used by updateGifTextures to find matching GIF entry
-    c.className='gif-scn-canvas';
-    // Draw immediately from existing GIF entry if loaded
-    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(ore.imgSrc)||e.img.src.endsWith(ore.imgSrc.split('/').pop())));
-    if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
-      try{const ctx2=c.getContext('2d');ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
-    } else {
-      // Fallback: load the image and draw once loaded
-      const fallImg=new Image();
-      fallImg.onload=()=>{try{const ctx2=c.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(fallImg,0,0,128,128);}catch(e){}};
-      fallImg.src=ore.imgSrc;
-    }
-    wrapper.appendChild(c);
-  }else{
-    const c=document.createElement('canvas');c.width=64;c.height=64;
-    const ctx=c.getContext('2d');
-    ctx.fillStyle=ore.color||'#888';ctx.fillRect(0,0,64,64);
-    if(ore.symbol){ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=ore.symbolColor||'#fff';ctx.font='bold '+(ore.symbol.length>2?18:24)+'px Arial';ctx.fillText(String(ore.symbol),32,32);}
-    c.style.cssText='display:block;width:'+size+'px;height:'+size+'px;border-radius:6px;border:2px solid '+rc+';box-shadow:0 0 12px '+rc+'88;';
+function _hideAllScnDivs(){
+  for(let i=0;i<SCN_MAX;i++){
+    if(_scnDivs[i]) _scnDivs[i].style.display = 'none';
+  }
+}
+
+function _buildOreBlockEl(ore, rc, size){
+  const wrapper = document.createElement('div');
+
+  // =====================================================
+  // IMAGE / WEBM ORE PREVIEW (STATIC UI ONLY)
+  // NOTE: WebM animation is handled in THREE.js, NOT here
+  // =====================================================
+  if (ore.imgSrc) {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 128;
+
+    c.style.cssText =
+      'display:block;width:' + size +
+      'px;height:' + size +
+      'px;border-radius:6px;border:2px solid ' + rc +
+      ';box-shadow:0 0 12px ' + rc + '88;image-rendering:pixelated;';
+
+    const img = new Image();
+    if (/^https?:\/\//i.test(ore.imgSrc)) img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      try {
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, 128, 128);
+        ctx.drawImage(img, 0, 0, 128, 128);
+      } catch(e){}
+    };
+
+    img.src = ore.imgSrc;
+
     wrapper.appendChild(c);
   }
+
+  // =====================================================
+  // SYMBOL ORE (STATIC)
+  // =====================================================
+  else {
+    const c = document.createElement('canvas');
+    c.width = 64;
+    c.height = 64;
+
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = ore.color || '#888';
+    ctx.fillRect(0, 0, 64, 64);
+
+    if (ore.symbol) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = ore.symbolColor || '#fff';
+      ctx.font = 'bold ' + (ore.symbol.length > 2 ? 18 : 24) + 'px Arial';
+      ctx.fillText(String(ore.symbol), 32, 32);
+    }
+
+    c.style.cssText =
+      'display:block;width:' + size +
+      'px;height:' + size +
+      'px;border-radius:6px;border:2px solid ' + rc +
+      ';box-shadow:0 0 12px ' + rc + '88;';
+
+    wrapper.appendChild(c);
+  }
+
   return wrapper;
 }
 
@@ -2873,72 +2945,194 @@ function updateScanner(h){
   const pick=PICKAXES.find(p=>p.id===currentPickId);
   const ov=document.getElementById('scn-overlay');
 
-  // ── Phantom block scanner ──
-  if(phantomBlock){
-    const pOre=ORES[phantomBlock.oi||0]||ORES[0];
-    const pCenter=new THREE.Vector3(phantomBlock.x+0.5,phantomBlock.y+0.5,phantomBlock.z+0.5);
-    const pv=pCenter.clone().project(camera);
-    const pIsAimed=h&&(()=>{const a=hitPos(h,true);return a.x===phantomBlock.x&&a.y===phantomBlock.y&&a.z===phantomBlock.z;})();
-    if(pv.z<=1&&!pIsAimed){
-      const psx=(pv.x+1)/2*window.innerWidth;
-      const psy=(1-pv.y)/2*window.innerHeight;
-      const pdist=camera.position.distanceTo(pCenter);
-      const pSize=Math.round(Math.min(100,Math.max(44,pdist*6)));
-      const pClampX=Math.max(pSize/2+4,Math.min(window.innerWidth-pSize/2-4,psx));
-      const pClampY=Math.max(pSize/2+4,Math.min(window.innerHeight-pSize/2-60,psy));
-      const prc=RC[pOre.rarity]||pOre.color||'#fff';
-      ov.style.display='block';ov.style.left=pClampX+'px';ov.style.top=pClampY+'px';ov.style.color=prc;
-      const blockDiv=document.getElementById('scn-block');
-      if(_scanOre!==pOre||_scanPos!=='phantom'){
-        _scanOre=pOre;_scanPos='phantom';
-        blockDiv.innerHTML='';
-        // Show ore image/GIF if available
-        if(pOre.imgSrc){
-          const c=document.createElement('canvas');c.width=128;c.height=128;
-          c.id='phantom-scn-canvas';
-          c.style.cssText='display:block;width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;image-rendering:pixelated;';
-          // Draw immediately if loaded
-          const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(pOre.imgSrc)||e.img.src.endsWith(pOre.imgSrc.split('/').pop())));
-          if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
-            try{const ctx2=c.getContext('2d');ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
-          } else {
-            const fallImg=new Image();
-            fallImg.onload=()=>{try{const ctx2=c.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(fallImg,0,0,128,128);}catch(e){}};
-            fallImg.src=pOre.imgSrc;
+    // ── Phantom block scanner ──
+  if (phantomBlock){
+    const pOre = ORES[phantomBlock.oi || 0] || ORES[0];
+    const pCenter = new THREE.Vector3(
+      phantomBlock.x + 0.5,
+      phantomBlock.y + 0.5,
+      phantomBlock.z + 0.5
+    );
+
+    const pv = pCenter.clone().project(camera);
+
+    const pIsAimed = h && (() => {
+      const a = hitPos(h, true);
+      return a.x === phantomBlock.x &&
+             a.y === phantomBlock.y &&
+             a.z === phantomBlock.z;
+    })();
+
+    if (pv.z <= 1 && !pIsAimed){
+
+      const psx = (pv.x + 1) / 2 * window.innerWidth;
+      const psy = (1 - pv.y) / 2 * window.innerHeight;
+      const pdist = camera.position.distanceTo(pCenter);
+
+      const pSize = Math.round(Math.min(100, Math.max(44, pdist * 6)));
+
+      const pClampX = Math.max(pSize/2+4, Math.min(window.innerWidth - pSize/2 - 4, psx));
+      const pClampY = Math.max(pSize/2+4, Math.min(window.innerHeight - pSize/2 - 60, psy));
+
+      const prc = RC[pOre.rarity] || pOre.color || '#fff';
+
+      ov.style.display = 'block';
+      ov.style.left = pClampX + 'px';
+      ov.style.top = pClampY + 'px';
+      ov.style.color = prc;
+
+      const blockDiv = document.getElementById('scn-block');
+
+      if (_scanOre !== pOre || _scanPos !== 'phantom'){
+        _scanOre = pOre;
+        _scanPos = 'phantom';
+
+        blockDiv.innerHTML = '';
+
+        // =====================================================
+        // WEBM / IMAGE ORE RENDER (UPDATED)
+        // =====================================================
+        if (pOre.imgSrc){
+
+          const c = document.createElement('canvas');
+          c.width = 128;
+          c.height = 128;
+          c.id = 'phantom-scn-canvas';
+
+          c.style.cssText =
+            'display:block;width:' + pSize +
+            'px;height:' + pSize +
+            'px;border-radius:6px;border:2px solid ' + prc +
+            ';box-shadow:0 0 14px ' + prc +
+            '88;image-rendering:pixelated;';
+
+          const isVideo = /\.webm($|\?)/i.test(pOre.imgSrc);
+
+          if (isVideo){
+            // =================================================
+            // WEBM PATH (NO GIF LOOKUP, NO FRAME SYSTEM)
+            // =================================================
+            const video = document.createElement('video');
+            video.src = pOre.imgSrc;
+            video.loop = true;
+            video.muted = true;
+            video.playsInline = true;
+            video.autoplay = true;
+            video.crossOrigin = 'anonymous';
+
+            video.play().catch(()=>{});
+
+            const ctx2 = c.getContext('2d');
+
+            const draw = () => {
+              if (video.readyState >= 2){
+                try{
+                  ctx2.clearRect(0,0,128,128);
+                  ctx2.drawImage(video,0,0,128,128);
+                }catch(e){}
+              }
+              requestAnimationFrame(draw);
+            };
+
+            draw();
           }
+          else {
+            // =================================================
+            // STATIC IMAGE PATH
+            // =================================================
+            const img = new Image();
+
+            img.onload = () => {
+              try{
+                const ctx2 = c.getContext('2d');
+                ctx2.drawImage(img,0,0,128,128);
+              }catch(e){}
+            };
+
+            img.src = pOre.imgSrc;
+          }
+
           blockDiv.appendChild(c);
-        } else if(pOre.symbol){
-          // Symbol block
-          const sc=document.createElement('canvas');sc.width=64;sc.height=64;
-          const ctx=sc.getContext('2d');
-          ctx.fillStyle=pOre.color||'#888';ctx.fillRect(0,0,64,64);
-          ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=pOre.symbolColor||'#fff';
-          ctx.font='bold '+(pOre.symbol.length>2?18:28)+'px Arial';ctx.fillText(String(pOre.symbol),32,32);
-          sc.style.cssText='display:block;width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;';
+        }
+
+        // =====================================================
+        // SYMBOL BLOCK (UNCHANGED)
+        // =====================================================
+        else if (pOre.symbol){
+          const sc = document.createElement('canvas');
+          sc.width = 64;
+          sc.height = 64;
+
+          const ctx = sc.getContext('2d');
+          ctx.fillStyle = pOre.color || '#888';
+          ctx.fillRect(0,0,64,64);
+
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = pOre.symbolColor || '#fff';
+          ctx.font = 'bold ' + (pOre.symbol.length > 2 ? 18 : 28) + 'px Arial';
+          ctx.fillText(String(pOre.symbol),32,32);
+
+          sc.style.cssText =
+            'display:block;width:' + pSize +
+            'px;height:' + pSize +
+            'px;border-radius:6px;border:2px solid ' + prc +
+            ';box-shadow:0 0 14px ' + prc + '88;';
+
           blockDiv.appendChild(sc);
-        } else {
-          // Color block with rarity icon overlay
-          const pSvg=drawRarityIcon(pOre.rarity,prc);
-          if(pSvg){blockDiv.innerHTML='<div style="filter:drop-shadow(0 0 10px '+prc+')">'+pSvg+'</div>';}
-          else{
-            const cblk=document.createElement('div');
-            cblk.style.cssText='width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;background:'+pOre.color+'44;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;margin:auto;display:flex;align-items:center;justify-content:center;';
-            const inner=document.createElement('div');
-            inner.style.cssText='width:'+(pSize*0.5)+'px;height:'+(pSize*0.5)+'px;border-radius:50%;background:'+prc+'66;border:2px solid '+prc+';';
-            cblk.appendChild(inner);blockDiv.appendChild(cblk);
+        }
+
+        // =====================================================
+        // COLOR / RARITY BLOCK (UNCHANGED)
+        // =====================================================
+        else {
+          const pSvg = drawRarityIcon(pOre.rarity, prc);
+
+          if (pSvg){
+            blockDiv.innerHTML =
+              '<div style="filter:drop-shadow(0 0 10px ' + prc + ')">' +
+              pSvg +
+              '</div>';
+          } else {
+            const cblk = document.createElement('div');
+
+            cblk.style.cssText =
+              'width:' + pSize +
+              'px;height:' + pSize +
+              'px;border-radius:6px;background:' + pOre.color +
+              '44;border:2px solid ' + prc +
+              ';box-shadow:0 0 14px ' + prc +
+              '88;margin:auto;display:flex;align-items:center;justify-content:center;';
+
+            const inner = document.createElement('div');
+            inner.style.cssText =
+              'width:' + (pSize*0.5) +
+              'px;height:' + (pSize*0.5) +
+              'px;border-radius:50%;background:' + prc +
+              '66;border:2px solid ' + prc + ';';
+
+            cblk.appendChild(inner);
+            blockDiv.appendChild(cblk);
           }
         }
-        // Name label
-        const nameEl=document.getElementById('scn-name');
-        nameEl.textContent=pOre.name;nameEl.style.color=prc;
-        // Rarity badge
-        const badgeEl=document.getElementById('scn-rarity-badge');
-        badgeEl.textContent=getRarityDisplay(pOre.rarity);
-        badgeEl.style.color=prc;badgeEl.style.background=prc+'22';badgeEl.style.border='1px solid '+prc+'55';
-        // Exact rarity
-        const exactEl=document.getElementById('scn-exact');
-        exactEl.textContent=T.rare1+fmtExact(pOre.exact);
+
+        // =====================================================
+        // TEXT LABELS (UNCHANGED)
+        // =====================================================
+        const nameEl = document.getElementById('scn-name');
+        nameEl.textContent = pOre.name;
+        nameEl.style.color = prc;
+
+        const badgeEl = document.getElementById('scn-rarity-badge');
+        badgeEl.textContent = getRarityDisplay(pOre.rarity);
+        badgeEl.style.color = prc;
+        badgeEl.style.background = prc + '22';
+        badgeEl.style.border = '1px solid ' + prc + '55';
+
+        const exactEl = document.getElementById('scn-exact');
+        exactEl.textContent = T.rare1 + fmtExact(pOre.exact);
       }
+
       _hideAllScnDivs();
       return;
     }
@@ -3240,36 +3434,39 @@ const CAVE_RARITY_TAG={
   'IceCaveExclusive':    {label:'ICE CAVE',     color:'#88eeff'},
   'EnergyCaveExclusive': {label:'ENERGY CAVE',  color:'#a327f5'},
   'NuclearCaveExclusive':{label:'NUCLEAR CAVE', color:'#46f527'},
-  'ShadowCaveExclusive': {label:'SHADOW CAVE',  color:'#555955'},
+  'ShadowCaveExclusive': {label:'SHADOW CAVE',  color:'#7766aa'},
   'AbyssCaveExclusive':  {label:'ABYSS CAVE',   color:'#3355ff'},
   'LavaCaveExclusive':   {label:'LAVA CAVE',    color:'#ff4400'},
   'NormalCaveExclusive': {label:'CAVE',         color:'#888888'},
 };
-// Cave exclusives (non-base) — ores found only in a certain cave type
+// Map caveType field → cave tag
+const CAVE_TYPE_TAG={
+  NormalCave: {label:'CAVE',         color:'#888888'},
+  IceCave:    {label:'ICE CAVE',     color:'#88eeff'},
+  EnergyCave: {label:'ENERGY CAVE',  color:'#a327f5'},
+  NuclearCave:{label:'NUCLEAR CAVE', color:'#46f527'},
+  ShadowCave: {label:'SHADOW CAVE',  color:'#7766aa'},
+  AbyssCave:  {label:'ABYSS CAVE',   color:'#3355ff'},
+  LavaCave:   {label:'LAVA CAVE',    color:'#ff4400'},
+};
 function getCaveTagForOre(ore){
   if(!ore)return null;
-  // caveBase ores are the cave floor blocks — still show their cave tag
-  // Check if rarity ends with CaveExclusive
+  // 1. Direct caveType field (new cave commons)
+  if(ore.caveType&&CAVE_TYPE_TAG[ore.caveType])return CAVE_TYPE_TAG[ore.caveType];
+  // 2. caveBase ores: use their rarity prefix
   const r=ore.rarity||'';
   for(const prefix of Object.keys(CAVE_RARITY_TAG)){
-    if(r===prefix||r.startsWith(prefix)){
+    if(r===prefix||r.startsWith(prefix+'-')||r===prefix){
       return CAVE_RARITY_TAG[prefix];
     }
   }
-  // Check if the ore appears as an exclusive in a CAVE_TYPES entry
+  // 3. Check if the ore appears as an exclusive in a CAVE_TYPES entry
   for(const ct of CAVE_TYPES){
     if(ct.exclusives&&ct.exclusives.includes(ore.name)){
-      // Map cave type to tag
-      const caveMap={
-        NormalCave: {label:'CAVE',         color:'#888888'},
-        IceCave:    {label:'ICE CAVE',     color:'#88eeff'},
-        EnergyCave: {label:'ENERGY CAVE',  color:'#a327f5'},
-        NuclearCave:{label:'NUCLEAR CAVE', color:'#46f527'},
-        ShadowCave: {label:'SHADOW CAVE',  color:'#555955'},
-        AbyssCave:  {label:'ABYSS CAVE',   color:'#3355ff'},
-        LavaCave:   {label:'LAVA CAVE',    color:'#ff4400'},
-      };
-      return caveMap[ct.type]||null;
+      return CAVE_TYPE_TAG[ct.type]||null;
+    }
+    if(ct.commons&&ct.commons.includes(ore.name)){
+      return CAVE_TYPE_TAG[ct.type]||null;
     }
   }
   return null;
@@ -4343,7 +4540,6 @@ function loop(t=0){
   if(!shopOpen)updateScanner(h);
   else document.getElementById('scn-overlay').style.display='none';
   updateEpineAudio();
-  updateGifTextures();
   tickFX(dt);
   renderer.render(scene,camera);
   // (poison blocks are now visually green via oreIdx override — no overlay needed)
