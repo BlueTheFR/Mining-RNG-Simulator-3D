@@ -45,7 +45,7 @@ canvas.free{cursor:default}
 .idx-exact{margin-left:auto;font-size:6px;opacity:.5;flex-shrink:0}
 
 /* ── Stats ── */
-.stat-row{display:flex;justify-content:space-between;gap:14px;font-size:8px;margin-bottom:5px;color:var(--hud-text-label)}
+.stat-row{display:flex;justify-content:space-between;gap:14px;font-size:8px;margin-bottom:5px;color:var(--hud-text-label);overflow:hidden}
 .stat-v{color:var(--hud-accent)}
 
 /* ── Crosshair ── */
@@ -336,11 +336,11 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
       <div id="idx-list"></div>
     </div>
   </div>
-  <div id="stats-panel" style="position:absolute;top:90px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;pointer-events:none;min-width:160px">
+  <div id="stats-panel" style="position:absolute;top:90px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;pointer-events:none;min-width:160px;max-width:200px;overflow:hidden">
     <h3 id="lbl-stats" style="font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55">STATS</h3>
     <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
     <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
-    <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44">x1.00</span></div>
+    <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">x1.00</span></div>
     <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
       <span id="lbl-100m" style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
       <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
@@ -1693,6 +1693,7 @@ function rollOreNormal(roll, depthFrac, lk) {
   for (let i = 0; i < ORES.length; i++) {
     const o = ORES[i];
     if (isCaveExclusiveOre(o)) continue;
+    if (o.isBarrier) continue; // bedrock never spawns via RNG
     if (o.event && o.event !== currentEvent) continue;
 
     // Poids de base pour tous les ores, sans influence de depthFrac
@@ -3151,6 +3152,7 @@ function updateScanner(h){
       if(!blocks[ci]||!oreRevealed[ci])continue;
       const ore=ORES[oreIdx[ci]||0];
       if(!ore||ore.exact<pick.scanMin)continue;
+      if(ore.isBarrier)continue; // bedrock is immune to scanner
       found.push({ore,x,y,z});
     }
     // Sort by rarity (rarest first)
@@ -3203,8 +3205,16 @@ function updateScanner(h){
     if(d._ore!==ore||d._posKey!==posKey){
       d._ore=ore;d._posKey=posKey;
       const iconDiv=d.querySelector('.scn-icon-m');
-      const blockEl=_buildOreBlockEl(ore,rc,rawSize);
-      iconDiv.innerHTML='';iconDiv.appendChild(blockEl);
+      // Regular scanner: show only the rarity icon SVG
+      const iconSvg=drawRarityIcon(ore.rarity,rc);
+      if(iconSvg){
+        iconDiv.innerHTML='<div style="filter:drop-shadow(0 0 8px '+rc+')">'+iconSvg+'</div>';
+      }else{
+        // Fallback: colored dot for common rarities
+        const dot=document.createElement('div');
+        dot.style.cssText='width:'+rawSize+'px;height:'+rawSize+'px;border-radius:50%;background:'+rc+'66;border:2px solid '+rc+';margin:auto;';
+        iconDiv.innerHTML='';iconDiv.appendChild(dot);
+      }
       // Distance label
       let distLabel=d.querySelector('.scn-dist-lbl');
       if(!distLabel){distLabel=document.createElement('div');distLabel.className='scn-dist-lbl';distLabel.style.cssText='font-size:5px;color:#aaa;text-align:center;margin-top:2px;font-family:monospace;';d.appendChild(distLabel);}
