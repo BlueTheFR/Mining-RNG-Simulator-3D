@@ -565,15 +565,21 @@ const RC={
   'EnergyCaveExclusive-Zenith':'#df03fc',
   'NuclearCaveExclusive':'#46f527',
   'NuclearCaveExclusive-Transcendent':'#2196f3',
-  'ShadowCaveExclusive':'#313831',
+  'ShadowCaveExclusive':'#7766aa',
   'ShadowCaveExclusive-Enigmatic':'#fff176',
   'ShadowCaveExclusive-Imaginary':'#ffffe0',
-  'AbyssCaveExclusive':'#0b0e61',
+  'AbyssCaveExclusive':'#5577cc',
   'AbyssCaveExclusive-Unfathomable':'#0d47a1',
   'AbyssCaveExclusive-Zenith':'#df03fc',
-  'LavaCaveExclusive':'#66584a',
+  'LavaCaveExclusive':'#ff6622',
   'LavaCaveExclusive-Otherworldly':'#8b0000',
   'LavaCaveExclusive-Eternal':'#00fbff',
+  'CaveCommon':'#aaaaaa',
+  'CaveUncommon':'#88cc88',
+  'CaveRare':'#4488ff',
+  'CaveEpic':'#aa44ff',
+  'CaveLegendary':'#ffaa00',
+  'Barrier':'#333333',
   'CaveExclusive-Mythical':'#df03fc',
   'CaveExclusive-Eternal':'#00fbff',
 };
@@ -608,6 +614,11 @@ const RARITY_FR={
   'LavaCaveExclusive':'Exclusif Cave de Lave',
   'LavaCaveExclusive-Otherworldly':'Exclusif Cave Lave — Extraterrestre',
   'LavaCaveExclusive-Eternal':'Exclusif Cave Lave — Éternel',
+  'CaveCommon':'Cave Commun',
+  'CaveUncommon':'Cave Peu Commun',
+  'CaveRare':'Cave Rare',
+  'CaveEpic':'Cave Épique',
+  'CaveLegendary':'Cave Légendaire',
   'CaveExclusive-Mythical':'Exclusif Cave — Mythique+',
   'CaveExclusive-Eternal':'Exclusif Cave — Éternel',
 };
@@ -719,12 +730,97 @@ const ORES=[
   {name:'BlueTheFR', rarity:'Eternal',     exact:100000000000,color:'#00fbff',spawnMsg:'You meet the creator...',                         spawnMsgFr:'Vous rencontrez le créateur...'},
   {name:'SPAFF',     rarity:'SPAFF',       exact:1000000000000,color:'#ff9900',spawnMsg:'THE SPAFF IS HERE!!',                           spawnMsgFr:'Le SPAFF est là !!'},
   // ── Cave base blocks ──
-  {name:'Ice',           rarity:'IceCaveExclusive',             exact:1,           color:'#88eeff',spawnMsg:null,caveBase:true},
+  // ── BEDROCK / BARRIER (indestructible bottom layer, hidden from index/inventory) ──
+  {name:'Bedrock', rarity:'Barrier', exact:1, color:'#111111', symbol:'▓', symbolColor:'#333333', caveBase:false, isBarrier:true, hidden:true},
   {name:'Energy',        rarity:'EnergyCaveExclusive',          exact:1,           color:'#a327f5',spawnMsg:null,caveBase:true},
   {name:'NuclearWaste',  rarity:'NuclearCaveExclusive',         exact:1,           color:'#46f527',spawnMsg:null,caveBase:true},
   {name:'ShadowMatter',  rarity:'ShadowCaveExclusive',          exact:1,           color:'#313831',spawnMsg:null,caveBase:true},
   {name:'AbyssSand',     rarity:'AbyssCaveExclusive',           exact:1,           color:'#0b0e61',spawnMsg:null,caveBase:true},
   {name:'LavaRock',      rarity:'LavaCaveExclusive',            exact:1,           color:'#66584a',spawnMsg:null,caveBase:true},
+
+  // ── Normal Cave commons (value < 100K) ──
+  {name:'FlintShard',    rarity:'CaveCommon',  exact:3,    color:'#aaaaaa',symbol:'FL',caveType:'NormalCave'},
+  {name:'QuartzVein',    rarity:'CaveCommon',  exact:8,    color:'#ffeeff',symbol:'QV',caveType:'NormalCave'},
+  {name:'CopperNugget',  rarity:'CaveUncommon',exact:25,   color:'#b55a0f',symbol:'CU',caveType:'NormalCave'},
+  {name:'TinFlake',      rarity:'CaveUncommon',exact:60,   color:'#c0c8d0',symbol:'TF',caveType:'NormalCave'},
+  {name:'CaveRuby',      rarity:'CaveRare',    exact:250,  color:'#ff3060',symbol:'CR',caveType:'NormalCave'},
+  {name:'StalactiteDust',rarity:'CaveRare',    exact:700,  color:'#d4c5b0',symbol:'SD',caveType:'NormalCave'},
+  {name:'MarbleShard',   rarity:'CaveEpic',    exact:2000, color:'#e8e8ff',symbol:'MS',caveType:'NormalCave'},
+  {name:'GoldVein',      rarity:'CaveEpic',    exact:5000, color:'#ffd700',symbol:'GV',caveType:'NormalCave'},
+  {name:'CaveAmethyst',  rarity:'CaveLegendary',exact:20000,color:'#9b59b6',symbol:'CA',caveType:'NormalCave'},
+  {name:'AncientCoin',   rarity:'CaveLegendary',exact:80000,color:'#d4a017',symbol:'AC',caveType:'NormalCave'},
+
+  // ── Ice Cave commons ──
+  {name:'FrostDust',     rarity:'IceCaveExclusive',exact:3,    color:'#cceeff',symbol:'FD',caveType:'IceCave'},
+  {name:'IceSliver',     rarity:'IceCaveExclusive',exact:10,   color:'#99ddff',symbol:'IS',caveType:'IceCave'},
+  {name:'SnowCrystal',   rarity:'IceCaveExclusive',exact:30,   color:'#eef8ff',symbol:'SC',caveType:'IceCave'},
+  {name:'FrozenPebble',  rarity:'IceCaveExclusive',exact:90,   color:'#aaddff',symbol:'FP',caveType:'IceCave'},
+  {name:'BlizzardShard', rarity:'IceCaveExclusive',exact:400,  color:'#55ccff',symbol:'BS',caveType:'IceCave'},
+  {name:'GlacierChip',   rarity:'IceCaveExclusive',exact:1500, color:'#00aaee',symbol:'GC',caveType:'IceCave'},
+  {name:'PermafrostGem', rarity:'IceCaveExclusive',exact:6000, color:'#00eeff',symbol:'PG',caveType:'IceCave'},
+  {name:'ArcticCore',    rarity:'IceCaveExclusive',exact:18000,color:'#0077cc',symbol:'AC',caveType:'IceCave'},
+  {name:'TundraEssence', rarity:'IceCaveExclusive',exact:55000,color:'#33bbff',symbol:'TE',caveType:'IceCave'},
+  {name:'HailstoneSoul', rarity:'IceCaveExclusive',exact:90000,color:'#00ddff',symbol:'HS',caveType:'IceCave'},
+
+  // ── Energy Cave commons ──
+  {name:'StaticFleck',   rarity:'EnergyCaveExclusive',exact:3,    color:'#dd88ff',symbol:'SF',caveType:'EnergyCave'},
+  {name:'SparkDust',     rarity:'EnergyCaveExclusive',exact:12,   color:'#cc44ff',symbol:'SK',caveType:'EnergyCave'},
+  {name:'PlasmaBit',     rarity:'EnergyCaveExclusive',exact:35,   color:'#bb00ff',symbol:'PB',caveType:'EnergyCave'},
+  {name:'VoltShard',     rarity:'EnergyCaveExclusive',exact:120,  color:'#9900ff',symbol:'VS',caveType:'EnergyCave'},
+  {name:'ArcCrystal',   rarity:'EnergyCaveExclusive',exact:500,  color:'#cc00ee',symbol:'AR',caveType:'EnergyCave'},
+  {name:'PhotonGrain',   rarity:'EnergyCaveExclusive',exact:2000, color:'#ff44ff',symbol:'PG',caveType:'EnergyCave'},
+  {name:'IonCore',       rarity:'EnergyCaveExclusive',exact:8000, color:'#ee00cc',symbol:'IC',caveType:'EnergyCave'},
+  {name:'NeonEssence',   rarity:'EnergyCaveExclusive',exact:25000,color:'#ff00aa',symbol:'NE',caveType:'EnergyCave'},
+  {name:'PulseGem',      rarity:'EnergyCaveExclusive',exact:70000,color:'#dd00ff',symbol:'PU',caveType:'EnergyCave'},
+  {name:'SurgeFragment', rarity:'EnergyCaveExclusive',exact:95000,color:'#aa00ff',symbol:'SG',caveType:'EnergyCave'},
+
+  // ── Nuclear Cave commons ──
+  {name:'RadDust',       rarity:'NuclearCaveExclusive',exact:3,    color:'#88ff44',symbol:'RD',caveType:'NuclearCave'},
+  {name:'UraniumFleck',  rarity:'NuclearCaveExclusive',exact:15,   color:'#66ff00',symbol:'UF',caveType:'NuclearCave'},
+  {name:'ToxicShard',    rarity:'NuclearCaveExclusive',exact:50,   color:'#00ff44',symbol:'TX',caveType:'NuclearCave'},
+  {name:'GeigerGrain',   rarity:'NuclearCaveExclusive',exact:200,  color:'#44ff88',symbol:'GG',caveType:'NuclearCave'},
+  {name:'IsotopeSplinter',rarity:'NuclearCaveExclusive',exact:700, color:'#00ee55',symbol:'IP',caveType:'NuclearCave'},
+  {name:'FissionChip',   rarity:'NuclearCaveExclusive',exact:3000, color:'#33ff00',symbol:'FC',caveType:'NuclearCave'},
+  {name:'NeutronCrystal',rarity:'NuclearCaveExclusive',exact:10000,color:'#00ff88',symbol:'NC',caveType:'NuclearCave'},
+  {name:'ReactorDust',   rarity:'NuclearCaveExclusive',exact:30000,color:'#55dd00',symbol:'RC',caveType:'NuclearCave'},
+  {name:'MeltdownGem',   rarity:'NuclearCaveExclusive',exact:75000,color:'#aaff00',symbol:'MG',caveType:'NuclearCave'},
+  {name:'CriticalShard', rarity:'NuclearCaveExclusive',exact:95000,color:'#ffff00',symbol:'CS',caveType:'NuclearCave'},
+
+  // ── Shadow Cave commons ──
+  {name:'DarkDust',      rarity:'ShadowCaveExclusive',exact:3,    color:'#333333',symbol:'DD',caveType:'ShadowCave'},
+  {name:'UmbraFleck',    rarity:'ShadowCaveExclusive',exact:12,   color:'#222244',symbol:'UF',caveType:'ShadowCave'},
+  {name:'GloomShard',    rarity:'ShadowCaveExclusive',exact:40,   color:'#443355',symbol:'GS',caveType:'ShadowCave'},
+  {name:'NightCrystal',  rarity:'ShadowCaveExclusive',exact:150,  color:'#554466',symbol:'NC',caveType:'ShadowCave'},
+  {name:'TwilightGrain', rarity:'ShadowCaveExclusive',exact:600,  color:'#665577',symbol:'TG',caveType:'ShadowCave'},
+  {name:'EclipseChip',   rarity:'ShadowCaveExclusive',exact:2500, color:'#776688',symbol:'EC',caveType:'ShadowCave'},
+  {name:'PenumbraGem',   rarity:'ShadowCaveExclusive',exact:9000, color:'#887799',symbol:'PG',caveType:'ShadowCave'},
+  {name:'AbyssalSmoke',  rarity:'ShadowCaveExclusive',exact:28000,color:'#4a3060',symbol:'AS',caveType:'ShadowCave'},
+  {name:'NullEssence',   rarity:'ShadowCaveExclusive',exact:72000,color:'#330044',symbol:'NE',caveType:'ShadowCave'},
+  {name:'VoidDust',      rarity:'ShadowCaveExclusive',exact:95000,color:'#110022',symbol:'VD',caveType:'ShadowCave'},
+
+  // ── Abyss Cave commons ──
+  {name:'DeepSilt',      rarity:'AbyssCaveExclusive',exact:3,    color:'#1a1a44',symbol:'DS',caveType:'AbyssCave'},
+  {name:'MarineDust',    rarity:'AbyssCaveExclusive',exact:14,   color:'#003366',symbol:'MD',caveType:'AbyssCave'},
+  {name:'TrenchFleck',   rarity:'AbyssCaveExclusive',exact:45,   color:'#004488',symbol:'TF',caveType:'AbyssCave'},
+  {name:'PressureGrain', rarity:'AbyssCaveExclusive',exact:180,  color:'#0055aa',symbol:'PG',caveType:'AbyssCave'},
+  {name:'TidalShard',    rarity:'AbyssCaveExclusive',exact:650,  color:'#0066bb',symbol:'TS',caveType:'AbyssCave'},
+  {name:'CoralCore',     rarity:'AbyssCaveExclusive',exact:2500, color:'#0077cc',symbol:'CC',caveType:'AbyssCave'},
+  {name:'BiolumCrystal', rarity:'AbyssCaveExclusive',exact:8000, color:'#00aadd',symbol:'BC',caveType:'AbyssCave'},
+  {name:'LeviathanDust', rarity:'AbyssCaveExclusive',exact:25000,color:'#0033aa',symbol:'LD',caveType:'AbyssCave'},
+  {name:'OceanEssence',  rarity:'AbyssCaveExclusive',exact:68000,color:'#0044cc',symbol:'OE',caveType:'AbyssCave'},
+  {name:'DeepwaterGem',  rarity:'AbyssCaveExclusive',exact:95000,color:'#002299',symbol:'DG',caveType:'AbyssCave'},
+
+  // ── Lava Cave commons ──
+  {name:'CinderDust',    rarity:'LavaCaveExclusive',exact:3,    color:'#773300',symbol:'CD',caveType:'LavaCave'},
+  {name:'EmberFleck',    rarity:'LavaCaveExclusive',exact:12,   color:'#aa4400',symbol:'EF',caveType:'LavaCave'},
+  {name:'ScorchShard',   rarity:'LavaCaveExclusive',exact:40,   color:'#cc5500',symbol:'SS',caveType:'LavaCave'},
+  {name:'ObsidianChip',  rarity:'LavaCaveExclusive',exact:160,  color:'#221122',symbol:'OC',caveType:'LavaCave'},
+  {name:'MagmaGrain',    rarity:'LavaCaveExclusive',exact:600,  color:'#ff4400',symbol:'MG',caveType:'LavaCave'},
+  {name:'VolcanoCore',   rarity:'LavaCaveExclusive',exact:2500, color:'#ff6600',symbol:'VC',caveType:'LavaCave'},
+  {name:'IgneousCrystal',rarity:'LavaCaveExclusive',exact:9000, color:'#ff8800',symbol:'IG',caveType:'LavaCave'},
+  {name:'MoltenEssence', rarity:'LavaCaveExclusive',exact:28000,color:'#ffaa00',symbol:'ME',caveType:'LavaCave'},
+  {name:'PyriteGem',     rarity:'LavaCaveExclusive',exact:72000,color:'#ffcc00',symbol:'PY',caveType:'LavaCave'},
+  {name:'HellstoneDust', rarity:'LavaCaveExclusive',exact:95000,color:'#ff0000',symbol:'HD',caveType:'LavaCave'},
   // ── Cave exclusive rare ores ──
   {name:'CrystalFrost',     rarity:'IceCaveExclusive-Exotic',          exact:500000,       color:'#00ffff',spawnMsg:'A shard of CrystalFrost glimmers in the icy cave!',                   spawnMsgFr:'Un éclat de CrystalFrost scintille dans la cave de glace !'},
   {name:'GlowingNova',      rarity:'EnergyCaveExclusive-Exquisite',    exact:1000000,      color:'#ff00ff',spawnMsg:'GlowingNova illuminates the cavern with a soft pulse!',               spawnMsgFr:'GlowingNova illumine la caverne d\'une douce pulsation !'},
@@ -749,9 +845,11 @@ let ORES_SORTED=[];
 
 function isCaveExclusiveOre(ore){
   if(!ore||ore.caveBase)return true;
+  if(ore.caveType)return true; // new cave ores with explicit caveType field
   const r=ore.rarity||'';
   if(r.includes('CaveExclusive'))return true;
   if(r.includes('IceCave')||r.includes('EnergyCave')||r.includes('NuclearCave')||r.includes('ShadowCave')||r.includes('AbyssCave')||r.includes('LavaCave'))return true;
+  if(r==='CaveCommon'||r==='CaveUncommon'||r==='CaveRare'||r==='CaveEpic'||r==='CaveLegendary')return true;
   return false;
 }
 
@@ -901,21 +999,35 @@ function applyGearMineEffect(ore){
   return extras;
 }
 
-function _triggerGearExplosion(radius,gearId){
+function _triggerGearExplosion(targetBlocks,gearId){
   const px=Math.floor(camera.position.x);
   const py=Math.floor(camera.position.y-CAM_H);
   const pz=Math.floor(camera.position.z);
-  const r=Math.ceil(Math.cbrt(radius*0.75));
+  // r such that sphere volume ≈ targetBlocks: V = 4/3 π r³ → r = cbrt(3V/4π)
+  const r=Math.max(3,Math.ceil(Math.cbrt(targetBlocks*3/(4*Math.PI))));
   let destroyed=0;
-  for(let dx=-r;dx<=r&&destroyed<radius;dx++)
-    for(let dy=-r;dy<=r&&destroyed<radius;dy++)
-      for(let dz=-r;dz<=r&&destroyed<radius;dz++){
-        if(dx*dx+dy*dy+dz*dz>r*r*1.2)continue;
-        if(abilityMine(px+dx,py+dy,pz+dz))destroyed++;
+  // Collect all solid blocks in sphere, sorted nearest first so we blast outward
+  const candidates=[];
+  for(let dx=-r;dx<=r;dx++)
+    for(let dy=-r;dy<=r;dy++)
+      for(let dz=-r;dz<=r;dz++){
+        const d2=dx*dx+dy*dy+dz*dz;
+        if(d2>r*r)continue;
+        const wx=px+dx,wy=py+dy,wz=pz+dz;
+        if(wx<0||wx>=W||wy<=0||wy>=H||wz<0||wz>=D)continue;
+        if(!blocks[idx(wx,wy,wz)])continue;
+        // Skip bedrock (y===0 or y===1 = barrier layer)
+        if(wy<=1)continue;
+        candidates.push({wx,wy,wz,d2});
       }
+  candidates.sort((a,b)=>a.d2-b.d2);
+  for(const {wx,wy,wz} of candidates){
+    if(destroyed>=targetBlocks)break;
+    if(abilityMine(wx,wy,wz))destroyed++;
+  }
   const col=GEAR_DATA[gearId]?GEAR_DATA[gearId].color:'#ff8800';
   showSpawn(lang==='fr'?'💥 '+gearId+' : '+destroyed+' blocs détruits !':'💥 '+gearId+': '+destroyed+' blocks destroyed!',col,false);
-  markMeshDirty();
+  markMeshDirty();markInvDirty();
 }
 
 function getUpgradedOre(ore){
@@ -968,26 +1080,33 @@ function isEventOreActive(ore){
 // ═══════════ CAVE TYPES ═══════════
 const CAVE_TYPES=[
   {type:'NormalCave',  blocks:['Stone','Coal','Iron'],
-   exclusives:['EternalCrystal','MonolithofOrigin'],rareChance:0.5,
-   color:'#888888',freq:0.35},
+   exclusives:['EternalCrystal','MonolithofOrigin'],
+   commons:['FlintShard','QuartzVein','CopperNugget','TinFlake','CaveRuby','StalactiteDust','MarbleShard','GoldVein','CaveAmethyst','AncientCoin'],
+   rareChance:0.5, color:'#888888',freq:0.35},
   {type:'IceCave',     blocks:['Ice'],
-   exclusives:['CrystalFrost'],rareChance:1/800,
-   color:'#88eeff',freq:0.15},
+   exclusives:['CrystalFrost'],
+   commons:['FrostDust','IceSliver','SnowCrystal','FrozenPebble','BlizzardShard','GlacierChip','PermafrostGem','ArcticCore','TundraEssence','HailstoneSoul'],
+   rareChance:1/800, color:'#88eeff',freq:0.15},
   {type:'EnergyCave',  blocks:['Energy'],
-   exclusives:['GlowingNova','ZenithShard'],rareChance:1/12,
-   color:'#a327f5',freq:0.13},
+   exclusives:['GlowingNova','ZenithShard'],
+   commons:['StaticFleck','SparkDust','PlasmaBit','VoltShard','ArcCrystal','PhotonGrain','IonCore','NeonEssence','PulseGem','SurgeFragment'],
+   rareChance:1/12,  color:'#a327f5',freq:0.13},
   {type:'NuclearCave', blocks:['NuclearWaste'],
-   exclusives:['RadiantCore'],rareChance:1/25,
-   color:'#46f527',freq:0.10},
+   exclusives:['RadiantCore'],
+   commons:['RadDust','UraniumFleck','ToxicShard','GeigerGrain','IsotopeSplinter','FissionChip','NeutronCrystal','ReactorDust','MeltdownGem','CriticalShard'],
+   rareChance:1/25,  color:'#46f527',freq:0.10},
   {type:'ShadowCave',  blocks:['ShadowMatter'],
-   exclusives:['ShadowGem','VoidOrb'],rareChance:1/35,
-   color:'#313831',freq:0.10},
+   exclusives:['ShadowGem','VoidOrb'],
+   commons:['DarkDust','UmbraFleck','GloomShard','NightCrystal','TwilightGrain','EclipseChip','PenumbraGem','AbyssalSmoke','NullEssence','VoidDust'],
+   rareChance:1/35,  color:'#313831',freq:0.10},
   {type:'AbyssCave',   blocks:['AbyssSand'],
-   exclusives:['AbyssCrystal','AbyssFish'],rareChance:1/50,
-   color:'#0b0e61',freq:0.10},
+   exclusives:['AbyssCrystal','AbyssFish'],
+   commons:['DeepSilt','MarineDust','TrenchFleck','PressureGrain','TidalShard','CoralCore','BiolumCrystal','LeviathanDust','OceanEssence','DeepwaterGem'],
+   rareChance:1/50,  color:'#0b0e61',freq:0.10},
   {type:'LavaCave',    blocks:['LavaRock'],
-   exclusives:['LavaRelic','Epinephrine'],rareChance:1/75,
-   color:'#66584a',freq:0.07},
+   exclusives:['LavaRelic','Epinephrine'],
+   commons:['CinderDust','EmberFleck','ScorchShard','ObsidianChip','MagmaGrain','VolcanoCore','IgneousCrystal','MoltenEssence','PyriteGem','HellstoneDust'],
+   rareChance:1/75,  color:'#66584a',freq:0.07},
 ];
 
 // Cave-exclusive rarity → sound mapping
@@ -1281,10 +1400,15 @@ function _getOrCreateChunk(cx,cz){
   if(_chunks.has(k))return _chunks.get(k);
   const sz=CHUNK_SIZE*H*CHUNK_SIZE;
   const ch={blocks:new Uint8Array(sz),oreIdx:new Uint8Array(sz),oreRevealed:new Uint8Array(sz),cx,cz};
-  // Fill with solid rock up to TOP_SOLID_Y
+  // Fill with solid rock up to TOP_SOLID_Y, bedrock at y=0 and y=1
+  const bedrockIdx=ORES.findIndex(o=>o.isBarrier);
   for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
     const li=lx*H*CHUNK_SIZE+y*CHUNK_SIZE+lz;
     ch.blocks[li]=1;
+    if(y<=1&&bedrockIdx>=0){
+      ch.oreIdx[li]=bedrockIdx;
+      ch.oreRevealed[li]=1;
+    }
   }
   _chunks.set(k,ch);
   return ch;
@@ -1589,7 +1713,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
   const depthDen=Math.max(1,TOP_SOLID_Y);
   for(const [dx,dy,dz] of N6){
     const nx=ax+dx,ny=ay+dy,nz=az+dz;
-    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
+    if(nx<0||nx>=W||ny<=1||ny>=H||nz<0||nz>=D)continue; // skip bedrock layer
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
@@ -1793,32 +1917,25 @@ function needsAnimCanvasPath(src){
   return /\.(gif|webp|png|jpg|jpeg)(\?|#|$)/i.test(src||'');
 }
 
-// Container for GIF source images — browsers only animate GIFs in the active render tree.
-// We use a flex row of 2×2px images positioned behind the HUD (z-index:0).
-// clip-path hides them visually but they remain in layout → browser advances GIF frames.
+// GIF animation fix: images must be truly rendered (not clipped/hidden) for browsers to advance frames.
+// We place them in a div that's translated far off-screen but still in the render tree.
 let _gifContainer=null;
 function _getGifContainer(){
   if(_gifContainer)return _gifContainer;
   _gifContainer=document.createElement('div');
-  _gifContainer.style.cssText=[
-    'position:fixed','bottom:0','left:0',
-    'display:flex','flex-direction:row','flex-wrap:wrap',
-    'width:1px','height:1px', // Layout size of 1×1px
-    'overflow:visible',        // images overflow but are clipped visually
-    'clip-path:inset(0)',      // visually clips children but keeps them in render tree
-    'pointer-events:none','z-index:0',
-  ].join(';');
+  // position:fixed, translated 9999px to the left — off-screen but NOT hidden.
+  // Browsers animate GIFs in elements that are rendered, even off-screen.
+  // clip-path, visibility:hidden, display:none, opacity:0 all stop GIF animation.
+  _gifContainer.style.cssText='position:fixed;top:0;left:0;transform:translateX(-9999px);display:flex;flex-direction:row;flex-wrap:wrap;width:256px;pointer-events:none;z-index:-1;';
   document.body.appendChild(_gifContainer);
   return _gifContainer;
 }
 
 function mountAnimImageInDom(img){
   if(img.parentNode)return;
-  // 32×32 so browser doesn't throttle "too small to animate"
-  img.style.cssText='width:32px;height:32px;flex-shrink:0;object-fit:cover;display:block;';
+  img.style.cssText='width:64px;height:64px;flex-shrink:0;object-fit:cover;display:block;';
   _getGifContainer().appendChild(img);
-  // Force a layout reflow to ensure the browser registers the image as visible
-  void img.offsetWidth;
+  void img.offsetWidth; // force layout so browser registers the image
 }
 
 function drawAnimOverlay(ctx,cw,ch,ore){
@@ -2371,8 +2488,10 @@ function doMine(){
   if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
   const i=idx(x,y,z);if(!blocks[i])return;
   // Bedrock: bottom layer cannot be mined (prevent mining into void)
-  // Note: no longer clamp X/Z — players can walk anywhere
-  if(y===0)return;
+  if(y<=1){
+    showSpawn(lang==='fr'?'▓ Bloc Barrière — Indestructible':'▓ Barrier Block — Indestructible','#333333',false);
+    return;
+  }
   const oI=oreIdx[i]||0;
   const ore=ORES[oI];
 
@@ -2423,46 +2542,109 @@ function spawnCave(cx,cy,cz){
   let roll=Math.random()*total,chosen=CAVE_TYPES[0];
   for(const t of CAVE_TYPES){roll-=t.freq;if(roll<=0){chosen=t;break;}}
 
-  const r=3+Math.floor(Math.random()*4);
+  // ── Size roll: small/medium/large/huge ──
+  const sizeRoll=Math.random();
+  let targetVol,shape;
+  if(sizeRoll<0.50){targetVol=100+Math.floor(Math.random()*100);shape='sphere';} // small 100-200
+  else if(sizeRoll<0.75){targetVol=200+Math.floor(Math.random()*100);shape='tunnel';} // medium 200-300
+  else if(sizeRoll<0.90){targetVol=300+Math.floor(Math.random()*200);shape='sphere';} // large 300-500
+  else{targetVol=500+Math.floor(Math.random()*500);shape='worm';} // huge 500-1000
+
+  // Compute sphere radius that encloses targetVol blocks
+  const r=Math.max(3,Math.ceil(Math.cbrt(targetVol*0.75)));
+
   const newAir=[];
+  const wallSet=new Set();
   const depthDen=Math.max(1,TOP_SOLID_Y);
-	
-  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
-    if(dx*dx+dy*dy+dz*dz>r*r*0.9)continue;
-    const nx=cx+dx,ny=cy+dy,nz=cz+dz;
-    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
+
+  function carveBlock(nx,ny,nz){
+    if(nx<0||nx>=W||ny<=1||ny>=H||nz<0||nz>=D)return; // leave y=0,1 as bedrock
     const i=idx(nx,ny,nz);
-    const isWall=(dx*dx+dy*dy+dz*dz>r*r*0.55);
-    if(isWall){
-      // Wall block: place solid with appropriate base ore
-      blocks[i]=1;
-	  const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-      const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    blocks[i]=0;
+    _syncBlockWrite(nx,ny,nz);
+    newAir.push([nx,ny,nz]);
+  }
+
+  function setWall(nx,ny,nz){
+    if(nx<0||nx>=W||ny<=1||ny>=H||nz<0||nz>=D)return;
+    const i=idx(nx,ny,nz);
+    if(!blocks[i])return; // already air
+    blocks[i]=1;
+    const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
+    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    // Roll for a cave common ore first (50% chance on each wall block)
+    let assignedIdx=-1;
+    if(chosen.commons&&chosen.commons.length>0&&Math.random()<0.5){
+      // Pick a random common ore from this cave's list
+      const cName=chosen.commons[Math.floor(Math.random()*chosen.commons.length)];
+      const ci2=ORES.findIndex(o=>o.name===cName);
+      if(ci2>=0)assignedIdx=ci2;
+    }
+    if(assignedIdx<0){
       if(chosen.type==='NormalCave'){
-        // Normal cave walls get regular ore rolls (same as normal world)
-        const oI=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
-        oreIdx[i]=oI;
+        assignedIdx=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
       }else{
-        // Typed cave walls get the cave base block type
         const baseOreIdx=ORES.findIndex(o=>o.name===chosen.blocks[0]);
-        oreIdx[i]=baseOreIdx>=0?baseOreIdx:0;
+        assignedIdx=baseOreIdx>=0?baseOreIdx:0;
       }
-      oreRevealed[i]=1;
-      _syncBlockWrite(nx,ny,nz);
-    }else{
-      // Interior: air
-      blocks[i]=0;
-      _syncBlockWrite(nx,ny,nz);
-      newAir.push([nx,ny,nz]);
+    }
+    oreIdx[i]=assignedIdx;
+    oreRevealed[i]=1;
+    _syncBlockWrite(nx,ny,nz);
+    wallSet.add(nx+'_'+ny+'_'+nz);
+  }
+
+  if(shape==='sphere'){
+    // Round cave
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      const d2=dx*dx+dy*dy+dz*dz;
+      const nx=cx+dx,ny=cy+dy,nz=cz+dz;
+      if(d2>r*r)continue;
+      if(d2>r*r*0.55)setWall(nx,ny,nz);
+      else carveBlock(nx,ny,nz);
+    }
+  } else if(shape==='tunnel'){
+    // Elongated tunnel in a random direction
+    const ang=Math.random()*Math.PI*2;
+    const len=Math.floor(targetVol/30);
+    const tr=Math.max(3,Math.ceil(r*0.55));
+    for(let s=-len;s<=len;s++){
+      const tx=cx+Math.round(Math.cos(ang)*s);
+      const tz=cz+Math.round(Math.sin(ang)*s);
+      for(let dx=-tr;dx<=tr;dx++)for(let dy=-tr;dy<=tr;dy++)for(let dz=-tr;dz<=tr;dz++){
+        const d2=dx*dx+dy*dy+dz*dz;
+        const nx=tx+dx,ny=cy+dy,nz=tz+dz;
+        if(d2>tr*tr)continue;
+        if(d2>tr*tr*0.5)setWall(nx,ny,nz);
+        else carveBlock(nx,ny,nz);
+      }
+    }
+  } else {
+    // Worm: random walk carving a winding tunnel
+    const steps=Math.floor(targetVol/8);
+    const wr=Math.max(3,Math.floor(r*0.45));
+    let wx2=cx,wy2=cy,wz2=cz;
+    let angH=Math.random()*Math.PI*2,angV=0;
+    for(let s=0;s<steps;s++){
+      angH+=(Math.random()-0.5)*0.5;
+      angV+=(Math.random()-0.5)*0.3;
+      angV=Math.max(-0.5,Math.min(0.5,angV));
+      wx2+=Math.round(Math.cos(angH)*Math.cos(angV));
+      wy2+=Math.round(Math.sin(angV));
+      wz2+=Math.round(Math.sin(angH)*Math.cos(angV));
+      for(let dx=-wr;dx<=wr;dx++)for(let dy=-wr;dy<=wr;dy++)for(let dz=-wr;dz<=wr;dz++){
+        const d2=dx*dx+dy*dy+dz*dz;
+        const nx=wx2+dx,ny=wy2+dy,nz=wz2+dz;
+        if(d2>wr*wr)continue;
+        if(d2>wr*wr*0.5)setWall(nx,ny,nz);
+        else carveBlock(nx,ny,nz);
+      }
     }
   }
 
   // Roll each wall block against cave exclusives
-  for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
-    const d2=dx*dx+dy*dy+dz*dz;
-    if(d2<r*r*0.5||d2>r*r*0.9)continue;
-    const nx=cx+dx,ny=cy+dy,nz=cz+dz;
-    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
+  for(const key of wallSet){
+    const [nx,ny,nz]=key.split('_').map(Number);
     const ii=idx(nx,ny,nz);
     if(!blocks[ii])continue;
     const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
@@ -2472,15 +2654,11 @@ function spawnCave(cx,cy,cz){
       const caveOre=ORES[exIdx];
       const spawnProb=combinedLuck/Math.max(1,caveOre.exact);
       if(Math.random()<spawnProb){
-        oreIdx[ii]=exIdx;
-        oreRevealed[ii]=1;
-        _syncBlockWrite(nx,ny,nz);
+        oreIdx[ii]=exIdx;oreRevealed[ii]=1;_syncBlockWrite(nx,ny,nz);
         if(caveOre.spawnMsg){
-          // Always play the appropriate sound for cave exclusives
           const _caveSound=CAVE_RARITY_SOUNDS[caveOre.rarity];
-          if(_caveSound&&_caveSound!=='EpineAudio'){
-            try{const _el=document.getElementById(_caveSound);if(_el){_el.currentTime=0;_el.play().catch(()=>{});}}catch(e){}
-          }else if(!_caveSound){playSound(caveOre);}
+          if(_caveSound&&_caveSound!=='EpineAudio'){try{const _el=document.getElementById(_caveSound);if(_el){_el.currentTime=0;_el.play().catch(()=>{});}}catch(e){}}
+          else if(!_caveSound){playSound(caveOre);}
           const caveCol=RC[caveOre.rarity]||caveOre.color||'#ffffff';
           const _ct=getOreTag(caveOre);const _cl=_ct?' ['+_ct.label+']':'';
           showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+_cl+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
@@ -2496,8 +2674,9 @@ function spawnCave(cx,cy,cz){
   markMeshDirty();
   _scanCachedBestOre=null;_scanCachedTopOres=null;
 
+  const sizeName=targetVol<200?'Petite':targetVol<350?'Moyenne':targetVol<600?'Grande':'Immense';
   const typeName=chosen.type.replace('Cave',' Cave');
-  showSpawn((lang==='fr'?'Cave generée: ':'Cave generated: ')+typeName, chosen.color, false, null);
+  showSpawn((lang==='fr'?sizeName+' cave générée: ':'Cave ('+sizeName+'): ')+typeName, chosen.color, false, null);
 }
 
 // ═══════════ PLACING (PHANTOM) ═══════════
@@ -3122,8 +3301,11 @@ function oreTagHTML(ore,fontSize){
 
 function rebuildInvPanel(){
   const list=document.getElementById('inv-list');
-  const entries=Object.entries(inventory).filter(([,q])=>q>0)
-    .sort((a,b)=>(ORES.find(o=>o.name===b[0])?.exact||0)-(ORES.find(o=>o.name===a[0])?.exact||0));
+  const entries=Object.entries(inventory).filter(([n,q])=>{
+    if(q<=0)return false;
+    const ore=ORES.find(o=>o.name===n);
+    return !ore||!ore.hidden; // hide barrier/bedrock ores
+  }).sort((a,b)=>(ORES.find(o=>o.name===b[0])?.exact||0)-(ORES.find(o=>o.name===a[0])?.exact||0));
   list.innerHTML='';
   if(!entries.length){
     list.innerHTML=`<div style="color:rgba(200,200,200,0.2);font-size:6px">${lang==='fr'?'Rien encore...':'Nothing yet...'}</div>`;
@@ -3154,9 +3336,10 @@ function rebuildInvPanel(){
   // Index panel
   const idxList=document.getElementById('idx-list');
   idxList.innerHTML='';
-  const ownedCount=ORES.filter(o=>(inventory[o.name]||0)>0).length;
-  document.getElementById('lbl-idx').textContent=(lang==='fr'?'INDEX ':'INDEX ')+`(${ownedCount}/${ORES.length})`;
-  ORES_SORTED.forEach(ore=>{
+  const visibleOres=ORES_SORTED.filter(o=>!o.hidden);
+  const ownedCount=visibleOres.filter(o=>(inventory[o.name]||0)>0).length;
+  document.getElementById('lbl-idx').textContent=(lang==='fr'?'INDEX ':'INDEX ')+`(${ownedCount}/${visibleOres.length})`;
+  visibleOres.forEach(ore=>{
     const qty=inventory[ore.name]||0;
     const owned=qty>0;
     const rc=RC[ore.rarity]||'#888';
@@ -3209,6 +3392,7 @@ const FX_PARTICLES=[];
 // ── Utility: mine a block in world coords (no mesh rebuild, batched) ──
 function abilityMine(wx,wy,wz){
   if(wx<0||wx>=W||wy<0||wy>=H||wz<0||wz>=D)return false;
+  if(wy<=1)return false; // bedrock layer — indestructible
   const i=idx(wx,wy,wz);
   if(!blocks[i])return false;
   // Never destroy phantom block via abilities — only player direct mining can pick it up
