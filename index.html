@@ -1562,39 +1562,31 @@ function getPickLuck(){
   return luckMap[pick.id]||1;
 }
 
-function rollOreNormal(roll, depthFrac, lk) {
-  let tot = 0;
-  const parts = [];
-
-  // shared depth curve for everything
-  const depthCurve = 0.05 + depthFrac * 0.95;
-
-  for (let i = 0; i < ORES.length; i++) {
-    const o = ORES[i];
-
-    if (isCaveExclusiveOre(o)) continue;
-    if (o.event && o.event !== currentEvent) continue;
-
-    const base = 1 / o.exact;
-
-    // shared scaling (rares + events use SAME system)
-    let rarityModifier = 1 + depthFrac;
-
-    // event is just a bonus layer, not a different system
-    if (o.event) {
-      rarityModifier *= 1;
+function rollOreNormal(roll,depthFrac,lk){
+  let tot=0;
+  const parts=[];
+  for(let i=0;i<ORES.length;i++){
+    const o=ORES[i];
+    if(isCaveExclusiveOre(o))continue;
+    if(o.event&&o.event!==currentEvent)continue;
+    let w=lk/o.exact;
+    if(o.event&&o.event===currentEvent){
+      
+      w*=(0.05+depthFrac*0.95);
+    } else if(o.exact>1000){
+      // Rare ores: scale with depth (deeper = more likely)
+      w*=(0.05+depthFrac*0.95);
+    }else{
+      // Common ores: scale inversely with depth, capped so luck shifts toward rares
+      w*=(1-depthFrac*0.5);
+      const cap=(1/o.exact)*(1-depthFrac*0.5);
+      if(w>cap)w=cap;
     }
-
-    let w = base * depthCurve * lk * rarityModifier;
+    parts.push({i,w});
+    tot+=w;
   }
-
-  let r = roll * tot;
-
-  for (const { i, w } of parts) {
-    r -= w;
-    if (r <= 0) return i;
-  }
-
+  let r=roll*tot;
+  for(const {i,w} of parts){r-=w;if(r<=0)return i;}
   return 0;
 }
 
