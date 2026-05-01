@@ -1562,32 +1562,46 @@ function getPickLuck(){
   return luckMap[pick.id]||1;
 }
 
-function rollOreNormal(roll,depthFrac,lk){
-  let tot=0;
-  const parts=[];
-  for(let i=0;i<ORES.length;i++){
-    const o=ORES[i];
-    if(isCaveExclusiveOre(o))continue;
-    if(o.event&&o.event!==currentEvent)continue;
-    let w=lk/o.exact;
-    if(o.event&&o.event===currentEvent){
-      // Event ores: scale with depth like rare ores, but boosted by a fixed factor
-      // so they're meaningfully findable without swamping the entire loot table
-      w*=(0.05+depthFrac*0.95)*8;
-    } else if(o.exact>1000){
+function rollOreNormal(roll, depthFrac, lk){
+  let tot = 0;
+  const parts = [];
+
+  for (let i = 0; i < ORES.length; i++){
+    const o = ORES[i];
+
+    if (isCaveExclusiveOre(o)) continue;
+    if (o.event && o.event !== currentEvent) continue;
+
+    let w = lk / o.exact;
+
+    if (o.event && o.event === currentEvent){
+      // Event ores: treated like rares but without 8x boost
+      w *= (0.05 + depthFrac * 0.95);
+
+      // same cap style as commons to prevent runaway weight
+      const cap = (1 / o.exact) * (1 - depthFrac * 0.5);
+      if (w > cap) w = cap;
+
+    } else if (o.exact > 1000){
       // Rare ores: scale with depth (deeper = more likely)
-      w*=(0.05+depthFrac*0.95);
-    }else{
-      // Common ores: scale inversely with depth, capped so luck shifts toward rares
-      w*=(1-depthFrac*0.5);
-      const cap=(1/o.exact)*(1-depthFrac*0.5);
-      if(w>cap)w=cap;
+      w *= (0.05 + depthFrac * 0.95);
+
+    } else {
+      // Common ores: inverse depth scaling with cap
+      w *= (1 - depthFrac * 0.5);
+      const cap = (1 / o.exact) * (1 - depthFrac * 0.5);
+      if (w > cap) w = cap;
     }
-    parts.push({i,w});
-    tot+=w;
+
+    parts.push({ i, w });
+    tot += w;
   }
-  let r=roll*tot;
-  for(const {i,w} of parts){r-=w;if(r<=0)return i;}
+
+  let r = roll * tot;
+  for (const { i, w } of parts){
+    r -= w;
+    if (r <= 0) return i;
+  }
   return 0;
 }
 
