@@ -29,20 +29,20 @@ canvas.free{cursor:default}
 
 /* ── Panels ── */
 #left-col{position:absolute;top:32px;left:10px;display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 20px);overflow:hidden}
-.panel{background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;color:var(--hud-text);flex-shrink:0;backdrop-filter:blur(2px)}
-.panel h3{font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55}
-#inv-panel{min-width:200px;max-width:240px;pointer-events:all;max-height:280px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
-.ore-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:9px;color:var(--hud-text);cursor:pointer;padding:2px 3px;border-radius:2px;transition:background .1s}
+.panel{background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:10px 14px;color:var(--hud-text);flex-shrink:0;backdrop-filter:blur(2px)}
+.panel h3{font-size:9px;color:var(--hud-accent);margin-bottom:9px;letter-spacing:2px;opacity:.55}
+#inv-panel{min-width:230px;max-width:275px;pointer-events:all;max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.ore-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:10px;color:var(--hud-text);cursor:pointer;padding:2px 4px;border-radius:2px;transition:background .1s}
 .ore-row:hover{background:var(--hud-hover)}
 .ore-row.sel{background:var(--hud-sel-bg);outline:1px solid var(--hud-sel-out)}
-.ore-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.ore-qty{margin-left:auto;color:var(--hud-text-dim);font-size:8px;flex-shrink:0}
+.ore-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.ore-qty{margin-left:auto;color:var(--hud-text-dim);font-size:9px;flex-shrink:0}
 
 /* ── Index panel ── */
-#idx-panel{min-width:175px;max-width:210px;pointer-events:all;max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
-.idx-row{display:flex;align-items:center;gap:5px;margin-bottom:2px;font-size:8px;padding:1px 3px}
-.idx-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0}
-.idx-exact{margin-left:auto;font-size:5px;opacity:.5;flex-shrink:0}
+#idx-panel{min-width:210px;max-width:250px;pointer-events:all;max-height:240px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.idx-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:9px;padding:1px 4px}
+.idx-dot{width:7px;height:7px;border-radius:1px;flex-shrink:0}
+.idx-exact{margin-left:auto;font-size:6px;opacity:.5;flex-shrink:0}
 
 /* ── Stats ── */
 .stat-row{display:flex;justify-content:space-between;gap:14px;font-size:8px;margin-bottom:5px;color:var(--hud-text-label)}
@@ -105,7 +105,7 @@ canvas.free{cursor:default}
 #scn-exact{display:block!important;font-size:6px;color:rgba(200,200,200,0.6);text-align:center;margin-top:1px}
 #scn-rarity-badge{display:block!important;font-size:6px;text-align:center;margin-top:1px;padding:1px 5px;border-radius:2px}
 /* Surface / spawn button */
-#surface-btn{position:absolute;top:32px;right:230px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:#60dd60;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
+#surface-btn{position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:#60dd60;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
 #surface-btn:hover{opacity:1;border-color:rgba(96,220,96,0.5)}
 
 /* ── Rarity glow effects (unchanged — these are world fx, not HUD) ── */
@@ -153,7 +153,7 @@ canvas.free{cursor:default}
 /* ── Top-right buttons ── */
 #shop-btn{position:absolute;top:32px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:var(--hud-accent);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
 #shop-btn:hover{opacity:1;border-color:var(--hud-border-hi)}
-#save-ind{position:absolute;top:28px;right:230px;font-size:5px;color:rgba(160,220,160,0.7);pointer-events:none;transition:opacity .5s;opacity:0}
+#save-ind{position:absolute;bottom:44px;right:120px;font-size:5px;color:rgba(160,220,160,0.7);pointer-events:none;transition:opacity .5s;opacity:0}
 #save-ind.show{opacity:1}
 #free-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7px;color:rgba(255,255,255,0.5);pointer-events:none;display:none;text-align:center;line-height:2}
 #placing-ind{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:5px;color:var(--hud-accent);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:4px 10px;display:none;pointer-events:none}
@@ -291,8 +291,8 @@ body.mob-active #xhair{display:none}
 body.mob-active #save-export-btn{display:none}
 body.mob-active #ability-panel{display:none!important}
 body.mob-active #left-col{max-height:40vh;top:28px}
-body.mob-active #inv-panel{max-height:110px}
-body.mob-active #idx-panel{max-height:90px}
+body.mob-active #inv-panel{max-height:130px}
+body.mob-active #idx-panel{max-height:110px}
 body.mob-active #stats-panel{display:block;right:4px;top:26px;min-width:120px}
 body.mob-active #stats-panel .stat-row{font-size:6px;gap:6px}
 body.mob-active #shop-btn{display:none}
@@ -397,7 +397,20 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
   <div id="mob-shop-btn">SHOP</div>
 </div>
 <button id="surface-btn" onclick="goToSurface()" title="Teleport to surface spawn">⬆ SURFACE</button>
-<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;top:32px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE MENU</button>
+<button onclick="toggleSettingsPanel()" style="position:absolute;bottom:14px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:#ddccaa;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;">⚙ SETTINGS</button>
+<!-- Settings panel -->
+<div id="settings-panel" style="display:none;position:absolute;bottom:55px;right:10px;background:rgba(10,10,18,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:14px 18px;z-index:50;font-family:'Press Start 2P',monospace;color:#ccc;min-width:210px;pointer-events:all;">
+  <div style="font-size:8px;color:#ffdd44;margin-bottom:10px;">⚙ PARAMÈTRES</div>
+  <div style="font-size:6px;color:#aaa;margin-bottom:6px;">DISTANCE DE RENDU</div>
+  <div style="display:flex;gap:6px;">
+    <button id="rd-btn-low" onclick="setRenderDist('low')" style="font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(30,30,50,0.9);border:2px solid rgba(255,255,255,0.2);border-radius:3px;color:#88ccff;padding:7px 10px;cursor:pointer;flex:1;">LOW<br><span style="color:#666;font-size:4px">~10 blocs</span></button>
+    <button id="rd-btn-medium" onclick="setRenderDist('medium')" style="font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(30,30,50,0.9);border:2px solid rgba(255,255,255,0.2);border-radius:3px;color:#88ffcc;padding:7px 10px;cursor:pointer;flex:1;">MED<br><span style="color:#666;font-size:4px">~50 blocs</span></button>
+    <button id="rd-btn-high" onclick="setRenderDist('high')" style="font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(30,30,50,0.9);border:2px solid rgba(255,255,255,0.2);border-radius:3px;color:#ffcc88;padding:7px 10px;cursor:pointer;flex:1;">HIGH<br><span style="color:#666;font-size:4px">~100 blocs</span></button>
+  </div>
+  <div style="margin-top:8px;font-size:5px;color:#555;">Mobile: LOW · PC: MEDIUM par défaut</div>
+  <button onclick="toggleSettingsPanel()" style="margin-top:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(60,20,20,0.8);border:1px solid rgba(200,60,60,0.4);border-radius:3px;color:#cc6666;padding:5px 12px;cursor:pointer;width:100%;">✕ FERMER</button>
+</div>
+<button id="save-export-btn" onclick="openSaveMenu()" style="position:absolute;bottom:14px;right:120px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s" onmouseover="this.style.opacity=1;this.style.borderColor='rgba(255,255,255,0.32)'" onmouseout="this.style.opacity=0.7;this.style.borderColor='rgba(255,255,255,0.12)'">SAVE MENU</button>
 <div id="save-ind" id="save-ind">SAVE</div>
 
 <!-- Import/Export Modal -->
@@ -812,89 +825,97 @@ ORES_SORTED=[...ORES].sort((a,b)=>b.exact-a.exact);
 // ═══════════ GEAR DATA ═══════════
 const GEAR_DATA={
   G1:{
-    nameFr:'Anneau de Chance',nameEn:'Lucky Ring',
-    descFr:'+0.5 Luck bonus permanent.',descEn:'+0.5 Luck bonus permanent.',
-    cost:{Stone:30,Coal:20},color:'#ffdd44',luckBonus:0.5
+    nameFr:'Bottes de Vent',nameEn:'Wind Boots',
+    descFr:'+25% vitesse de déplacement.',descEn:'+25% move speed.',
+    cost:{Stone:30,Coal:20},color:'#88ddff',speedMult:1.25
   },
   G2:{
-    nameFr:'Amulette du Mineur',nameEn:'Miner\'s Amulet',
-    descFr:'+5% chance de dupliquer le minerai miné.',descEn:'+5% chance to duplicate mined ore.',
-    cost:{Iron:30,Coal:15},color:'#aaaaaa',dupChance:0.05
+    nameFr:'Ressorts de Saut',nameEn:'Spring Coils',
+    descFr:'+25% hauteur de saut.',descEn:'+25% jump height.',
+    cost:{Iron:30,Coal:15},color:'#aaaaaa',jumpMult:1.25
   },
   G3:{
-    nameFr:'Gant de Cristal',nameEn:'Crystal Glove',
-    descFr:'25% chance x3 minerai, 50% chance x2 minerai.',descEn:'25% chance for 3× ore, 50% chance for 2× ore.',
-    cost:{Emerald:10,Iron:50},color:'#22aacc',multiChance:true
+    nameFr:'Combinaison Dynamique',nameEn:'Dynamic Suit',
+    descFr:'+50% vitesse et saut, +0.5 Luck.',descEn:'+50% speed & jump, +0.5 Luck.',
+    cost:{Emerald:10,Iron:50},color:'#22aacc',speedMult:1.5,jumpMult:1.5,luckBonus:0.5
   },
   G4:{
-    nameFr:'Talisman de Luck',nameEn:'Luck Talisman',
-    descFr:'+2 Luck bonus permanent.',descEn:'+2 Luck bonus permanent.',
-    cost:{Ruby:5,Emerald:10},color:'#e91e63',luckBonus:2
+    nameFr:'Ceinture d\'Explosion',nameEn:'Explosion Belt',
+    descFr:'1 chance sur 100 de déclencher une explosion de 50 blocs autour du joueur.',descEn:'1 in 100 chance to explode 50 blocks around the player.',
+    cost:{Ruby:5,Emerald:10},color:'#e91e63',explosionChance:1/100,explosionRadius:50
   },
   G5:{
     nameFr:'Cœur de Vide',nameEn:'Void Heart',
-    descFr:'+5 Luck. 5% chance d\'améliorer 1 rang de rareté.',descEn:'+5 Luck. 5% chance to upgrade mined ore by 1 rarity tier.',
-    cost:{Peta:1,Tera:1},color:'#9c27b0',luckBonus:5,upgradeChance:0.05
+    descFr:'+1 Luck.',descEn:'+1 Luck.',
+    cost:{Peta:1,Tera:1},color:'#9c27b0',luckBonus:1
   },
   G6:{
-    nameFr:'Sceau de l\'Abîsse',nameEn:'Abyss Seal',
-    descFr:'+10 Luck. Chaque mine a 1% de chance de ×100 le minerai (si valeur ≤ 100K).',descEn:'+10 Luck. 1% chance to multiply ore ×100 if value ≤ 100K.',
-    cost:{OblivionCore:1,Stone:100000},color:'#1a237e',luckBonus:10,megaMulti:true
+    nameFr:'Talisman du Mineur',nameEn:'Miner Talisman',
+    descFr:'25% de chance de dupliquer un minerai miné.',descEn:'25% chance to duplicate mined ore.',
+    cost:{OblivionCore:1,Stone:100000},color:'#1a237e',dupChance:0.25
   },
   G7:{
     nameFr:'Couronne du Zénith',nameEn:'Zenith Crown',
-    descFr:'+15 Luck. 20% chance d\'améliorer le rang de rareté du minerai miné.',descEn:'+15 Luck. 20% chance to upgrade mined ore rarity by 1 tier.',
-    cost:{Quantumite:20,FrostShard:2},color:'#df03fc',luckBonus:15,upgradeChance:0.20
+    descFr:'+100% vitesse et saut, +2 Luck.',descEn:'+100% speed & jump, +2 Luck.',
+    cost:{Quantumite:20,FrostShard:2},color:'#df03fc',speedMult:2.0,jumpMult:2.0,luckBonus:2
   },
   G8:{
     nameFr:'Relique de la Création',nameEn:'Creation Relic',
-    descFr:'+25 Luck. Quand vous minez un minerai ≥ 50M : 50% chance de le récolter une 2e fois.',descEn:'+25 Luck. When mining a 50M+ ore: 50% chance to harvest it a 2nd time.',
-    cost:{Infinity:1,AbyssalSingularity:20,ZergHunter:50},color:'#00fbff',luckBonus:25,bonusHarvest:true
+    descFr:'1 chance sur 500 de déclencher une explosion de 150 blocs. +2 Luck.',descEn:'1 in 500 chance to explode 150 blocks around player. +2 Luck.',
+    cost:{Infinity:1,AbyssalSingularity:20,ZergHunter:50},color:'#00fbff',luckBonus:2,explosionChance:1/500,explosionRadius:150
   },
 };
 
-// ═══════════ GEAR LUCK BONUS ═══════════
+// ═══════════ GEAR STAT BONUSES ═══════════
 function getGearLuckBonus(){
-  let bonus=0;
-  equippedGears.forEach(g=>{
-    const gd=GEAR_DATA[g];
-    if(gd&&gd.luckBonus)bonus+=gd.luckBonus;
-  });
-  return bonus;
+  let b=0;
+  equippedGears.forEach(g=>{const gd=GEAR_DATA[g];if(gd&&gd.luckBonus)b+=gd.luckBonus;});
+  return b;
+}
+function getGearSpeedMult(){
+  let m=1;
+  equippedGears.forEach(g=>{const gd=GEAR_DATA[g];if(gd&&gd.speedMult)m*=gd.speedMult;});
+  return m;
+}
+function getGearJumpMult(){
+  let m=1;
+  equippedGears.forEach(g=>{const gd=GEAR_DATA[g];if(gd&&gd.jumpMult)m*=gd.jumpMult;});
+  return m;
 }
 
 // ═══════════ GEAR MINE EFFECT ═══════════
-// Called after a normal block is mined; returns extra inventory to add
 function applyGearMineEffect(ore){
   const extras={};
   equippedGears.forEach(g=>{
     const gd=GEAR_DATA[g];
     if(!gd)return;
-    // G2: duplicate
+    // G6: 25% duplicate
     if(gd.dupChance&&Math.random()<gd.dupChance){
       extras[ore.name]=(extras[ore.name]||0)+1;
     }
-    // G3: multi
-    if(gd.multiChance){
-      const r=Math.random();
-      const extra=r<0.25?2:r<0.75?1:0;
-      if(extra>0)extras[ore.name]=(extras[ore.name]||0)+extra;
-    }
-    // G5/G7: upgrade rarity
-    if(gd.upgradeChance&&Math.random()<gd.upgradeChance){
-      const upgraded=getUpgradedOre(ore);
-      if(upgraded)extras[upgraded.name]=(extras[upgraded.name]||0)+1;
-    }
-    // G6: mega multiply for cheap ores
-    if(gd.megaMulti&&ore.exact<=100000&&Math.random()<0.01){
-      extras[ore.name]=(extras[ore.name]||0)+99; // 100x total
-    }
-    // G8: bonus harvest for 50M+ ores
-    if(gd.bonusHarvest&&ore.exact>=50000000&&Math.random()<0.5){
-      extras[ore.name]=(extras[ore.name]||0)+1;
+    // G4/G8: explosion around player
+    if(gd.explosionChance&&Math.random()<gd.explosionChance){
+      _triggerGearExplosion(gd.explosionRadius,g);
     }
   });
   return extras;
+}
+
+function _triggerGearExplosion(radius,gearId){
+  const px=Math.floor(camera.position.x);
+  const py=Math.floor(camera.position.y-CAM_H);
+  const pz=Math.floor(camera.position.z);
+  const r=Math.ceil(Math.cbrt(radius*0.75));
+  let destroyed=0;
+  for(let dx=-r;dx<=r&&destroyed<radius;dx++)
+    for(let dy=-r;dy<=r&&destroyed<radius;dy++)
+      for(let dz=-r;dz<=r&&destroyed<radius;dz++){
+        if(dx*dx+dy*dy+dz*dz>r*r*1.2)continue;
+        if(abilityMine(px+dx,py+dy,pz+dz))destroyed++;
+      }
+  const col=GEAR_DATA[gearId]?GEAR_DATA[gearId].color:'#ff8800';
+  showSpawn(lang==='fr'?'💥 '+gearId+' : '+destroyed+' blocs détruits !':'💥 '+gearId+': '+destroyed+' blocks destroyed!',col,false);
+  markMeshDirty();
 }
 
 function getUpgradedOre(ore){
@@ -1378,14 +1399,35 @@ const MINE_INTERVAL=0.07;
 let _invDirty=true;
 let _lastHudUpdate=0;
 let _meshDirty=false;
-// ── Auto-mine state ──
-let _autoMine=false;          // true = auto-mine is locked on
-let _holdMineTimer=0;         // seconds held down so far
-const AUTO_MINE_HOLD=5.0;     // seconds to hold to activate auto-mine
-let _holdingMineBtn=false;    // is the button physically held right now // set true when blocks change, rebuilt once per frame in loop
 function markMeshDirty(){_meshDirty=true;}
 function markInvDirty(){_invDirty=true;}
-function buildWorldMesh(){_meshDirty=true;} // lazy: actual rebuild happens in main loop
+function buildWorldMesh(){_meshDirty=true;}
+let _autoMine=false;
+let _holdMineTimer=0;
+const AUTO_MINE_HOLD=5.0;
+let _holdingMineBtn=false;
+
+// ── Render distance setting ──
+let _renderDist='medium'; // 'low'|'medium'|'high'
+const RENDER_DIST_PRESETS={
+  low:   {far:12,  fogNear:8,   fogFar:12,  yAbove:5,  yBelow:12},
+  medium:{far:55,  fogNear:30,  fogFar:55,  yAbove:8,  yBelow:32},
+  high:  {far:105, fogNear:70,  fogFar:105, yAbove:12, yBelow:50},
+};
+function applyRenderDist(preset){
+  _renderDist=preset;
+  const p=RENDER_DIST_PRESETS[preset]||RENDER_DIST_PRESETS.medium;
+  if(scene&&scene.fog){scene.fog.near=p.fogNear;scene.fog.far=p.fogFar;}
+  if(camera){camera.far=p.far;camera.updateProjectionMatrix();}
+  markMeshDirty();
+  // Update button highlights if settings panel open
+  ['low','medium','high'].forEach(k=>{
+    const btn=document.getElementById('rd-btn-'+k);
+    if(btn)btn.style.borderColor=k===preset?'#ffdd44':'rgba(255,255,255,0.2)';
+  });
+}
+// Expose for the settings modal (overridden below with button-update wrapper)
+window.setRenderDist=applyRenderDist;
 
 // ═══════════ SAVE/LOAD ═══════════
 function saveGame(){
@@ -1528,11 +1570,13 @@ function rollOreNormal(roll,depthFrac,lk){
     if(isCaveExclusiveOre(o))continue;
     if(o.event&&o.event!==currentEvent)continue;
     let w=lk/o.exact;
-    if(o.exact>1000)w*=(0.05+depthFrac*0.95);
-    else{
+    if(o.event&&o.event===currentEvent){
+      // Active event ores: massively boosted so luck meaningfully affects them
+      w*=500*(1+lk*0.5);
+    } else if(o.exact>1000){
+      w*=(0.05+depthFrac*0.95);
+    }else{
       w*=(1-depthFrac*0.5);
-      // Cap very common ores (Stone, Coal etc.) at lk=1 weight so luck actually
-      // shifts distribution toward rare ores instead of being neutral.
       const cap=(1/o.exact)*(1-depthFrac*0.5);
       if(w>cap)w=cap;
     }
@@ -1776,25 +1820,32 @@ function needsAnimCanvasPath(src){
   return /\.(gif|webp|png|jpg|jpeg)(\?|#|$)/i.test(src||'');
 }
 
-// Container for GIF source images — must be visible (not display:none, opacity > ~0.01)
-// for browsers to advance GIF animation frames.
+// Container for GIF source images — browsers only animate GIFs in the active render tree.
+// We use a flex row of 2×2px images positioned behind the HUD (z-index:0).
+// clip-path hides them visually but they remain in layout → browser advances GIF frames.
 let _gifContainer=null;
 function _getGifContainer(){
   if(_gifContainer)return _gifContainer;
   _gifContainer=document.createElement('div');
-  // 1px-tall strip at bottom edge: clipped to 1px but fully opaque inside.
-  // Each image is 2px wide so they don't overlap (overlapping GIFs may not all animate).
-  _gifContainer.style.cssText='position:fixed;bottom:0;left:0;height:1px;overflow:hidden;pointer-events:none;z-index:1;display:flex;flex-direction:row;';
+  _gifContainer.style.cssText=[
+    'position:fixed','bottom:0','left:0',
+    'display:flex','flex-direction:row','flex-wrap:wrap',
+    'width:1px','height:1px', // Layout size of 1×1px
+    'overflow:visible',        // images overflow but are clipped visually
+    'clip-path:inset(0)',      // visually clips children but keeps them in render tree
+    'pointer-events:none','z-index:0',
+  ].join(';');
   document.body.appendChild(_gifContainer);
   return _gifContainer;
 }
 
 function mountAnimImageInDom(img){
   if(img.parentNode)return;
-  // Each image is placed in a visible-but-tiny 1px-high container.
-  // The browser MUST see it as rendered+visible to advance GIF frames each tick.
-  img.style.cssText='width:2px;height:64px;flex-shrink:0;object-fit:cover;';
+  // 32×32 so browser doesn't throttle "too small to animate"
+  img.style.cssText='width:32px;height:32px;flex-shrink:0;object-fit:cover;display:block;';
   _getGifContainer().appendChild(img);
+  // Force a layout reflow to ensure the browser registers the image as visible
+  void img.offsetWidth;
 }
 
 function drawAnimOverlay(ctx,cw,ch,ore){
@@ -1873,52 +1924,36 @@ function getOrCreateTexture(imgSrc,overlayOre){
 }
 
 function updateGifTextures(){
+  const now=performance.now();
   for(const e of GIF_TEX_ENTRIES){
     if(!e.img||!e.img.complete||e.img.naturalWidth<1)continue;
+    if(!e.img.parentNode)mountAnimImageInDom(e.img); // ensure mounted
     try{
       if(e.canvas.width!==128||e.canvas.height!==128){e.canvas.width=128;e.canvas.height=128;}
       e.ctx.clearRect(0,0,128,128);
-      // Flip vertically to match flipY=false on BoxGeometry
       e.ctx.save();
       e.ctx.translate(0,128);
       e.ctx.scale(1,-1);
       e.ctx.drawImage(e.img,0,0,128,128);
       e.ctx.restore();
-      e.tex.needsUpdate=true;
+      e.tex.needsUpdate=true; // always mark dirty so Three.js uploads new frame
     }catch(err){}
   }
-  // Update phantom scanner canvas if visible
-  const scnCanvas=document.getElementById('phantom-scn-canvas');
-  if(scnCanvas&&phantomBlock){
-    const pOre=ORES[phantomBlock.oi||0];
-    if(pOre&&pOre.imgSrc){
-      const _pImgName=pOre.imgSrc.split('/').pop();
-      const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(pOre.imgSrc)||e.img.src.endsWith(_pImgName)));
-      if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
-        try{const ctx2=scnCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
-      }
-    }
-  }
-  // Update regular scanner canvas if visible (for GIF ores)
-  const regCanvas=document.getElementById('regular-scn-canvas');
-  if(regCanvas&&_scanOre&&_scanOre.imgSrc){
-    const _rName=_scanOre.imgSrc.split('/').pop();
-    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(_scanOre.imgSrc)||e.img.src.endsWith(_rName)));
-    if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
-      try{const ctx2=regCanvas.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
-    }
-  }
-  // Update all multi-scanner GIF canvases (new multi-ore scanner overlays)
-  const gifScnCanvases=document.querySelectorAll('.gif-scn-canvas');
+  // Update ALL gif-scn-canvas elements (scanner overlays)
+  const gifScnCanvases=document.querySelectorAll('.gif-scn-canvas, #phantom-scn-canvas');
   gifScnCanvases.forEach(c=>{
-    const oreName=c.dataset.oreName;
+    const oreName=c.dataset.oreName||(phantomBlock&&c.id==='phantom-scn-canvas'?(ORES[phantomBlock.oi||0]||{}).name:null);
     if(!oreName)return;
     const ore=ORES.find(o=>o.name===oreName);
     if(!ore||!ore.imgSrc)return;
-    const _name=ore.imgSrc.split('/').pop();
-    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(ore.imgSrc)||e.img.src.endsWith(_name)));
+    const fname=ore.imgSrc.split('/').pop();
+    const entry=GIF_TEX_ENTRIES.find(e=>e.img&&e.img.src&&(e.img.src.includes(ore.imgSrc)||e.img.src.endsWith(fname)));
     if(entry&&entry.img.complete&&entry.img.naturalWidth>0){
-      try{const ctx2=c.getContext('2d');ctx2.clearRect(0,0,128,128);ctx2.drawImage(entry.img,0,0,128,128);}catch(e){}
+      try{
+        const ctx2=c.getContext('2d');
+        ctx2.clearRect(0,0,c.width,c.height);
+        ctx2.drawImage(entry.img,0,0,c.width,c.height);
+      }catch(e){}
     }
   });
 }
@@ -2017,6 +2052,29 @@ function spawnPlayer(){
   camera.quaternion.setFromEuler(euler);
 }
 
+function toggleSettingsPanel(){
+  const p=document.getElementById('settings-panel');
+  if(!p)return;
+  const show=p.style.display==='none';
+  p.style.display=show?'block':'none';
+  if(show)_updateSettingsBtns();
+}
+function _updateSettingsBtns(){
+  ['low','medium','high'].forEach(k=>{
+    const btn=document.getElementById('rd-btn-'+k);
+    if(!btn)return;
+    btn.style.borderColor=k===_renderDist?'#ffdd44':'rgba(255,255,255,0.2)';
+    btn.style.color=k===_renderDist?'#ffdd44':(k==='low'?'#88ccff':k==='medium'?'#88ffcc':'#ffcc88');
+  });
+}
+// Override setRenderDist to also update buttons
+const _origApplyRD=applyRenderDist;
+window.setRenderDist=function(preset){
+  _origApplyRD(preset);
+  _updateSettingsBtns();
+  showSpawn(lang==='fr'?'Rendu: '+preset.toUpperCase():'Render: '+preset.toUpperCase(),'#ffdd44',false);
+};
+
 // Teleport back to the surface spawn (resets chunk window to origin)
 function goToSurface(){
   // Reset chunk window so spawn is back at center
@@ -2061,13 +2119,11 @@ function _buildWorldMeshReal(){
   if(!_BOX_GEO)_BOX_GEO=new THREE.BoxGeometry(1,1,1);
   const _dummy=new THREE.Object3D();
 
-  // ── Y-slab culling: only render blocks the camera can plausibly see ──
-  // Player eye is at camera.position.y; render RENDER_Y_ABOVE above and RENDER_Y_BELOW below
-  const RENDER_Y_ABOVE=8;
-  const RENDER_Y_BELOW=32; // look down into tunnels
+  // ── Y-slab culling using current render distance preset ──
+  const rdp=RENDER_DIST_PRESETS[_renderDist]||RENDER_DIST_PRESETS.medium;
   const camY=camera?Math.floor(camera.position.y):TOP_SOLID_Y;
-  const yMin=Math.max(0,camY-RENDER_Y_BELOW);
-  const yMax=Math.min(H-1,camY+RENDER_Y_ABOVE);
+  const yMin=Math.max(0,camY-rdp.yBelow);
+  const yMax=Math.min(H-1,camY+rdp.yAbove);
 
   function air(x,y,z){
     if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return true;
@@ -2144,9 +2200,10 @@ function _buildWorldMeshReal(){
 
 function init3D(){
   scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x87ceeb); // open sky
-  scene.fog=new THREE.Fog(0x87ceeb,50,130);
-  camera=new THREE.PerspectiveCamera(75,1,0.05,120);
+  scene.background=new THREE.Color(0x87ceeb);
+  // Render distance applied by applyRenderDist() after init
+  scene.fog=new THREE.Fog(0x87ceeb,20,60);
+  camera=new THREE.PerspectiveCamera(75,1,0.05,60);
   renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   scene.add(new THREE.AmbientLight(0xaabbcc,1.0));
@@ -2159,6 +2216,10 @@ function init3D(){
     new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:0.5})
   );
   selMesh.visible=false;scene.add(selMesh);
+  // Set default render distance (mobile=low, pc=medium)
+  const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  _renderDist=isMobile?'low':'medium';
+  applyRenderDist(_renderDist);
   _buildWorldMeshReal();
   spawnPlayer();
 
@@ -2217,13 +2278,11 @@ function doResize(){
 
 // ═══════════ MOVEMENT ═══════════
 function movePlayer(dt){
-  let spd=PSPEED;
+  let spd=PSPEED*getGearSpeedMult();
   if(currentPickId==='t10')spd*=2;
   const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
   const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
   let dx=0,dz=0;
-  // ZQSD: _useQwerty=false → forward=Z(KeyZ), left=Q(KeyQ)
-  // WASD: _useQwerty=true  → forward=W(KeyW), left=A(KeyA)
   const fwdKey=_useQwerty?'KeyW':'KeyZ';
   const bkKey='KeyS';
   const ltKey=_useQwerty?'KeyA':'KeyQ';
@@ -2235,11 +2294,10 @@ function movePlayer(dt){
   const len=Math.sqrt(dx*dx+dz*dz);
   if(len>0){dx=(dx/len)*spd*dt;dz=(dz/len)*spd*dt;}
   velY+=GRAVITY*dt;
-  if(keys['Space']&&onGround){velY=JUMP;onGround=false;}
+  if(keys['Space']&&onGround){velY=JUMP*getGearJumpMult();onGround=false;}
   const p=camera.position;
   const r=moveAABB(p.x,p.y,p.z,dx,velY*dt,dz);
   p.set(r.x,r.y,r.z);
-  // Void death: fell off platform
   if(p.y < -5){ spawnPlayer(); return; }
   const feet=p.y-CAM_H;
   const cap=minCeilingAbove(p.x,feet,p.z);
@@ -2773,24 +2831,38 @@ function updateScanner(h){
     const worldCenter=new THREE.Vector3(x+0.5,y+0.5,z+0.5);
     const dist=camera.position.distanceTo(worldCenter);
     const v=worldCenter.clone().project(camera);
-    if(v.z>1){d.style.display='none';shown++;continue;}
-    const sx=(v.x+1)/2*window.innerWidth;
-    const sy=(1-v.y)/2*window.innerHeight;
-    const rawSize=Math.round(Math.min(90,Math.max(24,dist*5)));
-    const clampedX=Math.max(rawSize/2+4,Math.min(window.innerWidth-rawSize/2-4,sx));
-    const clampedY=Math.max(rawSize/2+4,Math.min(window.innerHeight-rawSize/2-60,sy));
+    // Always show — even behind fog/outside render dist. If behind camera (z>1), pin to screen edge.
+    let sx,sy,pinned=false;
+    if(v.z>1){
+      // Behind camera: pin to nearest screen edge
+      // Flip coordinates when behind camera
+      sx=((1-v.x)+1)/2*window.innerWidth;
+      sy=((1+v.y))/2*window.innerHeight;
+      pinned=true;
+    }else{
+      sx=(v.x+1)/2*window.innerWidth;
+      sy=(1-v.y)/2*window.innerHeight;
+    }
+    const rawSize=Math.round(Math.min(70,Math.max(18,1200/Math.max(1,dist))));
+    // Clamp to screen with padding
+    const pad=rawSize/2+4;
+    const clampedX=Math.max(pad,Math.min(window.innerWidth-pad,sx));
+    const clampedY=Math.max(pad,Math.min(window.innerHeight-pad-60,sy));
     const rc=RC[ore.rarity]||ore.color||'#fff';
-    d.style.display='block';d.style.left=clampedX+'px';d.style.top=clampedY+'px';d.style.color=rc;
+    const alpha=pinned?0.5:1;
+    d.style.display='block';
+    d.style.left=clampedX+'px';d.style.top=clampedY+'px';
+    d.style.color=rc;d.style.opacity=alpha;
     const posKey=x*10000+y*100+z;
     if(d._ore!==ore||d._posKey!==posKey){
       d._ore=ore;d._posKey=posKey;
       const iconDiv=d.querySelector('.scn-icon-m');
-      const svg=drawRarityIcon(ore.rarity,rc);
-      if(svg){
-        iconDiv.innerHTML='<div style="filter:drop-shadow(0 0 10px '+rc+')">'+svg+'</div>';
-      }else{
-        iconDiv.innerHTML='<div style="width:22px;height:22px;border-radius:50%;background:'+rc+'44;border:2px solid '+rc+';box-shadow:0 0 8px '+rc+';margin:auto"></div>';
-      }
+      const blockEl=_buildOreBlockEl(ore,rc,rawSize);
+      iconDiv.innerHTML='';iconDiv.appendChild(blockEl);
+      // Distance label
+      let distLabel=d.querySelector('.scn-dist-lbl');
+      if(!distLabel){distLabel=document.createElement('div');distLabel.className='scn-dist-lbl';distLabel.style.cssText='font-size:5px;color:#aaa;text-align:center;margin-top:2px;font-family:monospace;';d.appendChild(distLabel);}
+      distLabel.textContent=Math.round(dist)+'m'+(pinned?' ←':'');
     }
     shown++;
   }
@@ -4250,7 +4322,7 @@ function loop(t=0){
     jumpBtn.addEventListener('touchstart',e=>{
       e.preventDefault();e.stopPropagation();
       jumpBtn.classList.add('active');
-      if(onGround){velY=JUMP;onGround=false;}
+      if(onGround){velY=JUMP*getGearJumpMult();onGround=false;}
     },{passive:false});
     jumpBtn.addEventListener('touchend',()=>jumpBtn.classList.remove('active'),{passive:false});
 
@@ -4259,7 +4331,7 @@ function loop(t=0){
     window.movePlayer=function(dt){
       _origMove(dt); // handles keyboard
       if(joy.active&&(joy.dx!==0||joy.dz!==0)){
-        let spd=PSPEED;
+        let spd=PSPEED*getGearSpeedMult();
         if(currentPickId==='t10')spd*=2;
         const fwd=new THREE.Vector3(-Math.sin(euler.y),0,-Math.cos(euler.y));
         const rgt=new THREE.Vector3(Math.cos(euler.y),0,-Math.sin(euler.y));
