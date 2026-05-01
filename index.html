@@ -1562,55 +1562,80 @@ function getPickLuck(){
   return luckMap[pick.id]||1;
 }
 
-function rollOreNormal(roll,depthFrac,lk){
-  let tot=0;
-  const parts=[];
-  for(let i=0;i<ORES.length;i++){
-    const o=ORES[i];
-    if(isCaveExclusiveOre(o))continue;
-    if(o.event&&o.event!==currentEvent)continue;
-    let w=lk/o.exact;
-    if(o.event&&o.event===currentEvent){
-      // Active event ores: massively boosted so luck meaningfully affects them
-      w*=1*(1+lk*0.5);
-    } else if(o.exact>1000){
-      w*=(0.05+depthFrac*0.95);
-    }else{
-      w*=(1-depthFrac*0.5);
-      const cap=(1/o.exact)*(1-depthFrac*0.5);
-      if(w>cap)w=cap;
+function rollOreNormal(roll, lk){
+  let tot = 0;
+  const parts = [];
+
+  for(let i = 0; i < ORES.length; i++){
+    const o = ORES[i];
+
+    if(isCaveExclusiveOre(o)) continue;
+    if(o.event && o.event !== currentEvent) continue;
+
+    // Exact rarity scaled by luck
+    let w = (1 / o.exact) * lk;
+
+    // Event modifier (kept)
+    if(o.event && o.event === currentEvent){
+      w *= 0.5 * (1 + lk * 0.5);
     }
-    parts.push({i,w});
-    tot+=w;
+
+    parts.push({ i, w });
+    tot += w;
   }
-  let r=roll*tot;
-  for(const {i,w} of parts){r-=w;if(r<=0)return i;}
+
+  let r = roll * tot;
+  for(const { i, w } of parts){
+    r -= w;
+    if(r <= 0) return i;
+  }
+
   return 0;
 }
 
-function revealAdjacentSolid(ax,ay,az,seedSalt){
-  const depthDen=Math.max(1,TOP_SOLID_Y);
-  for(const [dx,dy,dz] of N6){
-    const nx=ax+dx,ny=ay+dy,nz=az+dz;
-    if(nx<0||nx>=W||ny<0||ny>=H||nz<0||nz>=D)continue;
-    const j=idx(nx,ny,nz);
-    if(!blocks[j]||oreRevealed[j])continue;
-    const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const _lk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
-    const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
-    oreIdx[j]=oI;
-    oreRevealed[j]=1;
-    _syncBlockWrite(nx,ny,nz); // persist to chunk
-    // Play sound + show message when a rare ore spawns into view
-    const ore=ORES[oI];
-    if(ore&&ore.exact>=250000&&ore.spawnMsg){
-      if(CAVE_RARITY_SOUNDS[ore.rarity])playCaveSound(ore.rarity,ore);
+function revealAdjacentSolid(ax, ay, az, seedSalt){
+  for(const [dx, dy, dz] of N6){
+    const nx = ax + dx, ny = ay + dy, nz = az + dz;
+    if(nx < 0 || nx >= W || ny < 0 || ny >= H || nz < 0 || nz >= D) continue;
+
+    const j = idx(nx, ny, nz);
+    if(!blocks[j] || oreRevealed[j]) continue;
+
+    const _lk = luck * getPickLuck() *
+      (Date.now() < _luckBoostUntil ? _luckBoostMult : 1) +
+      getGearLuckBonus();
+
+    // Call updated function (no depthFrac)
+    const oI = rollOreNormal(
+      h3(nx, ny, nz, (seedSalt ^ mined ^ j) & 65535),
+      _lk
+    );
+
+    oreIdx[j] = oI;
+    oreRevealed[j] = 1;
+    _syncBlockWrite(nx, ny, nz);
+
+    // Rare ore notification (unchanged)
+    const ore = ORES[oI];
+    if(ore && ore.exact >= 250000 && ore.spawnMsg){
+      if(CAVE_RARITY_SOUNDS[ore.rarity]) playCaveSound(ore.rarity, ore);
       else playSound(ore);
-      const col=RC[ore.rarity]||ore.color||'#ffffff';
-      const _st=getOreTag(ore);const _sl=_st?' ['+_st.label+']':'';
-      showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+_sl+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
-      // Force scanner to update immediately when a qualifying ore appears
-      if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;
+
+      const col = RC[ore.rarity] || ore.color || '#ffffff';
+      const _st = getOreTag(ore);
+      const _sl = _st ? ' [' + _st.label + ']' : '';
+
+      showSpawn(
+        getOreSpawnMsg(ore) + '\n' +
+        ore.name + _sl + ' — ' + T.rare1 + fmtExact(ore.exact),
+        col,
+        true,
+        ore.rarity
+      );
+
+      // Force scanner refresh
+      if(typeof _scanCachedBestOre !== 'undefined') _scanCachedBestOre = null;
+      _scanCachedTopOres = null;
     }
   }
 }
@@ -2435,8 +2460,8 @@ function doMine(){
   triggerPickAbility(x,y,z);
   if(!phantomBlock){
     _blocksSinceCave++;
-    // Cave spawns every 2450 blocks mined (fixed, no luck scaling)
-    if(_blocksSinceCave>=2450){_blocksSinceCave=0;spawnCave(x,y,z);}
+    // Cave spawns every 5000 blocks mined (fixed, no luck scaling)
+    if(_blocksSinceCave>=5000){_blocksSinceCave=0;spawnCave(x,y,z);}
   }
   markMeshDirty();
   // Instant reset at cap — no countdown
