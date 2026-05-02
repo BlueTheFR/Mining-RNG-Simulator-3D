@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mining RNG Simulator 3D</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -176,6 +177,15 @@ canvas.free{cursor:default}
 #mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
 #mine-top-txt{font-size:7px;color:rgba(255,255,255,0.35);white-space:nowrap}
 #mine-top-cd{font-size:7px;color:#ff4444;display:none;white-space:nowrap}
+/* Mobile safe-area shifts: push all HUD below browser chrome */
+@supports(padding-top:env(safe-area-inset-top)){
+  body.mob-active #mine-top{padding-top:env(safe-area-inset-top)}
+  body.mob-active #mine-top{height:calc(22px + env(safe-area-inset-top))}
+  body.mob-active #left-col{top:calc(64px + env(safe-area-inset-top))}
+  body.mob-active #stats-panel{top:calc(64px + env(safe-area-inset-top))}
+  body.mob-active #surface-btn{top:calc(64px + env(safe-area-inset-top))}
+  body.mob-active #mob-shop-btn{top:calc(64px + env(safe-area-inset-top))}
+}
 
 /* ── Top-right buttons ── */
 #shop-btn{position:absolute;top:32px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;color:var(--hud-accent);opacity:.7;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;transition:opacity .12s,border-color .12s}
@@ -292,7 +302,7 @@ canvas.free{cursor:default}
 #jump-btn.active{background:rgba(80,160,255,0.5);}
 /* Shop button — top right of mobile controls */
 #mob-shop-btn{
-  position:absolute;top:36px;right:10px;
+  position:absolute;top:64px;right:10px;
   font-family:'Press Start 2P',monospace;font-size:7px;
   background:rgba(4,4,8,0.92);
   border:1px solid rgba(255,255,255,0.25);
@@ -318,12 +328,24 @@ body.mob-active #hint{display:none!important}
 body.mob-active #xhair{display:none}
 body.mob-active #save-export-btn{display:none}
 body.mob-active #ability-panel{display:none!important}
-body.mob-active #left-col{max-height:40vh;top:28px}
+body.mob-active #left-col{max-height:40vh;top:64px}
 body.mob-active #inv-panel{max-height:130px}
 body.mob-active #idx-panel{max-height:110px}
-body.mob-active #stats-panel{display:block;right:4px;top:26px;min-width:120px}
+body.mob-active #stats-panel{display:block;right:4px;top:64px;min-width:120px}
 body.mob-active #stats-panel .stat-row{font-size:6px;gap:6px}
 body.mob-active #shop-btn{display:none}
+body.mob-active #surface-btn{top:64px;right:140px}
+/* Mobile settings button — bottom left above joystick */
+#mob-settings-btn{
+  position:absolute;bottom:175px;left:20px;
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  background:rgba(4,4,8,0.88);border:1px solid rgba(255,255,255,0.2);
+  border-radius:3px;color:rgba(255,255,255,0.7);
+  padding:8px 10px;pointer-events:all;touch-action:manipulation;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  z-index:41;display:none;
+}
+#mobile-controls.mob-active #mob-settings-btn{display:block}
 /* Mobile shop: always reachable close button */
 body.mob-active #shop-box{padding:12px;width:min(780px,96vw);max-height:85vh}
 body.mob-active #shop-box .shop-close{position:sticky;bottom:0;display:block;width:100%;background:var(--shop-bg);border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.8);font-size:8px;padding:12px;z-index:2}
@@ -426,6 +448,7 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
   <div id="jump-btn">↑<br>JUMP</div>
   <!-- Mobile shop -->
   <div id="mob-shop-btn">SHOP</div>
+  <div id="mob-settings-btn" onclick="document.getElementById('settings-panel')&&(document.getElementById('settings-panel').style.display=document.getElementById('settings-panel').style.display==='none'?'block':'none')">⚙</div>
 </div>
 <button id="surface-btn" onclick="goToSurface()" title="Teleport to surface spawn">⬆ SURFACE</button>
 <button onclick="toggleSettingsPanel()" style="position:absolute;bottom:14px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:#ddccaa;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;">⚙ SETTINGS</button>
@@ -682,13 +705,33 @@ const RC={
   'CaveExclusive-Mythical':'#df03fc',
   'CaveExclusive-Eternal':'#00fbff',
   // Shadow world rarities
-  'ShadowCommon':'#8888bb',
-  'ShadowUncommon':'#9966dd',
-  'ShadowRare':'#aa44ff',
-  'ShadowEpic':'#7700cc',
-  'ShadowLegendary':'#5500aa',
-  'ShadowMythical':'#9900ff',
-  'ShadowAncient':'#6600cc',
+  'ShadowCommon':'#6666aa',
+  'ShadowUncommon':'#8855cc',
+  'ShadowRare':'#aa44ee',
+  'ShadowEpic':'#8800cc',
+  'ShadowLegendary':'#6600aa',
+  'ShadowLegendary+':'#7700bb',
+  'ShadowMythic':'#550099',
+  'ShadowMythical':'#440088',
+  'ShadowExotic':'#9900cc',
+  'ShadowExquisite':'#aa00dd',
+  'ShadowTranscendent':'#bb11ee',
+  'ShadowEnigmatic':'#330044',
+  'ShadowUnfathomable':'#220033',
+  'ShadowOtherworldly':'#110022',
+  'ShadowImaginary':'#080011',
+  'ShadowZenith':'#cc00ff',
+  'ShadowEternal':'#000000',
+  // Shadow cave rarities
+  'ShadowVoidCave':'#9922bb',
+  'ShadowVoidCave-Exotic':'#cc44ff',
+  'ShadowFlameCave':'#00bb44',
+  'ShadowFlameCave-Exotic':'#00ff66',
+  'ShadowCrystalCave':'#0044cc',
+  'ShadowCrystalCave-Enigmatic':'#0088ff',
+  'ShadowCorruptionCave':'#aa0000',
+  'ShadowCorruptionCave-Unfathomable':'#ff2222',
+  'ShadowCaveEternal':'#440044',
 };
 
 // ═══════════ ORES ═══════════
@@ -941,19 +984,196 @@ const ORES=[
   {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!',                  spawnMsgFr:'EternalCrystal brille comme le cœur de la création !'},
   {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...',       spawnMsgFr:'De sa naissance, les étoiles se lèvent et illuminent l\'univers...'},
   {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:99999999,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true, spawnMsgFr:'Votre adrénaline monte violemment lorsqu\'Epinéphrine éclate !'},
-  // ── SHADOW WORLD ores (only spawn in shadow world) ──
-  {name:'ShadowDust',    rarity:'ShadowCommon',   exact:1,        color:'#444466',shadowWorld:true,symbol:'SD'},
-  {name:'DarkCrystal',   rarity:'ShadowUncommon', exact:30,       color:'#6644aa',shadowWorld:true,symbol:'DC'},
-  {name:'VoidEcho',      rarity:'ShadowRare',     exact:250,      color:'#9922ff',shadowWorld:true,symbol:'VE'},
-  {name:'DarkGem',      rarity:'ShadowEpic',     exact:4000,     color:'#220044',shadowWorld:true,symbol:'DG'},
-  {name:'NullShard',     rarity:'ShadowLegendary',exact:80000,    color:'#001133',shadowWorld:true,symbol:'NS'},
-  {name:'EclipseOre',    rarity:'ShadowMythical', exact:2000000,  color:'#000011',shadowWorld:true,symbol:'EO'},
-  {name:'VoidSoul',      rarity:'ShadowAncient',  exact:50000000, color:'#080010',shadowWorld:true,symbol:'VS',
-    spawnMsg:'A hollow cry echoes from beyond... VoidSoul awakens!',
-    spawnMsgFr:'Un cri creux résonne depuis l\'au-delà... VoidSoul s\'éveille !'},
+  // ── SHADOW WORLD CAVE ORES (unique to shadow caves, 4 cave types) ──
+  // ShadowVoid cave (dark purple swirling void)
+  {name:'VoidDust',        rarity:'ShadowVoidCave',         exact:3,    color:'#220033',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'VD'},
+  {name:'NullFleck',       rarity:'ShadowVoidCave',         exact:12,   color:'#330044',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'NF'},
+  {name:'AbyssalBit',      rarity:'ShadowVoidCave',         exact:40,   color:'#440055',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'AB'},
+  {name:'VoidShard2',      rarity:'ShadowVoidCave',         exact:150,  color:'#550066',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'VS2'},
+  {name:'NullCrystal',     rarity:'ShadowVoidCave',         exact:600,  color:'#660077',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'NC'},
+  {name:'VoidGrain',       rarity:'ShadowVoidCave',         exact:2500, color:'#770088',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'VG'},
+  {name:'AbyssCore',       rarity:'ShadowVoidCave',         exact:8000, color:'#880099',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'AC'},
+  {name:'NullEssence2',    rarity:'ShadowVoidCave',         exact:30000,color:'#9900aa',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'NE2'},
+  {name:'VoidFragment',    rarity:'ShadowVoidCave',         exact:80000,color:'#aa00bb',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'VF'},
+  {name:'AbyssalSoul',     rarity:'ShadowVoidCave',         exact:95000,color:'#bb00cc',shadowWorld:true,caveType:'ShadowVoidCave',symbol:'AS'},
+  // ShadowFlame cave (ghostly green-black fire)
+  {name:'GhostAsh',        rarity:'ShadowFlameCave',        exact:3,    color:'#002200',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'GA'},
+  {name:'DarkEmber',       rarity:'ShadowFlameCave',        exact:15,   color:'#003300',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'DE'},
+  {name:'NullScorch',      rarity:'ShadowFlameCave',        exact:45,   color:'#004400',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'NS2'},
+  {name:'AbyssalChar',     rarity:'ShadowFlameCave',        exact:180,  color:'#005500',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'AC2'},
+  {name:'VoidCinder',      rarity:'ShadowFlameCave',        exact:700,  color:'#006600',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'VC2'},
+  {name:'DarkMolten',      rarity:'ShadowFlameCave',        exact:3000, color:'#007700',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'DM2'},
+  {name:'GhostObsidian',   rarity:'ShadowFlameCave',        exact:10000,color:'#008800',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'GO'},
+  {name:'NullInferno',     rarity:'ShadowFlameCave',        exact:35000,color:'#009900',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'NI'},
+  {name:'AbyssalHelstone', rarity:'ShadowFlameCave',        exact:75000,color:'#00aa00',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'AH'},
+  {name:'DarkPhoenixAsh',  rarity:'ShadowFlameCave',        exact:95000,color:'#00bb00',shadowWorld:true,caveType:'ShadowFlameCave',symbol:'DPA'},
+  // ShadowCrystal cave (dark blue ice-like crystal formations)
+  {name:'DarkFrost',       rarity:'ShadowCrystalCave',      exact:3,    color:'#001133',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'DF2'},
+  {name:'NullIce',         rarity:'ShadowCrystalCave',      exact:10,   color:'#001a44',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'NI2'},
+  {name:'AbyssSliver',     rarity:'ShadowCrystalCave',      exact:35,   color:'#002255',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'AS2'},
+  {name:'VoidCrystal2',    rarity:'ShadowCrystalCave',      exact:100,  color:'#002a66',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'VC3'},
+  {name:'DarkBlizzard',    rarity:'ShadowCrystalCave',      exact:450,  color:'#003377',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'DB'},
+  {name:'NullGlacier',     rarity:'ShadowCrystalCave',      exact:1800, color:'#003b88',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'NG'},
+  {name:'AbyssPermafrost', rarity:'ShadowCrystalCave',      exact:7000, color:'#004499',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'AP2'},
+  {name:'VoidTundra',      rarity:'ShadowCrystalCave',      exact:22000,color:'#004daa',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'VT2'},
+  {name:'DarkHailstone',   rarity:'ShadowCrystalCave',      exact:60000,color:'#0055bb',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'DH'},
+  {name:'NullArcticSoul',  rarity:'ShadowCrystalCave',      exact:90000,color:'#0066cc',shadowWorld:true,caveType:'ShadowCrystalCave',symbol:'NAS'},
+  // ShadowCorruption cave (deep red infection-like spread)
+  {name:'CorruptDust',     rarity:'ShadowCorruptionCave',   exact:3,    color:'#330000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'CD'},
+  {name:'BlightFleck',     rarity:'ShadowCorruptionCave',   exact:14,   color:'#440000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'BF'},
+  {name:'MaligShard',      rarity:'ShadowCorruptionCave',   exact:50,   color:'#550000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'MS2'},
+  {name:'PlagueGrain',     rarity:'ShadowCorruptionCave',   exact:200,  color:'#660000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'PG2'},
+  {name:'ViralCrystal',    rarity:'ShadowCorruptionCave',   exact:800,  color:'#770000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'VC4'},
+  {name:'CorruptCore',     rarity:'ShadowCorruptionCave',   exact:3500, color:'#880000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'CC'},
+  {name:'BlightGem',       rarity:'ShadowCorruptionCave',   exact:12000,color:'#990000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'BG'},
+  {name:'MaligEssence',    rarity:'ShadowCorruptionCave',   exact:40000,color:'#aa0000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'ME2'},
+  {name:'PlagueCore',      rarity:'ShadowCorruptionCave',   exact:80000,color:'#bb0000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'PC'},
+  {name:'ViralSoul',       rarity:'ShadowCorruptionCave',   exact:95000,color:'#cc0000',shadowWorld:true,caveType:'ShadowCorruptionCave',symbol:'VS3'},
+  // ── Shadow cave exclusive rare ores ──
+  {name:'VoidSingularity', rarity:'ShadowVoidCave-Exotic',     exact:500000,   color:'#aa00ff',shadowWorld:true,spawnMsg:'A void singularity tears open the shadow cave!',    spawnMsgFr:'Une singularité vide déchire la cave d\'ombre !'},
+  {name:'NullFlameHeart',  rarity:'ShadowFlameCave-Exotic',    exact:600000,   color:'#00cc44',shadowWorld:true,spawnMsg:'A null flame heart ignites in the darkness!',       spawnMsgFr:'Un cœur de flamme nulle s\'embrase dans l\'obscurité !'},
+  {name:'AbyssIceSoul',    rarity:'ShadowCrystalCave-Enigmatic',exact:5000000, color:'#0044cc',shadowWorld:true,spawnMsg:'An abyssal ice soul crystallizes from nothing!',    spawnMsgFr:'Une âme de glace abyssale se cristallise de rien !'},
+  {name:'CorruptionOrb',   rarity:'ShadowCorruptionCave-Unfathomable',exact:22000000,color:'#cc0022',shadowWorld:true,spawnMsg:'The corruption manifests as a sentient orb!',spawnMsgFr:'La corruption se manifeste en un orbe conscient !'},
+  {name:'ShadowEternal2',  rarity:'ShadowCaveEternal',         exact:500000000,color:'#110022',shadowWorld:true,spawnMsg:'SHADOW CAVE ETERNAL — Even the void trembles.',      spawnMsgFr:'ÉTERNEL DE CAVE D\'OMBRE — Même le néant tremble.'},
+  // ── SHADOW BEDROCK (floor of shadow world) ──
+  // Shadow world uses regular Bedrock for floor (isShadowBedrock removed)
+  // Base block (shadow stone — filler like Stone in main world)
+  {name:'ShadowStone',   rarity:'ShadowCommon',      exact:3,          color:'#2a2a3a',shadowWorld:true,symbol:'SS'},
+  {name:'DarkCoal',      rarity:'ShadowCommon',       exact:10,         color:'#1a1a2a',shadowWorld:true,symbol:'DC'},
+  {name:'VoidIron',      rarity:'ShadowUncommon',     exact:20,         color:'#44446a',shadowWorld:true,symbol:'VI'},
+  {name:'UmbraEmerald',  rarity:'ShadowRare',         exact:35,         color:'#0d3322',shadowWorld:true,symbol:'UE'},
+  {name:'ShadowRuby',    rarity:'ShadowEpic',         exact:50,         color:'#4a0020',shadowWorld:true,symbol:'SR'},
+  {name:'DarkSapphire',  rarity:'ShadowLegendary',    exact:75,         color:'#0a0a2e',shadowWorld:true,symbol:'DS'},
+  {name:'VoidTopaz',     rarity:'ShadowLegendary',    exact:100,        color:'#3a1a00',shadowWorld:true,symbol:'VT'},
+  {name:'AbyssDiamond',  rarity:'ShadowLegendary',    exact:150,        color:'#002233',shadowWorld:true,symbol:'AD'},
+  {name:'NullVoid',      rarity:'ShadowLegendary',    exact:250,        color:'#110022',shadowWorld:true,symbol:'NV'},
+  {name:'ShadowGold',    rarity:'ShadowLegendary+',   exact:1000,       color:'#4a3a00',shadowWorld:true,symbol:'SG'},
+  {name:'DarkMega',      rarity:'ShadowMythic',       exact:10000,      color:'#3a1800',shadowWorld:true,symbol:'DM'},
+  {name:'VoidUltraMega', rarity:'ShadowMythic',       exact:25000,      color:'#220011',shadowWorld:true,symbol:'VM'},
+  {name:'NullHyperMega', rarity:'ShadowMythic',       exact:50000,      color:'#1a0022',shadowWorld:true,symbol:'NH'},
+  {name:'AbyssVoidShard',rarity:'ShadowMythical',     exact:75000,      color:'#001122',shadowWorld:true,symbol:'AV'},
+  {name:'ShadowGiga',    rarity:'ShadowMythical',     exact:100000,     color:'#000a1a',shadowWorld:true,symbol:'SG2',
+   spawnMsg:'Shadow energy pulses from within the darkness...',spawnMsgFr:'Une énergie sombre pulse depuis les ténèbres...'},
+  {name:'UmbraSmiley',   rarity:'ShadowExotic',       exact:250000,     color:'#1a1a00',shadowWorld:true,symbol:'US',
+   spawnMsg:'Something... smiles at you from the dark.',spawnMsgFr:'Quelque chose... vous sourit depuis les ténèbres.'},
+  {name:'DarkFrostWraith',rarity:'ShadowExotic',      exact:750000,     color:'#001a22',shadowWorld:true,symbol:'DF',
+   spawnMsg:'A frozen shadow wraith crystallizes!',spawnMsgFr:'Un spectre de givre sombre se cristallise !'},
+  {name:'VoidTera',      rarity:'ShadowExotic',       exact:500000,     color:'#150022',shadowWorld:true,symbol:'VTe',
+   spawnMsg:'The void expands around the Tera fragment.',spawnMsgFr:'Le néant s\'étend autour du fragment Tera.'},
+  {name:'AbyssTeraPlus', rarity:'ShadowExotic',       exact:1000000,    color:'#1a000a',shadowWorld:true,symbol:'AT',
+   spawnMsg:'Abyssal light tears through the darkness!',spawnMsgFr:'Une lumière abyssale déchire les ténèbres !'},
+  {name:'NullSoulGlacier',rarity:'ShadowExotic',      exact:2000000,    color:'#0a0022',shadowWorld:true,symbol:'NS',
+   spawnMsg:'A soulless glacier forms in the shadow...',spawnMsgFr:'Un glacier sans âme se forme dans l\'ombre...'},
+  {name:'DarkEmberPhantom',rarity:'ShadowExotic',     exact:3000000,    color:'#220800',shadowWorld:true,symbol:'DE',
+   spawnMsg:'Phantom embers drift through the abyss.',spawnMsgFr:'Des braises fantômes dérivent dans l\'abîsse.'},
+  {name:'VoidCrimsonEclipse',rarity:'ShadowExotic',   exact:4000000,    color:'#1a0000',shadowWorld:true,symbol:'VC',
+   spawnMsg:'A crimson void eclipse tears reality apart!',spawnMsgFr:'Une éclipse rouge-vide déchire la réalité !'},
+  {name:'AbyssPeta',     rarity:'ShadowExotic',       exact:5000000,    color:'#00111a',shadowWorld:true,symbol:'AP',
+   spawnMsg:'Abyssal depths reveal the Peta fragment.',spawnMsgFr:'Les profondeurs abyssales révèlent le fragment Peta.'},
+  {name:'NullPetaPlus1', rarity:'ShadowExquisite',    exact:10000000,   color:'#1a0011',shadowWorld:true,symbol:'NP',
+   spawnMsg:'Your shadow self gasps in disbelief!',spawnMsgFr:'Votre être ombral retient son souffle !'},
+  {name:'DarkCelestiteNova',rarity:'ShadowExquisite', exact:12100000,   color:'#110022',shadowWorld:true,symbol:'DN',
+   spawnMsg:'Dark nova light pulses through the void.',spawnMsgFr:'Une lumière de nova sombre pulse dans le néant.'},
+  {name:'VoidNovaShard', rarity:'ShadowExquisite',    exact:12000000,   color:'#0d0022',shadowWorld:true,symbol:'VN',
+   spawnMsg:'A void nova shard tears the shadow fabric.',spawnMsgFr:'Un éclat de nova vide déchire le tissu de l\'ombre.'},
+  {name:'AbyssAuroriteShard',rarity:'ShadowExquisite',exact:13500000,   color:'#000a22',shadowWorld:true,symbol:'AA',
+   spawnMsg:'Abyssal light fractures into aurite shards.',spawnMsgFr:'La lumière abyssale se fracture en éclats d\'aurite.'},
+  {name:'NullCelestium', rarity:'ShadowExquisite',    exact:15000000,   color:'#08001a',shadowWorld:true,symbol:'NC',
+   spawnMsg:'Null energy coalesces into Celestium.',spawnMsgFr:'L\'énergie nulle se condense en Celestium.'},
+  {name:'DarkLuminaraGem',rarity:'ShadowExquisite',   exact:15500000,   color:'#1a1100',shadowWorld:true,symbol:'DL',
+   spawnMsg:'A dark luminary emerges from shadow depths.',spawnMsgFr:'Un luminaire sombre émerge des profondeurs.'},
+  {name:'VoidAstralite', rarity:'ShadowExquisite',    exact:18000000,   color:'#000811',shadowWorld:true,symbol:'VA',
+   spawnMsg:'Void astral currents crystallize around you.',spawnMsgFr:'Des courants astraux vides se cristallisent.'},
+  {name:'AbyssEclipseraCore',rarity:'ShadowExquisite',exact:17000000,   color:'#110000',shadowWorld:true,symbol:'AE',
+   spawnMsg:'The Abyssal Eclipsera awakens from slumber.',spawnMsgFr:'L\'Eclipsera abyssale s\'éveille de son sommeil.'},
+  {name:'NullLuminite',  rarity:'ShadowExquisite',    exact:21000000,   color:'#0a0a00',shadowWorld:true,symbol:'NLu',
+   spawnMsg:'Null luminescence floods the shadow realm.',spawnMsgFr:'Une luminescence nulle inonde le royaume de l\'ombre.'},
+  {name:'DarkEclipseCore',rarity:'ShadowExquisite',   exact:24000000,   color:'#0d0000',shadowWorld:true,symbol:'DEC',
+   spawnMsg:'Dark eclipse energy radiates from the core.',spawnMsgFr:'L\'énergie d\'éclipse sombre rayonne depuis le cœur.'},
+  {name:'VoidPetaPlus2', rarity:'ShadowTranscendent', exact:25000000,   color:'#0a0d00',shadowWorld:true,symbol:'VP2',
+   spawnMsg:'You sense a void transcendence!',spawnMsgFr:'Vous ressentez une transcendance du néant !'},
+  {name:'AbyssNebulium', rarity:'ShadowTranscendent', exact:26000000,   color:'#000d04',shadowWorld:true,symbol:'AN',
+   spawnMsg:'Abyssal nebula matter solidifies.',spawnMsgFr:'La matière de nébuleuse abyssale se solidifie.'},
+  {name:'NullStellarium',rarity:'ShadowTranscendent', exact:28000000,   color:'#000811',shadowWorld:true,symbol:'NSt',
+   spawnMsg:'Null stellar fragments orbit your form.',spawnMsgFr:'Des fragments stellaires nuls orbitent autour de vous.'},
+  {name:'DarkLunarium',  rarity:'ShadowTranscendent', exact:30000000,   color:'#0a0800',shadowWorld:true,symbol:'DLu',
+   spawnMsg:'Dark lunar energy floods the abyss.',spawnMsgFr:'L\'énergie lunaire sombre inonde l\'abîsse.'},
+  {name:'VoidSolarium',  rarity:'ShadowTranscendent', exact:32000000,   color:'#0d0500',shadowWorld:true,symbol:'VS',
+   spawnMsg:'A void sun flares in the darkworld.',spawnMsgFr:'Un soleil vide explose dans le monde sombre.'},
+  {name:'AbyssAetherium',rarity:'ShadowTranscendent', exact:35000000,   color:'#030a02',shadowWorld:true,symbol:'AAe',
+   spawnMsg:'Abyssal aether wraps around your soul.',spawnMsgFr:'L\'éther abyssal enveloppe votre âme.'},
+  {name:'NullChronium',  rarity:'ShadowTranscendent', exact:38000000,   color:'#000a0a',shadowWorld:true,symbol:'NCh',
+   spawnMsg:'Time fractures as NullChronium emerges.',spawnMsgFr:'Le temps se fracture à l\'émergence de NullChronium.'},
+  {name:'DarkQuantumite',rarity:'ShadowTranscendent', exact:40000000,   color:'#000511',shadowWorld:true,symbol:'DQ',
+   spawnMsg:'Dark quantum fluctuations crystallize.',spawnMsgFr:'Les fluctuations quantiques sombres se cristallisent.'},
+  {name:'VoidHyperion',  rarity:'ShadowTranscendent', exact:45000000,   color:'#0d0011',shadowWorld:true,symbol:'VH',
+   spawnMsg:'Hyperion shadow tendrils reach outward!',spawnMsgFr:'Des tentacules d\'ombre d\'Hyperion s\'étendent !'},
+  {name:'AbyssPetaPlus3',rarity:'ShadowTranscendent', exact:51000000,   color:'#0d0a00',shadowWorld:true,symbol:'AP3',
+   spawnMsg:'Deep abyss channels surge with power!',spawnMsgFr:'Les canaux abyssaux profonds se chargent de puissance !'},
+  {name:'NullVortexium', rarity:'ShadowTranscendent', exact:52500000,   color:'#070022',shadowWorld:true,symbol:'NVo',
+   spawnMsg:'A null vortex tears through shadow reality!',spawnMsgFr:'Un vortex nul déchire la réalité de l\'ombre !'},
+  {name:'DarkEcliptium', rarity:'ShadowTranscendent', exact:55000000,   color:'#0d0500',shadowWorld:true,symbol:'DEcl',
+   spawnMsg:'Dark eclipse matter stabilizes around you.',spawnMsgFr:'La matière d\'éclipse sombre se stabilise autour de vous.'},
+  {name:'VoidEclipseShard',rarity:'ShadowEnigmatic',  exact:60000000,   color:'#050505',shadowWorld:true,symbol:'VES',
+   spawnMsg:'Your shadow vision begins to invert...',spawnMsgFr:'Votre vision de l\'ombre commence à s\'inverser...'},
+  {name:'AbyssShadowFrag',rarity:'ShadowEnigmatic',   exact:61230000,   color:'#080808',shadowWorld:true,symbol:'ASF',
+   spawnMsg:'Shadow fragments scatter into the abyss.',spawnMsgFr:'Des fragments d\'ombre se dispersent dans l\'abîsse.'},
+  {name:'NullTwilightGem',rarity:'ShadowEnigmatic',   exact:63000000,   color:'#0d0022',shadowWorld:true,symbol:'NTG',
+   spawnMsg:'Twilight null energy crystallizes!',spawnMsgFr:'L\'énergie nulle du crépuscule se cristallise !'},
+  {name:'DarkPetaPlus4', rarity:'ShadowEnigmatic',    exact:75000000,   color:'#000d0d',shadowWorld:true,symbol:'DP4',
+   spawnMsg:'Your sense of depth dissolves entirely.',spawnMsgFr:'Votre sens de la profondeur se dissout entièrement.'},
+  {name:'VoidOblivionStone',rarity:'ShadowEnigmatic', exact:70000000,   color:'#050808',shadowWorld:true,symbol:'VOS',
+   spawnMsg:'Void oblivion stone pulls light inward.',spawnMsgFr:'La pierre d\'oubli vide absorbe la lumière.'},
+  {name:'AbyssNightCore',rarity:'ShadowEnigmatic',    exact:77000000,   color:'#0d0003',shadowWorld:true,symbol:'ANC',
+   spawnMsg:'Abyssal night core radiates cold darkness.',spawnMsgFr:'Le noyau nocturne abyssal irradie une froideur sombre.'},
+  {name:'NullSpecterGem',rarity:'ShadowEnigmatic',    exact:81000000,   color:'#080808',shadowWorld:true,symbol:'NSG',
+   spawnMsg:'A null specter materializes around the gem.',spawnMsgFr:'Un spectre nul se matérialise autour du gemme.'},
+  {name:'DarkOblivionShard',rarity:'ShadowEnigmatic', exact:85000000,   color:'#050505',shadowWorld:true,symbol:'DOS',
+   spawnMsg:'Oblivion darkness seeps from the shard.',spawnMsgFr:'L\'obscurité de l\'oubli suinte de l\'éclat.'},
+  {name:'VoidPhantomCrystal',rarity:'ShadowEnigmatic',exact:95000000,  color:'#080808',shadowWorld:true,symbol:'VPC',
+   spawnMsg:'A phantom void crystal phases in and out.',spawnMsgFr:'Un cristal fantôme vide se matérialise et disparaît.'},
+  {name:'AbyssOblivionCore',rarity:'ShadowEnigmatic', exact:90000000,   color:'#060606',shadowWorld:true,symbol:'AOC',
+   spawnMsg:'Abyssal oblivion energy surges outward.',spawnMsgFr:'L\'énergie d\'oubli abyssale se propage.'},
+  {name:'NullAbyssGem',  rarity:'ShadowEnigmatic',    exact:99000000,   color:'#0d0022',shadowWorld:true,symbol:'NAG',
+   spawnMsg:'Null abyss energy tears through shadow fabric.',spawnMsgFr:'L\'énergie d\'abîsse nulle déchire le tissu d\'ombre.'},
+  {name:'ShadowZergHunter',rarity:'ShadowUnfathomable',exact:100000000, color:'#220000',shadowWorld:true,symbol:'SZH',
+   spawnMsg:'A shadow predator stirs in the void...',spawnMsgFr:'Un prédateur de l\'ombre s\'éveille dans le néant...'},
+  {name:'VoidFrostShard',rarity:'ShadowUnfathomable', exact:120000000,  color:'#001122',shadowWorld:true,symbol:'VFS',
+   spawnMsg:'A shard of void frost crystallizes in silence.',spawnMsgFr:'Un éclat de givre vide se cristallise en silence.'},
+  {name:'AbyssGlacierHeart',rarity:'ShadowUnfathomable',exact:140000000,color:'#001a22',shadowWorld:true,symbol:'AGH',
+   spawnMsg:'The heart of a shadow glacier pulses coldly.',spawnMsgFr:'Le cœur d\'un glacier d\'ombre pulse froidement.'},
+  {name:'NullAbyssalCore',rarity:'ShadowUnfathomable',exact:150000000,  color:'#0a000d',shadowWorld:true,symbol:'NAC',
+   spawnMsg:'A null abyssal core opens beneath your feet.',spawnMsgFr:'Un noyau abyssal nul s\'ouvre sous vos pieds.'},
+  {name:'DarkVoidPlus',  rarity:'ShadowUnfathomable', exact:250000000,  color:'#0d0022',shadowWorld:true,symbol:'DVP',
+   spawnMsg:'Dark void energy ripples through all shadow matter!',spawnMsgFr:'L\'énergie vide sombre ondule à travers la matière d\'ombre !'},
+  {name:'VoidAtom',      rarity:'ShadowUnfathomable', exact:265000000,  color:'#00110a',shadowWorld:true,symbol:'VAt',
+   spawnMsg:'Void atomic structures collapse and reform.',spawnMsgFr:'Les structures atomiques vides s\'effondrent et se reforment.'},
+  {name:'AbyssInfernium', rarity:'ShadowUnfathomable',exact:285000000,  color:'#220000',shadowWorld:true,symbol:'AI',
+   spawnMsg:'Abyssal infernal fire erupts from the dark!',spawnMsgFr:'Un feu infernal abyssal jaillit de l\'obscurité !'},
+  {name:'NullVoidUltra', rarity:'ShadowOtherworldly', exact:500000000,  color:'#020202',shadowWorld:true,symbol:'NVU',
+   spawnMsg:'The shadow universe trembles at your discovery!',spawnMsgFr:'L\'univers de l\'ombre tremble face à votre découverte !'},
+  {name:'DarkAbyssion',  rarity:'ShadowOtherworldly', exact:525000000,  color:'#0d0000',shadowWorld:true,symbol:'DA',
+   spawnMsg:'Dark abyssion emerges from unfathomable depths.',spawnMsgFr:'L\'abyssion sombre émerge de profondeurs insondables.'},
+  {name:'VoidEternium',  rarity:'ShadowOtherworldly', exact:550000000,  color:'#0d0003',shadowWorld:true,symbol:'VEt',
+   spawnMsg:'Void eternium pulses with shadow energy!',spawnMsgFr:'L\'Eternium vide pulse d\'énergie sombre !'},
+  {name:'AbyssCosmosite',rarity:'ShadowOtherworldly', exact:650000000,  color:'#0d0000',shadowWorld:true,symbol:'ACo',
+   spawnMsg:'Shadow cosmos fragments orbit your form.',spawnMsgFr:'Des fragments de cosmos sombre orbitent autour de vous.'},
+  {name:'NullCosmicRelic',rarity:'ShadowOtherworldly',exact:750000000,  color:'#0d0000',shadowWorld:true,symbol:'NCR',
+   spawnMsg:'The null fabric of existence tears apart!',spawnMsgFr:'Le tissu nul de l\'existence se déchire !'},
+  {name:'DarkLugubre',   rarity:'ShadowOtherworldly', exact:850000000,  color:'#0d0511',shadowWorld:true,symbol:'DLg',
+   spawnMsg:'OBSCURE luck... something vast watches you.',spawnMsgFr:'Chance OBSCURE... quelque chose de vaste vous observe.'},
+  {name:'VoidEclipseMax',rarity:'ShadowImaginary',    exact:1500000000, color:'#030303',shadowWorld:true,symbol:'VEM',
+   spawnMsg:'Shadow darkness stretches infinitely inward!',spawnMsgFr:'Les ténèbres de l\'ombre s\'étendent infiniment vers l\'intérieur !'},
+  {name:'AbyssZanacharium',rarity:'ShadowZenith',     exact:6875000000, color:'#220033',shadowWorld:true,symbol:'AZ',
+   spawnMsg:'An abyssal force materializes from the shadow...',spawnMsgFr:'Une force abyssale se matérialise depuis l\'ombre...'},
+  {name:'ShadowEternal', rarity:'ShadowEternal',      exact:5000000000, color:'#000000',shadowWorld:true,symbol:'SE',
+   spawnMsg:'SHADOW ETERNAL — The void itself weeps.',spawnMsgFr:'ÉTERNEL DES OMBRES — Le néant lui-même pleure.'},
   // ── PORTALS ──
-  {name:'MainPortal',  rarity:'Barrier',exact:999999,color:'#330066',symbol:'◈',symbolColor:'#9900ff',isBarrier:true,isPortal:true,portalDest:'shadow',hidden:true},
-  {name:'ShadowPortal',rarity:'Barrier',exact:999999,color:'#003300',symbol:'◈',symbolColor:'#00ff44',isBarrier:true,isPortal:true,portalDest:'main',  hidden:true},
+  {name:'MainPortal',      rarity:'Barrier',exact:999999,color:'#330066',symbol:'◈',symbolColor:'#9900ff',isBarrier:true,isPortal:true,isPortalFrame:true,portalDest:'shadow',hidden:true},
+  {name:'ShadowPortal',    rarity:'Barrier',exact:999999,color:'#003300',symbol:'◈',symbolColor:'#00ff44',isBarrier:true,isPortal:true,isPortalFrame:true,portalDest:'main',  hidden:true},
+  // Portal fill — visually rendered but NOT solid so player walks through
+  {name:'MainPortalFill',  rarity:'Barrier',exact:999999,color:'#220044',isPortal:true,isPortalFill:true,portalDest:'shadow',hidden:true,noSolid:true},
+  {name:'ShadowPortalFill',rarity:'Barrier',exact:999999,color:'#001100',isPortal:true,isPortalFill:true,portalDest:'main',  hidden:true,noSolid:true},
   // ── SHADOW ALTAR ──
   {name:'ShadowAltar',rarity:'Barrier',exact:999999,color:'#110022',symbol:'⬡',symbolColor:'#9900ff',isBarrier:true,isShadowAltarBlock:true,hidden:true},
   // ── ORE ALTAR — special interactive structure block ──
@@ -971,10 +1191,11 @@ let ORES_SORTED=[];
 
 function isCaveExclusiveOre(ore){
   if(!ore||ore.caveBase)return true;
-  if(ore.caveType)return true; // new cave ores with explicit caveType field
+  if(ore.caveType)return true; // explicit caveType field covers all cave types
   const r=ore.rarity||'';
   if(r.includes('CaveExclusive'))return true;
   if(r.includes('IceCave')||r.includes('EnergyCave')||r.includes('NuclearCave')||r.includes('ShadowCave')||r.includes('AbyssCave')||r.includes('LavaCave'))return true;
+  if(r.includes('ShadowVoidCave')||r.includes('ShadowFlameCave')||r.includes('ShadowCrystalCave')||r.includes('ShadowCorruptionCave'))return true;
   if(r==='CaveCommon'||r==='CaveUncommon'||r==='CaveRare'||r==='CaveEpic'||r==='CaveLegendary')return true;
   return false;
 }
@@ -1065,26 +1286,19 @@ let _altarSacrificed=new Set();  // ore names already sacrificed (once per type,
 let _altarConfirmPending=false;  // waiting for confirmation
 
 function _buildAltarStructure(){
-  const cx=Math.floor(W/2), cz=Math.floor(D/2)-6;
-  let topY=TOP_SOLID_Y;
-  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
-  const baseY=topY+1;
-  _altarWorldPos={x:cx,y:baseY,z:cz};
   const altarOreIdx=ORES.findIndex(o=>o.isAltarBlock);
-  if(altarOreIdx<0)return;
+  if(altarOreIdx<0){console.warn('OreAltar block not found in ORES');return;}
+  const cx=Math.floor(W/2), cz=Math.floor(D/2)-6;
+  const baseY=TOP_SOLID_Y+1; // always above surface
+  _altarWorldPos={x:cx,y:baseY,z:cz};
   const places=[
-    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},
-    {x:cx-1,y:baseY,z:cz},{x:cx+1,y:baseY,z:cz},
-    {x:cx,y:baseY,z:cz-1},{x:cx,y:baseY,z:cz+1},
-    {x:cx-1,y:baseY,z:cz-1},{x:cx+1,y:baseY,z:cz-1},
-    {x:cx-1,y:baseY,z:cz+1},{x:cx+1,y:baseY,z:cz+1},
+    [cx,  baseY,  cz],[cx,baseY+1,cz],[cx,baseY+2,cz],
+    [cx-1,baseY,  cz],[cx+1,baseY,  cz],
+    [cx,  baseY,cz-1],[cx,  baseY,cz+1],
+    [cx-1,baseY,cz-1],[cx+1,baseY,cz-1],
+    [cx-1,baseY,cz+1],[cx+1,baseY,cz+1],
   ];
-  for(const p of places){
-    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
-    const bi=idx(p.x,p.y,p.z);
-    blocks[bi]=1; oreIdx[bi]=altarOreIdx; oreRevealed[bi]=1;
-    _syncBlockWrite(p.x,p.y,p.z);
-  }
+  for(const[x,y,z]of places)_placeBlock(x,y,z,altarOreIdx);
 }
 
 function isAltarBlock(x,y,z){
@@ -1190,20 +1404,18 @@ function renderAltarUI(){
     const totalItems=ready.reduce((a,e)=>a+e.qty,0);
     previewEl.innerHTML=
       `<span style="color:#df03fc;font-size:9px">+${luckGain.toFixed(1)} Luck</span>`+
-      `<span style="color:rgba(255,255,255,0.4);font-size:7px;margin-left:8px">from ${ready.length} ore type${ready.length>1?'s':''} (${totalItems} total items consumed)</span>`;
+      `<span style="color:rgba(255,255,255,0.4);font-size:7px;margin-left:8px">1× each of ${ready.length} ore type${ready.length>1?'s':''}</span>`;
     missingLbl.textContent=missing.length>0?(lang==='fr'?'Manque encore: ':'Still missing: ')+missing.map(o=>o.name).slice(0,4).join(', ')+(missing.length>4?' +more':''):'';
   }else{
     cancelBtn.style.display='block';
-    // Confirm state
     btn.disabled=false;
     btn.style.borderColor='#ffdd44';btn.style.color='#ffdd44';
     btn.textContent=lang==='fr'
       ?`✓ CONFIRMER (+${luckGain.toFixed(1)} Luck)`
       :`✓ CONFIRM SACRIFICE (+${luckGain.toFixed(1)} Luck)`;
-    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
     previewEl.innerHTML=
       `<span style="color:#ffdd44;font-size:8px">⚠ ${lang==='fr'?'Cette action est irréversible!':'This cannot be undone!'}</span><br>`+
-      ready.map(e=>`<span style="color:${RC[e.ore.rarity]||e.ore.color||'#aaa'};font-size:7px">${e.ore.name} ×${e.qty}</span>`).join(' &nbsp;');
+      ready.map(e=>`<span style="color:${RC[e.ore.rarity]||e.ore.color||'#aaa'};font-size:7px">${e.ore.name} ×1 (vous en avez ${e.qty})</span>`).join(' &nbsp;');
     missingLbl.textContent='';
   }
 }
@@ -1219,13 +1431,13 @@ function doAltarSacrifice(){
     return;
   }
 
-  // Second click → confirmed, execute sacrifice
+  // Second click → confirmed, execute sacrifice (1 of each)
   _altarConfirmPending=false;
   let gained=0;
-  for(const {ore,qty} of ready){
-    // Consume ALL of this ore
-    delete inventory[ore.name];
-    // Mark as sacrificed forever (this ore type won't appear again)
+  for(const {ore} of ready){
+    // Consume exactly 1
+    inventory[ore.name]=(inventory[ore.name]||1)-1;
+    if((inventory[ore.name]||0)<=0)delete inventory[ore.name];
     _altarSacrificed.add(ore.name);
     gained+=0.5;
   }
@@ -1250,22 +1462,19 @@ function cancelAltarConfirm(){
 window.cancelAltarConfirm=cancelAltarConfirm;
 
 // ═══════════ SHADOW WORLD ═══════════
-let currentWorld='main'; // 'main' | 'shadow'
-let _shadowAltarLuckBonus=0;
-let _shadowAltarSacrificed=new Set();
-let _shadowAltarConfirmPending=false;
-let shadowAltarOpen=false;
+// (state vars: currentWorld, _shadowAltarLuckBonus, _shadowAltarSacrificed, etc. are declared in state block below)
 
 function isShadowOre(o){ return !!o.shadowWorld; }
 
 function getShadowAltarOres(){
-  return ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden);
+  return ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden&&!isCaveExclusiveOre(o)&&o.name!=='ShadowStone');
 }
 
 function rollOreShadow(roll,depthFrac,lk){
-  const candidates=ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden);
+  const candidates=ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden&&!isCaveExclusiveOre(o));
   let totalW=0;
   const weights=candidates.map(o=>{const w=lk/o.exact;totalW+=w;return w;});
+  if(!totalW)return ORES.findIndex(o=>o.name==='ShadowStone')||0;
   let r=roll*totalW;
   for(let i=0;i<candidates.length;i++){r-=weights[i];if(r<=0)return ORES.indexOf(candidates[i]);}
   return ORES.indexOf(candidates[candidates.length-1]);
@@ -1294,88 +1503,91 @@ function _playPortalSfx(isShadow){
 }
 
 // Build the portal structure (3-tall portal frame like nether portal)
+function _placeBlock(x,y,z,oreIndex){
+  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
+  const bi=idx(x,y,z);
+  blocks[bi]=1;oreIdx[bi]=oreIndex;oreRevealed[bi]=1;
+  _syncBlockWrite(x,y,z);
+}
+
 function _buildPortalStructure(){
-  const portalIdx=ORES.findIndex(o=>o.name==='MainPortal');
-  if(portalIdx<0)return;
-  const cx=Math.floor(W/2)+5, cz=Math.floor(D/2); // 5 blocks east of spawn
-  let topY=TOP_SOLID_Y;
-  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
-  const baseY=topY+1;
-  // Portal frame: 4 wide, 5 tall arch shape
-  const portalBlocks=[
-    // Two pillars
-    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},{x:cx,y:baseY+3,z:cz},{x:cx,y:baseY+4,z:cz},
-    {x:cx+3,y:baseY,z:cz},{x:cx+3,y:baseY+1,z:cz},{x:cx+3,y:baseY+2,z:cz},{x:cx+3,y:baseY+3,z:cz},{x:cx+3,y:baseY+4,z:cz},
-    // Top arch
-    {x:cx+1,y:baseY+4,z:cz},{x:cx+2,y:baseY+4,z:cz},
-    // Portal fill (inner 2x3)
-    {x:cx+1,y:baseY,z:cz},{x:cx+2,y:baseY,z:cz},
-    {x:cx+1,y:baseY+1,z:cz},{x:cx+2,y:baseY+1,z:cz},
-    {x:cx+1,y:baseY+2,z:cz},{x:cx+2,y:baseY+2,z:cz},
-    {x:cx+1,y:baseY+3,z:cz},{x:cx+2,y:baseY+3,z:cz},
+  const frameIdx=ORES.findIndex(o=>o.name==='MainPortal');
+  const fillIdx =ORES.findIndex(o=>o.name==='MainPortalFill');
+  if(frameIdx<0||fillIdx<0){console.warn('Portal ores not found');return;}
+  const cx=Math.floor(W/2)+5, cz=Math.floor(D/2);
+  const baseY=TOP_SOLID_Y+1; // Always place on surface regardless of terrain
+  // Frame: outer 4-wide × 5-tall arch (solid, indestructible)
+  const frameList=[
+    [cx,  baseY  ,cz],[cx,  baseY+1,cz],[cx,  baseY+2,cz],[cx,  baseY+3,cz],[cx,  baseY+4,cz], // left pillar
+    [cx+3,baseY  ,cz],[cx+3,baseY+1,cz],[cx+3,baseY+2,cz],[cx+3,baseY+3,cz],[cx+3,baseY+4,cz], // right pillar
+    [cx+1,baseY+4,cz],[cx+2,baseY+4,cz], // top bar
+    [cx+1,baseY  ,cz],[cx+2,baseY  ,cz], // bottom bar (floor of arch)
   ];
-  for(const p of portalBlocks){
-    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
-    const bi=idx(p.x,p.y,p.z);
-    blocks[bi]=1;oreIdx[bi]=portalIdx;oreRevealed[bi]=1;
-    _syncBlockWrite(p.x,p.y,p.z);
-  }
+  // Fill: inner 2-wide × 3-tall (passable, triggers teleport)
+  const fillList=[
+    [cx+1,baseY+1,cz],[cx+2,baseY+1,cz],
+    [cx+1,baseY+2,cz],[cx+2,baseY+2,cz],
+    [cx+1,baseY+3,cz],[cx+2,baseY+3,cz],
+  ];
+  for(const[x,y,z]of frameList)_placeBlock(x,y,z,frameIdx);
+  for(const[x,y,z]of fillList) _placeBlock(x,y,z,fillIdx);
+  _mainPortalFillZone={minX:cx+1,maxX:cx+3,minY:baseY+1,maxY:baseY+3+1,z:cz};
 }
 
 function _buildShadowPortalStructure(){
-  const portalIdx=ORES.findIndex(o=>o.name==='ShadowPortal');
-  if(portalIdx<0)return;
+  const frameIdx=ORES.findIndex(o=>o.name==='ShadowPortal');
+  const fillIdx =ORES.findIndex(o=>o.name==='ShadowPortalFill');
+  if(frameIdx<0||fillIdx<0){console.warn('Shadow portal ores not found');return;}
   const cx=Math.floor(W/2)+5, cz=Math.floor(D/2);
-  let topY=TOP_SOLID_Y;
-  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
-  const baseY=topY+1;
-  const portalBlocks=[
-    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},{x:cx,y:baseY+3,z:cz},{x:cx,y:baseY+4,z:cz},
-    {x:cx+3,y:baseY,z:cz},{x:cx+3,y:baseY+1,z:cz},{x:cx+3,y:baseY+2,z:cz},{x:cx+3,y:baseY+3,z:cz},{x:cx+3,y:baseY+4,z:cz},
-    {x:cx+1,y:baseY+4,z:cz},{x:cx+2,y:baseY+4,z:cz},
-    {x:cx+1,y:baseY,z:cz},{x:cx+2,y:baseY,z:cz},
-    {x:cx+1,y:baseY+1,z:cz},{x:cx+2,y:baseY+1,z:cz},
-    {x:cx+1,y:baseY+2,z:cz},{x:cx+2,y:baseY+2,z:cz},
-    {x:cx+1,y:baseY+3,z:cz},{x:cx+2,y:baseY+3,z:cz},
+  const baseY=TOP_SOLID_Y+1;
+  const frameList=[
+    [cx,  baseY  ,cz],[cx,  baseY+1,cz],[cx,  baseY+2,cz],[cx,  baseY+3,cz],[cx,  baseY+4,cz],
+    [cx+3,baseY  ,cz],[cx+3,baseY+1,cz],[cx+3,baseY+2,cz],[cx+3,baseY+3,cz],[cx+3,baseY+4,cz],
+    [cx+1,baseY+4,cz],[cx+2,baseY+4,cz],
+    [cx+1,baseY  ,cz],[cx+2,baseY  ,cz],
   ];
-  for(const p of portalBlocks){
-    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
-    const bi=idx(p.x,p.y,p.z);
-    blocks[bi]=1;oreIdx[bi]=portalIdx;oreRevealed[bi]=1;
-    _syncBlockWrite(p.x,p.y,p.z);
-  }
+  const fillList=[
+    [cx+1,baseY+1,cz],[cx+2,baseY+1,cz],
+    [cx+1,baseY+2,cz],[cx+2,baseY+2,cz],
+    [cx+1,baseY+3,cz],[cx+2,baseY+3,cz],
+  ];
+  for(const[x,y,z]of frameList)_placeBlock(x,y,z,frameIdx);
+  for(const[x,y,z]of fillList) _placeBlock(x,y,z,fillIdx);
+  _shadowPortalFillZone={minX:cx+1,maxX:cx+3,minY:baseY+1,maxY:baseY+3+1,z:cz};
 }
 
 function _buildShadowAltarStructure(){
   const altarIdx=ORES.findIndex(o=>o.isShadowAltarBlock);
-  if(altarIdx<0)return;
+  if(altarIdx<0){console.warn('ShadowAltar block not found in ORES');return;}
   const cx=Math.floor(W/2), cz=Math.floor(D/2)-6;
-  let topY=TOP_SOLID_Y;
-  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
-  const baseY=topY+1;
+  const baseY=TOP_SOLID_Y+1;
   const places=[
-    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},
-    {x:cx-1,y:baseY,z:cz},{x:cx+1,y:baseY,z:cz},
-    {x:cx,y:baseY,z:cz-1},{x:cx,y:baseY,z:cz+1},
-    {x:cx-1,y:baseY,z:cz-1},{x:cx+1,y:baseY,z:cz-1},
-    {x:cx-1,y:baseY,z:cz+1},{x:cx+1,y:baseY,z:cz+1},
+    [cx,  baseY,  cz],[cx,baseY+1,cz],[cx,baseY+2,cz],
+    [cx-1,baseY,  cz],[cx+1,baseY,  cz],
+    [cx,  baseY,cz-1],[cx,  baseY,cz+1],
+    [cx-1,baseY,cz-1],[cx+1,baseY,cz-1],
+    [cx-1,baseY,cz+1],[cx+1,baseY,cz+1],
   ];
-  for(const p of places){
-    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
-    const bi=idx(p.x,p.y,p.z);
-    blocks[bi]=1;oreIdx[bi]=altarIdx;oreRevealed[bi]=1;
-    _syncBlockWrite(p.x,p.y,p.z);
-  }
+  for(const[x,y,z]of places)_placeBlock(x,y,z,altarIdx);
 }
 
+const SHADOW_WORLD_UNLOCK=500000;
+let _shadowSpawnCaveBlockCount=0;
+
 function travelToShadow(){
+  if(mined<SHADOW_WORLD_UNLOCK){
+    const need=(SHADOW_WORLD_UNLOCK-mined).toLocaleString();
+    const pct=Math.floor(mined/SHADOW_WORLD_UNLOCK*100);
+    showSpawn(lang==='fr'?`🌑 Portail verrouillé — Minez encore ${need} blocs (${pct}%)`:
+      `🌑 Portal locked — Mine ${need} more blocks (${pct}%)`, '#ff4444',true,null);
+    return;
+  }
   _playPortalSfx(true);
   currentWorld='shadow';
-  // Apply shadow sky: pitch black with green fog
-  scene.background=new THREE.Color(0x000005);
-  scene.fog.color.set(0x001100);
-  scene.fog.near=8;scene.fog.far=25;
-  // Rebuild world with shadow ores
+  _shadowSpawnCaveBlockCount=0;
+  if(typeof _buildSkybox==='function')_buildSkybox(true);
+  else{if(scene){scene.background=new THREE.Color(0x000005);scene.fog&&scene.fog.color.set(0x001100);}}
+  if(scene&&scene.fog){scene.fog.near=8;scene.fog.far=25;}
   _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   const side=RENDER_DIST*2+1;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
@@ -1383,19 +1595,23 @@ function travelToShadow(){
   _buildShadowAltarStructure();
   _buildShadowPortalStructure();
   _buildWorldMeshReal();
-  spawnPlayer();
+  const pCX=Math.floor(W/2)+5, pCZ=Math.floor(D/2);
+  let pTopY=TOP_SOLID_Y;
+  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(pCX,y,pCZ)]){pTopY=y;break;}}
+  camera.position.set(pCX+1.5, pTopY+1+CAM_H, pCZ+1.5);
+  velY=0;onGround=true;
+  _portalCooldown=3.0;
   _scanCachedBestOre=null;_scanCachedTopOres=null;
-  showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':'🌑 Shadow World — welcome to the dark','#00ff44',true,null);
+  showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':
+    '🌑 Shadow World — welcome to the dark','#00ff44',true,null);
 }
 
 function travelToMain(){
   _playPortalSfx(false);
   currentWorld='main';
-  // Restore sky
-  scene.background=new THREE.Color(0x87ceeb);
-  scene.fog.color.set(0x87ceeb);
+  if(typeof _buildSkybox==='function')_buildSkybox(false);
+  else{if(scene){scene.background=new THREE.Color(0x87ceeb);scene.fog&&scene.fog.color.set(0x87ceeb);}}
   applyRenderDist(_renderDist);
-  // Rebuild main world
   _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   const side=RENDER_DIST*2+1;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGenerated(_chunkOriginCX+ci,_chunkOriginCZ+ck);
@@ -1403,30 +1619,42 @@ function travelToMain(){
   _buildAltarStructure();
   _buildPortalStructure();
   _buildWorldMeshReal();
-  spawnPlayer();
+  const pCX=Math.floor(W/2)+5, pCZ=Math.floor(D/2);
+  let pTopY=TOP_SOLID_Y;
+  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(pCX,y,pCZ)]){pTopY=y;break;}}
+  camera.position.set(pCX+1.5, pTopY+1+CAM_H, pCZ-1.5);
+  velY=0;onGround=true;
+  _portalCooldown=3.0;
   _scanCachedBestOre=null;_scanCachedTopOres=null;
-  showSpawn(lang==='fr'?'☀ Retour au monde principal !':'☀ Back to the main world!','#9900ff',true,null);
+  showSpawn(lang==='fr'?'☀ Retour au monde principal !':
+    '☀ Back to the main world!','#9900ff',true,null);
 }
 
 function _ensureChunkGeneratedShadow(cx,cz){
-  const key=cx+','+cz;
+  const key=_chunkKey(cx,cz);
   if(_chunks.has(key))return;
-  // Fill chunk with shadow rock and shadow ores
-  const bk=new Uint8Array(CHUNK_SIZE*H*CHUNK_SIZE);
-  const oi=new Uint16Array(CHUNK_SIZE*H*CHUNK_SIZE);
-  const rev=new Uint8Array(CHUNK_SIZE*H*CHUNK_SIZE);
-  const stoneIdx=0; // stone = index 0
-  const shadowLk=luck+_shadowAltarLuckBonus+_altarLuckBonus;
+  const sz=CHUNK_SIZE*H*CHUNK_SIZE;
+  const bk=new Uint8Array(sz);
+  const oi=new Uint16Array(sz);
+  const rev=new Uint8Array(sz);
+  const bedrockIdx2=ORES.findIndex(o=>o.isBarrier&&o.name==='Bedrock');
+  const useBedrockIdx=bedrockIdx2>=0?bedrockIdx2:ORES.findIndex(o=>o.isBarrier);
+  const shadowLk=luck+(_shadowAltarLuckBonus||0)+(_altarLuckBonus||0);
+  const ch={blocks:bk,oreIdx:oi,oreRevealed:rev,cx,cz};
   for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
     const wx=cx*CHUNK_SIZE+lx,wz=cz*CHUNK_SIZE+lz;
-    const li=(lx*H+y)*CHUNK_SIZE+lz;
-    if(y<=1){bk[li]=1;oi[li]=ORES.findIndex(o=>o.isBarrier&&o.name==='Bedrock');continue;}
+    const li=_chunkIdx(lx,y,lz);
     bk[li]=1;
-    const roll=h3(wx,y,wz,cx^cz^y)/65535;
+    if(y<=1){
+      oi[li]=useBedrockIdx>=0?useBedrockIdx:0;
+      rev[li]=1;
+      continue;
+    }
+    const roll=h3(wx,y,wz,(cx^cz^y)&65535)/65535;
     const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
     oi[li]=rollOreShadow(roll,depthFrac,shadowLk);
   }
-  _chunks.set(key,{blocks:bk,oreIdx:oi,oreRevealed:rev});
+  _chunks.set(key,ch);
 }
 
 // Shadow altar UI
@@ -1523,8 +1751,10 @@ function doShadowSacrifice(){
   if(!_shadowAltarConfirmPending){_shadowAltarConfirmPending=true;renderShadowAltarUI();return;}
   _shadowAltarConfirmPending=false;
   let gained=0;
-  for(const{ore,qty}of ready){
-    delete inventory[ore.name];
+  for(const{ore}of ready){
+    // Consume exactly 1
+    inventory[ore.name]=(inventory[ore.name]||1)-1;
+    if((inventory[ore.name]||0)<=0)delete inventory[ore.name];
     _shadowAltarSacrificed.add(ore.name);
     gained+=0.5;
   }
@@ -1728,6 +1958,23 @@ const CAVE_TYPES=[
    exclusives:['LavaRelic','Epinephrine'],
    commons:['CinderDust','EmberFleck','ScorchShard','ObsidianChip','MagmaGrain','VolcanoCore','IgneousCrystal','MoltenEssence','PyriteGem','HellstoneDust'],
    rareChance:1/75,  color:'#66584a',freq:0.07},
+  // ── Shadow world cave types (only used in shadow world) ──
+  {type:'ShadowVoidCave',       blocks:['ShadowMatter'],shadowOnly:true,
+   exclusives:['VoidSingularity','ShadowEternal2'],
+   commons:['VoidDust','NullFleck','AbyssalBit','VoidShard2','NullCrystal','VoidGrain','AbyssCore','NullEssence2','VoidFragment','AbyssalSoul'],
+   rareChance:1/30, color:'#330044',freq:0.30},
+  {type:'ShadowFlameCave',      blocks:['ShadowMatter'],shadowOnly:true,
+   exclusives:['NullFlameHeart','ShadowEternal2'],
+   commons:['GhostAsh','DarkEmber','NullScorch','AbyssalChar','VoidCinder','DarkMolten','GhostObsidian','NullInferno','AbyssalHelstone','DarkPhoenixAsh'],
+   rareChance:1/40, color:'#004400',freq:0.25},
+  {type:'ShadowCrystalCave',    blocks:['ShadowMatter'],shadowOnly:true,
+   exclusives:['AbyssIceSoul','ShadowEternal2'],
+   commons:['DarkFrost','NullIce','AbyssSliver','VoidCrystal2','DarkBlizzard','NullGlacier','AbyssPermafrost','VoidTundra','DarkHailstone','NullArcticSoul'],
+   rareChance:1/50, color:'#001a44',freq:0.25},
+  {type:'ShadowCorruptionCave', blocks:['ShadowMatter'],shadowOnly:true,
+   exclusives:['CorruptionOrb','ShadowEternal2'],
+   commons:['CorruptDust','BlightFleck','MaligShard','PlagueGrain','ViralCrystal','CorruptCore','BlightGem','MaligEssence','PlagueCore','ViralSoul'],
+   rareChance:1/60, color:'#330000',freq:0.20},
 ];
 
 // Cave-exclusive rarity → sound mapping
@@ -1996,22 +2243,22 @@ function getAbilityChance(a){
 
 // ═══════════ CHUNK SYSTEM ═══════════
 // Infinite world: blocks generated per-chunk, only near-player chunks are rendered.
-const H=100;
-const TOP_SOLID_Y=H-3; // highest solid block Y
+const H=115;
+const TOP_SOLID_Y=H-18; // highest solid block Y — leaves 17 blocks of air above for portals/altars
 const CHUNK_SIZE=16; // blocks per chunk edge (XZ only)
 const RENDER_DIST=2; // chunks around player rendered (5×5 = 25 chunks)
 // W and D are kept as aliases = CHUNK_SIZE*RENDER_DIST*2+CHUNK_SIZE for legacy compatibility
 const W=CHUNK_SIZE*(RENDER_DIST*2+1);
 const D=W;
 
-// Chunk data store: chunkKey->"cx:cz" → {blocks:Uint8Array, oreIdx:Uint8Array, oreRevealed:Uint8Array}
+// Chunk data store: chunkKey->"cx:cz" → {blocks:Uint8Array, oreIdx:Uint16Array, oreRevealed:Uint8Array}
 const _chunks=new Map();
 // Origin offset (so camera.position still roughly maps to block coords)
 let _chunkOriginCX=0, _chunkOriginCZ=0; // top-left chunk CX,CZ of the rendered window
 
 // Flat arrays for the current rendered window (W×H×D)
 let blocks=new Uint8Array(W*H*D);
-let oreIdx=new Uint8Array(W*H*D);
+let oreIdx=new Uint16Array(W*H*D);
 let oreRevealed=new Uint8Array(W*H*D);
 
 function _chunkKey(cx,cz){return cx+'x'+cz;}
@@ -2020,7 +2267,7 @@ function _getOrCreateChunk(cx,cz){
   const k=_chunkKey(cx,cz);
   if(_chunks.has(k))return _chunks.get(k);
   const sz=CHUNK_SIZE*H*CHUNK_SIZE;
-  const ch={blocks:new Uint8Array(sz),oreIdx:new Uint8Array(sz),oreRevealed:new Uint8Array(sz),cx,cz};
+  const ch={blocks:new Uint8Array(sz),oreIdx:new Uint16Array(sz),oreRevealed:new Uint8Array(sz),cx,cz};
   // Fill with solid rock up to TOP_SOLID_Y, bedrock at y=0 and y=1
   const bedrockIdx=ORES.findIndex(o=>o.isBarrier);
   for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
@@ -2112,7 +2359,37 @@ function _updateChunkWindow(){
     phantomBlock.x-=dCX*CHUNK_SIZE;
     phantomBlock.z-=dCZ*CHUNK_SIZE;
   }
+  // Shift portal fill zones with the window
+  if(_mainPortalFillZone){
+    _mainPortalFillZone.minX-=dCX*CHUNK_SIZE;
+    _mainPortalFillZone.maxX-=dCX*CHUNK_SIZE;
+    _mainPortalFillZone.z-=dCZ*CHUNK_SIZE;
+  }
+  if(_shadowPortalFillZone){
+    _shadowPortalFillZone.minX-=dCX*CHUNK_SIZE;
+    _shadowPortalFillZone.maxX-=dCX*CHUNK_SIZE;
+    _shadowPortalFillZone.z-=dCZ*CHUNK_SIZE;
+  }
+  // Shift blackhole position with chunk window
+  if(_blackhole){
+    _blackhole.x-=dCX*CHUNK_SIZE;
+    _blackhole.z-=dCZ*CHUNK_SIZE;
+  }
+  // Shift all active FX particles with the window
+  const shiftX=dCX*CHUNK_SIZE, shiftZ=dCZ*CHUNK_SIZE;
+  for(const p of FX_PARTICLES){
+    if(p.px!==undefined){p.px-=shiftX;p.pz-=shiftZ;}
+    if(p.wx!==undefined){p.wx-=shiftX;p.wz-=shiftZ;}
+    if(p.targetX!==undefined){p.targetX-=shiftX;p.targetZ-=shiftZ;}
+    if(p.zigzag){for(const pt of p.zigzag){pt[0]-=shiftX;pt[2]-=shiftZ;}}
+  }
   _rebuildWindowFromChunks();
+  // Rebuild structures that need to be in the new window origin
+  if(currentWorld==='shadow'){
+    if(typeof _ensureChunkGeneratedShadow==='function'){
+      for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+    }
+  }
   return true;
 }
 
@@ -2128,6 +2405,15 @@ let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilit
 let lastResetMined=0; // tracks when last mine reset fired
 let shopOpen=false,shopTab='all';
 let isFreeMouse=false;
+// ── Portal & world state ──
+let _mainPortalFillZone=null;
+let _shadowPortalFillZone=null;
+let _portalCooldown=0;
+let currentWorld='main';
+let _shadowAltarLuckBonus=0;
+let _shadowAltarSacrificed=new Set();
+let _shadowAltarConfirmPending=false;
+let shadowAltarOpen=false;
 // ── Gear state ──
 let ownedGears=[];
 let equippedGears=[]; // max 2
@@ -2137,8 +2423,9 @@ let selectedInv=null;
 let phantomBlock=null;
 let phantomMesh=null;
 let miningHeld=false;
-let _blocksSinceCave=0; // tracks mines since last cave gen
-let _blackhole=null; // {x,y,z,radius,age} — only 1 at a time
+let _blocksSinceCave=0;
+let _blackhole=null;
+let FX_PARTICLES=[]; // declared early — also redefined below at init
 let mineCd=0;
 const MINE_INTERVAL=0.07;
 let _invDirty=true;
@@ -3254,9 +3541,12 @@ function doMine(){
 
 // Generate a typed cave around a mined position
 function spawnCave(cx,cy,cz){
-  const total=CAVE_TYPES.reduce((a,t)=>a+t.freq,0);
-  let roll=Math.random()*total,chosen=CAVE_TYPES[0];
-  for(const t of CAVE_TYPES){roll-=t.freq;if(roll<=0){chosen=t;break;}}
+  // Filter cave types to current world
+  const validTypes=CAVE_TYPES.filter(t=>currentWorld==='shadow'?!!t.shadowOnly:!t.shadowOnly);
+  if(!validTypes.length)return;
+  const total=validTypes.reduce((a,t)=>a+t.freq,0);
+  let roll=Math.random()*total,chosen=validTypes[0];
+  for(const t of validTypes){roll-=t.freq;if(roll<=0){chosen=t;break;}}
 
   // ── Size roll: small/medium/large/huge ──
   const sizeRoll=Math.random();
@@ -3297,7 +3587,9 @@ function spawnCave(cx,cy,cz){
       if(ci2>=0)assignedIdx=ci2;
     }
     if(assignedIdx<0){
-      if(chosen.type==='NormalCave'){
+      if(currentWorld==='shadow'){
+        assignedIdx=rollOreShadow(h3(nx,ny,nz,(cy^cx^cz)&65535)/65535,depthFrac,combinedLuck);
+      }else if(chosen.type==='NormalCave'){
         assignedIdx=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
       }else{
         const baseOreIdx=ORES.findIndex(o=>o.name===chosen.blocks[0]);
@@ -4215,11 +4507,16 @@ function oreTagHTML(ore,fontSize){
 }
 
 function rebuildInvPanel(){
+  const isShadow=currentWorld==='shadow';
   const list=document.getElementById('inv-list');
   const entries=Object.entries(inventory).filter(([n,q])=>{
     if(q<=0)return false;
     const ore=ORES.find(o=>o.name===n);
-    return !ore||!ore.hidden; // hide barrier/bedrock ores
+    if(!ore||ore.hidden)return false;
+    // Show only ores matching current world
+    const isShadowOre=!!(ore.shadowWorld||isCaveExclusiveOre(ore)&&(ore.caveType||'').includes('Shadow'));
+    if(isShadow)return !!(ore.shadowWorld||isShadowOre);
+    return !ore.shadowWorld;
   }).sort((a,b)=>(ORES.find(o=>o.name===b[0])?.exact||0)-(ORES.find(o=>o.name===a[0])?.exact||0));
   list.innerHTML='';
   if(!entries.length){
@@ -4251,7 +4548,12 @@ function rebuildInvPanel(){
   // Index panel
   const idxList=document.getElementById('idx-list');
   idxList.innerHTML='';
-  const visibleOres=ORES_SORTED.filter(o=>!o.hidden);
+  const isShadow2=currentWorld==='shadow';
+  const visibleOres=ORES_SORTED.filter(o=>{
+    if(o.hidden)return false;
+    if(isShadow2)return !!(o.shadowWorld||isCaveExclusiveOre(o)&&(o.caveType||'').includes('Shadow'));
+    return !o.shadowWorld;
+  });
   const ownedCount=visibleOres.filter(o=>(inventory[o.name]||0)>0).length;
   document.getElementById('lbl-idx').textContent=(lang==='fr'?'INDEX ':'INDEX ')+`(${ownedCount}/${visibleOres.length})`;
   visibleOres.forEach(ore=>{
@@ -4302,7 +4604,7 @@ const fx2d=fxCanvas.getContext('2d');
 window.addEventListener('resize',()=>{fxCanvas.width=window.innerWidth;fxCanvas.height=window.innerHeight;});
 
 // Active particles / projectiles list
-const FX_PARTICLES=[];
+// FX_PARTICLES declared in state block above
 
 // ── Utility: mine a block in world coords (no mesh rebuild, batched) ──
 function abilityMine(wx,wy,wz){
@@ -5287,23 +5589,21 @@ function loop(t=0){
     fx2d.restore();
   }
 
-  // ── Portal particle effect — spawn green/purple wisps near portal blocks ──
+  // ── Portal particle effect — spawn wisps at the current fill zone ──
   if(Math.random()<0.15){
-    const portalName=currentWorld==='shadow'?'ShadowPortal':'MainPortal';
-    const pOreIdx=ORES.findIndex(o=>o.name===portalName);
-    if(pOreIdx>=0){
-      const cx2=Math.floor(W/2)+5,cz2=Math.floor(D/2);
-      const topY2=TOP_SOLID_Y+1;
+    const zone=currentWorld==='shadow'?_shadowPortalFillZone:_mainPortalFillZone;
+    if(zone){
+      const px2=zone.minX+0.5+(Math.random()-0.5)*1.5;
+      const py2=zone.minY+Math.random()*(zone.maxY-zone.minY);
+      const pz2=zone.z+0.5+(Math.random()-0.5)*0.3;
       FX_PARTICLES.push({
         type:'spark',
         color:currentWorld==='shadow'?'#00ff44':'#9900ff',
-        px:cx2+1.5+(Math.random()-0.5)*2,
-        py:topY2+1+Math.random()*3,
-        pz:cz2+(Math.random()-0.5)*0.4,
-        vx:(Math.random()-0.5)*0.5,
-        vy:1.5+Math.random()*2,
-        vz:(Math.random()-0.5)*0.3,
-        life:1.2+Math.random()*0.8,
+        px:px2, py:py2, pz:pz2,
+        vx:(Math.random()-0.5)*0.4,
+        vy:1.2+Math.random()*1.5,
+        vz:(Math.random()-0.5)*0.2,
+        life:1.0+Math.random()*0.6,
         maxLife:2,
         trailPts:[]
       });
