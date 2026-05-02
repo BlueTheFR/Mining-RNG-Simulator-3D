@@ -128,6 +128,33 @@ canvas.free{cursor:default}
 .smsg.eternal{animation:smsgAnim 5s forwards,eternalRainbow 0.6s infinite}
 .smsg.spaff{animation:smsgAnim 5s forwards,spaffPulse 0.4s infinite}
 
+/* ── Ore Altar UI ── */
+#altar-ov{position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:55;align-items:center;justify-content:center;pointer-events:all}
+#altar-ov.open{display:flex}
+#altar-box{background:#06060d;border:1px solid rgba(180,120,255,0.35);border-radius:8px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent;font-family:'Press Start 2P',monospace}
+#altar-box h2{font-size:10px;color:#df03fc;margin-bottom:4px;letter-spacing:3px}
+.altar-sub{font-size:9px;color:rgba(200,200,200,0.28);margin-bottom:14px;font-family:sans-serif}
+.altar-luck-bar{background:rgba(223,3,252,0.08);border:1px solid rgba(223,3,252,0.3);border-radius:4px;padding:8px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;font-size:8px;color:rgba(223,3,252,0.9)}
+.altar-luck-val{font-size:13px;color:#df03fc;margin-left:auto}
+#altar-ore-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:14px}
+.altar-ore-row{background:#080810;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:8px}
+.altar-ore-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.altar-ore-name{flex:1;color:rgba(220,220,220,0.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.altar-ore-qty{font-size:7px;margin-left:auto;flex-shrink:0}
+.altar-ore-qty.ok{color:#60dd60}.altar-ore-qty.no{color:#dd4444}
+.altar-sacrifice-btn{font-family:'Press Start 2P',monospace;font-size:7px;width:100%;padding:11px;border-radius:4px;border:1px solid rgba(223,3,252,0.5);background:rgba(223,3,252,0.08);color:#df03fc;cursor:pointer;transition:all .12s;margin-bottom:8px}
+.altar-sacrifice-btn:hover:not(:disabled){background:rgba(223,3,252,0.18);border-color:#df03fc}
+.altar-sacrifice-btn:disabled{opacity:.25;cursor:default}
+.altar-close-btn{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:4px;transition:all .12s}
+.altar-close-btn:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.25)}
+/* ── Shadow Altar UI (green-tinted version of altar) ── */
+#shadow-altar-ov{position:absolute;inset:0;background:rgba(0,2,0,0.97);display:none;z-index:55;align-items:center;justify-content:center;pointer-events:all}
+#shadow-altar-ov.open{display:flex}
+#shadow-altar-box{background:#010a01;border:1px solid rgba(0,255,68,0.3);border-radius:8px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(0,255,68,0.1) transparent;font-family:'Press Start 2P',monospace}
+#shadow-altar-box h2{font-size:10px;color:#00ff44;margin-bottom:4px;letter-spacing:3px}
+/* ── Portal ambient glow blocks ── */
+@keyframes portalPulse{0%,100%{opacity:.55;filter:brightness(1)}50%{opacity:1;filter:brightness(1.4)}}
+.portal-glow{animation:portalPulse 1.8s ease-in-out infinite}
 /* ── Ability panel ── */
 #ability-panel{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:5px;padding:10px 16px;pointer-events:none;text-align:left;display:none;min-width:320px;max-width:500px}
 #ability-title{font-size:8px;color:var(--hud-accent);margin-bottom:7px;letter-spacing:2px;text-align:center;opacity:.55}
@@ -341,6 +368,9 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
     <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
     <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
     <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">x1.00</span></div>
+    <div class="stat-row" id="altar-luck-row" style="display:none"><span style="color:#df03fc;font-size:7px">⬡ Autel</span><span class="stat-v" id="s-altar-luck" style="color:#df03fc;font-size:7px">+0.00</span></div>
+    <div class="stat-row" id="shadow-altar-luck-row" style="display:none"><span style="color:#00ff44;font-size:7px">⬡ Ombre</span><span class="stat-v" id="s-shadow-altar-luck" style="color:#00ff44;font-size:7px">+0.00</span></div>
+    <div class="stat-row" id="world-row" style="display:none"><span style="font-size:7px" id="world-lbl">🌑 Shadow</span></div>
     <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
       <span id="lbl-100m" style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
       <span class="stat-v" id="s-counter" style="color:#df03fc">0</span>
@@ -457,7 +487,49 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
 </div>
 </div>
 
+<!-- Shadow Altar Modal -->
+<div id="shadow-altar-ov">
+  <div id="shadow-altar-box">
+    <h2>⬡ AUTEL DES OMBRES</h2>
+    <div class="altar-sub" style="color:rgba(0,255,68,0.3)">
+      Sacrifiez tout votre stock de chaque minerai des ombres (une fois par type) pour +0.5 Luck.
+    </div>
+    <div class="altar-luck-bar" style="background:rgba(0,255,68,0.06);border-color:rgba(0,255,68,0.25);color:rgba(0,255,68,0.8)">
+      <span>Bonus de luck total (autel des ombres)</span>
+      <span class="altar-luck-val" id="shadow-altar-luck-val" style="color:#00ff44">+0.00</span>
+    </div>
+    <div id="shadow-altar-grid"></div>
+    <div id="shadow-altar-preview" style="display:none;background:rgba(0,255,68,0.04);border:1px solid rgba(0,255,68,0.2);border-radius:4px;padding:8px 12px;margin-bottom:8px;font-family:sans-serif;line-height:2"></div>
+    <button class="altar-sacrifice-btn" id="shadow-sacrifice-btn" onclick="doShadowSacrifice()" style="border-color:rgba(0,255,68,0.4);color:#00ff44;background:rgba(0,255,68,0.06)">⬡ SACRIFICE — APERÇU</button>
+    <div style="font-size:8px;color:rgba(0,255,68,0.2);margin-bottom:6px;font-family:sans-serif" id="shadow-missing-lbl"></div>
+    <div style="display:flex;gap:8px">
+      <button class="altar-close-btn" onclick="closeShadowAltar()" style="flex:1">FERMER [E]</button>
+      <button class="altar-close-btn" id="shadow-cancel-btn" onclick="cancelShadowConfirm()" style="display:none;flex:1;color:rgba(255,180,50,0.6);border-color:rgba(255,180,50,0.2)">✗ ANNULER</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Ore Altar Modal -->
+<div id="altar-ov">
+  <div id="altar-box">
+    <h2 id="altar-title">⬡ ORE ALTAR</h2>
+    <div class="altar-sub" id="altar-sub">Sacrifice all your stock of each ore type (once per type) for +0.5 Luck each.</div>
+    <div class="altar-luck-bar">
+      <span id="altar-luck-lbl">Total altar luck bonus</span>
+      <span class="altar-luck-val" id="altar-luck-val">+0.00</span>
+    </div>
+    <div id="altar-ore-grid"></div>
+    <div id="altar-preview" style="display:none;background:rgba(223,3,252,0.06);border:1px solid rgba(223,3,252,0.2);border-radius:4px;padding:8px 12px;margin-bottom:8px;font-family:sans-serif;line-height:2"></div>
+    <button class="altar-sacrifice-btn" id="altar-sacrifice-btn" onclick="doAltarSacrifice()">⬡ SACRIFICE — PREVIEW</button>
+    <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-bottom:6px;font-family:sans-serif" id="altar-missing-lbl"></div>
+    <div style="display:flex;gap:8px">
+      <button class="altar-close-btn" id="altar-close-lbl" onclick="closeAltar()" style="flex:1">CLOSE [E]</button>
+      <button class="altar-close-btn" id="altar-cancel-btn" onclick="cancelAltarConfirm()" style="display:none;flex:1;color:rgba(255,180,50,0.6);border-color:rgba(255,180,50,0.2)">✗ CANCEL</button>
+    </div>
+  </div>
+</div>
 <script>
 const MAX_ORE_EXACT=5000000000;
 // ═══════════ I18N ═══════════
@@ -472,7 +544,20 @@ const T={
       equip:'EQUIPER',unequip:'DESEQUIPER',craft:'CRAFTER',nomat:'Manque mat.',
       def:'Disponible par defaut',scanner:'SCANNER ACTIF',clickplay:'Clic pour jouer',
       freemouse:'Mode libre — Ctrl pour reverrouiller',shopopen:'Boutique ouverte',
-      aimat:'Visez un bloc',saved:'SAUVEGARDE',rare1:'en 1/'},
+      aimat:'Visez un bloc',saved:'SAUVEGARDE',rare1:'en 1/',
+      altarTitle:'⬡ AUTEL DES MINERAIS',
+      altarSub:'Sacrifiez tout votre stock de chaque type (une fois par type) pour +0.5 Luck chacun.',
+      altarLuckLbl:'Bonus de luck total (autel)',
+      altarClose:'FERMER [E]',altarCancel:'✗ ANNULER',
+      altarNothing:'⬡ RIEN À SACRIFIER',
+      altarPreviewBtn:(n)=>`⬡ SACRIFIER ${n} TYPE${n>1?'S':''} — VOIR APERÇU`,
+      altarConfirmBtn:(g)=>`✓ CONFIRMER LE SACRIFICE (+${g} Luck)`,
+      altarWarning:'⚠ Cette action est irréversible !',
+      altarMissing:'Manque encore : ',altarStillMissing:'Manque encore : ',
+      altarDoneCount:(n)=>`⬡ ${n} type${n>1?'s':''} de minerai déjà sacrifié${n>1?'s':''}`,
+      altarConsumed:(n,t)=>`depuis ${n} type${n>1?'s':''} (${t} objets consommés au total)`,
+      altarSuccess:(g,tot)=>`⬡ Sacrifice ! +${g} Luck (Total autel : +${tot})`,
+      altarTooltip:'⬡ Autel des Minerais — Cliquer pour ouvrir'},
   en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
       atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
       all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
@@ -482,7 +567,20 @@ const T={
       equip:'EQUIP',unequip:'UNEQUIP',craft:'CRAFT',nomat:'Missing mat.',
       def:'Available by default',scanner:'SCANNER ACTIVE',clickplay:'Click to play',
       freemouse:'Free mode — Ctrl to re-lock',shopopen:'Shop open',
-      aimat:'Aim at a block',saved:'SAVED',rare1:'1 in '}
+      aimat:'Aim at a block',saved:'SAVED',rare1:'1 in ',
+      altarTitle:'⬡ ORE ALTAR',
+      altarSub:'Sacrifice all your stock of each ore type (once per type) for +0.5 Luck each.',
+      altarLuckLbl:'Total altar luck bonus',
+      altarClose:'CLOSE [E]',altarCancel:'✗ CANCEL',
+      altarNothing:'⬡ NOTHING TO SACRIFICE',
+      altarPreviewBtn:(n)=>`⬡ SACRIFICE ${n} TYPE${n>1?'S':''} — PREVIEW`,
+      altarConfirmBtn:(g)=>`✓ CONFIRM SACRIFICE (+${g} Luck)`,
+      altarWarning:'⚠ This cannot be undone!',
+      altarMissing:'Missing: ',altarStillMissing:'Still missing: ',
+      altarDoneCount:(n)=>`⬡ ${n} ore type${n>1?'s':''} already sacrificed`,
+      altarConsumed:(n,t)=>`from ${n} ore type${n>1?'s':''} (${t} total items consumed)`,
+      altarSuccess:(g,tot)=>`⬡ Sacrifice! +${g} Luck (Altar total: +${tot})`,
+      altarTooltip:'⬡ Ore Altar — Click to open'}
 }[lang];
 
 let _useQwerty=lang!=='fr';
@@ -583,6 +681,14 @@ const RC={
   'Barrier':'#333333',
   'CaveExclusive-Mythical':'#df03fc',
   'CaveExclusive-Eternal':'#00fbff',
+  // Shadow world rarities
+  'ShadowCommon':'#8888bb',
+  'ShadowUncommon':'#9966dd',
+  'ShadowRare':'#aa44ff',
+  'ShadowEpic':'#7700cc',
+  'ShadowLegendary':'#5500aa',
+  'ShadowMythical':'#9900ff',
+  'ShadowAncient':'#6600cc',
 };
 
 // ═══════════ ORES ═══════════
@@ -736,6 +842,8 @@ const ORES=[
   {name:'ShadowMatter',  rarity:'ShadowCaveExclusive',          exact:1,           color:'#313831',spawnMsg:null,caveBase:true},
   {name:'AbyssSand',     rarity:'AbyssCaveExclusive',           exact:1,           color:'#0b0e61',spawnMsg:null,caveBase:true},
   {name:'LavaRock',      rarity:'LavaCaveExclusive',            exact:1,           color:'#66584a',spawnMsg:null,caveBase:true},
+  {name:'Ice',           rarity:'IceCaveExclusive',             exact:1,           color:'#88eeff',spawnMsg:null,caveBase:true},
+  
 
   // ── Normal Cave commons (value < 100K) ──
   {name:'FlintShard',    rarity:'CaveCommon',  exact:3,    color:'#aaaaaa',symbol:'FL',caveType:'NormalCave'},
@@ -833,6 +941,23 @@ const ORES=[
   {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!',                  spawnMsgFr:'EternalCrystal brille comme le cœur de la création !'},
   {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...',       spawnMsgFr:'De sa naissance, les étoiles se lèvent et illuminent l\'univers...'},
   {name:'Epinephrine',      rarity:'LavaCaveExclusive-Eternal',        exact:99999999,    color:'#ff4500',spawnMsg:'Your adrenaline surges violently as Epinephrine erupts!',epinephrine:true, spawnMsgFr:'Votre adrénaline monte violemment lorsqu\'Epinéphrine éclate !'},
+  // ── SHADOW WORLD ores (only spawn in shadow world) ──
+  {name:'ShadowDust',    rarity:'ShadowCommon',   exact:1,        color:'#444466',shadowWorld:true,symbol:'SD'},
+  {name:'DarkCrystal',   rarity:'ShadowUncommon', exact:30,       color:'#6644aa',shadowWorld:true,symbol:'DC'},
+  {name:'VoidEcho',      rarity:'ShadowRare',     exact:250,      color:'#9922ff',shadowWorld:true,symbol:'VE'},
+  {name:'DarkGem',      rarity:'ShadowEpic',     exact:4000,     color:'#220044',shadowWorld:true,symbol:'DG'},
+  {name:'NullShard',     rarity:'ShadowLegendary',exact:80000,    color:'#001133',shadowWorld:true,symbol:'NS'},
+  {name:'EclipseOre',    rarity:'ShadowMythical', exact:2000000,  color:'#000011',shadowWorld:true,symbol:'EO'},
+  {name:'VoidSoul',      rarity:'ShadowAncient',  exact:50000000, color:'#080010',shadowWorld:true,symbol:'VS',
+    spawnMsg:'A hollow cry echoes from beyond... VoidSoul awakens!',
+    spawnMsgFr:'Un cri creux résonne depuis l\'au-delà... VoidSoul s\'éveille !'},
+  // ── PORTALS ──
+  {name:'MainPortal',  rarity:'Barrier',exact:999999,color:'#330066',symbol:'◈',symbolColor:'#9900ff',isBarrier:true,isPortal:true,portalDest:'shadow',hidden:true},
+  {name:'ShadowPortal',rarity:'Barrier',exact:999999,color:'#003300',symbol:'◈',symbolColor:'#00ff44',isBarrier:true,isPortal:true,portalDest:'main',  hidden:true},
+  // ── SHADOW ALTAR ──
+  {name:'ShadowAltar',rarity:'Barrier',exact:999999,color:'#110022',symbol:'⬡',symbolColor:'#9900ff',isBarrier:true,isShadowAltarBlock:true,hidden:true},
+  // ── ORE ALTAR — special interactive structure block ──
+  {name:'OreAltar', rarity:'Barrier', exact:999999, color:'#6a00aa', symbol:'⬡', symbolColor:'#df03fc', isBarrier:true, isAltarBlock:true, hidden:true},
   // ── BEDROCK / BARRIER — must be LAST so index 0 stays Stone (default unrevealed ore) ──
   {name:'Bedrock', rarity:'Barrier', exact:100000, color:'#111111', symbol:'▓', symbolColor:'#333333', caveBase:false, isBarrier:true, hidden:true},
 ];
@@ -920,6 +1045,501 @@ EVENT_ORES.forEach(eo=>{
 });
 // Build sorted index AFTER event ores are included
 ORES_SORTED=[...ORES].sort((a,b)=>b.exact-a.exact);
+
+// ═══════════ ORE ALTAR ═══════════
+// Normal ores eligible for sacrifice: not cave, not event, not barrier, not hidden, not Stone
+function getAltarOres(){
+  return ORES.filter(o=>
+    !isCaveExclusiveOre(o) &&
+    !o.event &&
+    !o.isBarrier &&
+    !o.hidden &&
+    o.name!=='Stone'
+  );
+}
+
+let _altarWorldPos=null;
+let altarOpen=false;
+let _altarLuckBonus=0;           // total permanent luck gained from altar
+let _altarSacrificed=new Set();  // ore names already sacrificed (once per type, ever)
+let _altarConfirmPending=false;  // waiting for confirmation
+
+function _buildAltarStructure(){
+  const cx=Math.floor(W/2), cz=Math.floor(D/2)-6;
+  let topY=TOP_SOLID_Y;
+  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
+  const baseY=topY+1;
+  _altarWorldPos={x:cx,y:baseY,z:cz};
+  const altarOreIdx=ORES.findIndex(o=>o.isAltarBlock);
+  if(altarOreIdx<0)return;
+  const places=[
+    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},
+    {x:cx-1,y:baseY,z:cz},{x:cx+1,y:baseY,z:cz},
+    {x:cx,y:baseY,z:cz-1},{x:cx,y:baseY,z:cz+1},
+    {x:cx-1,y:baseY,z:cz-1},{x:cx+1,y:baseY,z:cz-1},
+    {x:cx-1,y:baseY,z:cz+1},{x:cx+1,y:baseY,z:cz+1},
+  ];
+  for(const p of places){
+    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
+    const bi=idx(p.x,p.y,p.z);
+    blocks[bi]=1; oreIdx[bi]=altarOreIdx; oreRevealed[bi]=1;
+    _syncBlockWrite(p.x,p.y,p.z);
+  }
+}
+
+function isAltarBlock(x,y,z){
+  const bi=idx(x,y,z);
+  if(!blocks[bi])return false;
+  const o=ORES[oreIdx[bi]||0];
+  return o&&o.isAltarBlock;
+}
+
+function openAltar(){
+  altarOpen=true;
+  _altarConfirmPending=false;
+  if(isLocked)document.exitPointerLock();
+  document.getElementById('altar-ov').classList.add('open');
+  renderAltarUI();
+}
+
+function closeAltar(){
+  altarOpen=false;
+  _altarConfirmPending=false;
+  document.getElementById('altar-ov').classList.remove('open');
+}
+window.closeAltar=closeAltar;
+
+// Returns list of {ore, qty} that are eligible (not yet sacrificed, have ≥1 in inv)
+function _getReadyToSacrifice(){
+  return getAltarOres()
+    .filter(o=>!_altarSacrificed.has(o.name))
+    .map(o=>({ore:o, qty:inventory[o.name]||0}))
+    .filter(e=>e.qty>0);
+}
+
+// Returns list of {ore} that are not yet sacrificed and we have none of
+function _getMissingEligible(){
+  return getAltarOres()
+    .filter(o=>!_altarSacrificed.has(o.name)&&!(inventory[o.name]>0));
+}
+
+function renderAltarUI(){
+  const allAltarOres=getAltarOres();
+  const grid=document.getElementById('altar-ore-grid');
+  grid.innerHTML='';
+
+  const ready=_getReadyToSacrifice();
+  const luckGain=ready.length*0.5;
+
+  // Build grid rows — skip already-sacrificed ones
+  for(const ore of allAltarOres){
+    const alreadyDone=_altarSacrificed.has(ore.name);
+    if(alreadyDone)continue; // hide sacrificed ores
+    const qty=inventory[ore.name]||0;
+    const hasAny=qty>0;
+    const rc=RC[ore.rarity]||ore.color||'#aaa';
+    const row=document.createElement('div');
+    row.className='altar-ore-row';
+    row.style.opacity=hasAny?'1':'0.45';
+    row.innerHTML=
+      `<div class="altar-ore-dot" style="background:${ore.color||'#888'}"></div>`+
+      `<span class="altar-ore-name" style="color:${rc}">${ore.name}</span>`+
+      `<span class="altar-ore-qty ${hasAny?'ok':'no'}">${qty} ${hasAny?'✓':'✗'}</span>`;
+    grid.appendChild(row);
+  }
+
+  // Sacrificed count summary
+  if(_altarSacrificed.size>0){
+    const done=document.createElement('div');
+    done.style.cssText='font-size:7px;color:rgba(223,3,252,0.4);margin-bottom:8px;font-family:sans-serif;padding:4px 6px;border-top:1px solid rgba(223,3,252,0.15)';
+    done.textContent=`⬡ ${_altarSacrificed.size} ore type${_altarSacrificed.size>1?'s':''} already sacrificed`;
+    grid.appendChild(done);
+  }
+
+  // Luck preview / confirm state
+  const btn=document.getElementById('altar-sacrifice-btn');
+  const previewEl=document.getElementById('altar-preview');
+  const missingLbl=document.getElementById('altar-missing-lbl');
+  const missing=_getMissingEligible();
+
+  document.getElementById('altar-luck-val').textContent='+'+_altarLuckBonus.toFixed(2);
+
+  if(ready.length===0){
+    // Nothing ready
+    btn.disabled=true;
+    btn.textContent=lang==='fr'?'⬡ RIEN À SACRIFIER':'⬡ NOTHING TO SACRIFICE';
+    btn.style.borderColor='rgba(255,255,255,0.15)';btn.style.color='rgba(255,255,255,0.3)';
+    previewEl.style.display='none';
+    missingLbl.textContent=missing.length>0?(lang==='fr'?'Il vous manque: ':'Missing: ')+missing.map(o=>o.name).slice(0,5).join(', ')+(missing.length>5?' +more':''):'';
+    _altarConfirmPending=false;
+    document.getElementById('altar-cancel-btn').style.display='none';
+    return;
+  }
+
+  previewEl.style.display='block';
+  const cancelBtn=document.getElementById('altar-cancel-btn');
+
+  if(!_altarConfirmPending){
+    cancelBtn.style.display='none';
+    // Show preview
+    btn.disabled=false;
+    btn.style.borderColor='rgba(223,3,252,0.5)';btn.style.color='#df03fc';
+    btn.textContent=lang==='fr'
+      ?`⬡ SACRIFIER ${ready.length} TYPE${ready.length>1?'S':''} — VOIR APERÇU`
+      :`⬡ SACRIFICE ${ready.length} TYPE${ready.length>1?'S':''} — PREVIEW`;
+    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
+    previewEl.innerHTML=
+      `<span style="color:#df03fc;font-size:9px">+${luckGain.toFixed(1)} Luck</span>`+
+      `<span style="color:rgba(255,255,255,0.4);font-size:7px;margin-left:8px">from ${ready.length} ore type${ready.length>1?'s':''} (${totalItems} total items consumed)</span>`;
+    missingLbl.textContent=missing.length>0?(lang==='fr'?'Manque encore: ':'Still missing: ')+missing.map(o=>o.name).slice(0,4).join(', ')+(missing.length>4?' +more':''):'';
+  }else{
+    cancelBtn.style.display='block';
+    // Confirm state
+    btn.disabled=false;
+    btn.style.borderColor='#ffdd44';btn.style.color='#ffdd44';
+    btn.textContent=lang==='fr'
+      ?`✓ CONFIRMER (+${luckGain.toFixed(1)} Luck)`
+      :`✓ CONFIRM SACRIFICE (+${luckGain.toFixed(1)} Luck)`;
+    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
+    previewEl.innerHTML=
+      `<span style="color:#ffdd44;font-size:8px">⚠ ${lang==='fr'?'Cette action est irréversible!':'This cannot be undone!'}</span><br>`+
+      ready.map(e=>`<span style="color:${RC[e.ore.rarity]||e.ore.color||'#aaa'};font-size:7px">${e.ore.name} ×${e.qty}</span>`).join(' &nbsp;');
+    missingLbl.textContent='';
+  }
+}
+
+function doAltarSacrifice(){
+  const ready=_getReadyToSacrifice();
+  if(ready.length===0)return;
+
+  if(!_altarConfirmPending){
+    // First click → show confirmation
+    _altarConfirmPending=true;
+    renderAltarUI();
+    return;
+  }
+
+  // Second click → confirmed, execute sacrifice
+  _altarConfirmPending=false;
+  let gained=0;
+  for(const {ore,qty} of ready){
+    // Consume ALL of this ore
+    delete inventory[ore.name];
+    // Mark as sacrificed forever (this ore type won't appear again)
+    _altarSacrificed.add(ore.name);
+    gained+=0.5;
+  }
+  _altarLuckBonus+=gained;
+  luck+=gained;
+  saveGame();
+  markInvDirty();
+  updateHUD();
+  renderAltarUI();
+  const msg=lang==='fr'
+    ?`⬡ Sacrifice! +${gained.toFixed(1)} Luck (Autel total: +${_altarLuckBonus.toFixed(1)})`
+    :`⬡ Sacrifice! +${gained.toFixed(1)} Luck (Altar total: +${_altarLuckBonus.toFixed(1)})`;
+  showSpawn(msg,'#df03fc',true,null);
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.type='sine';o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(440,ac.currentTime);o.frequency.exponentialRampToValueAtTime(880,ac.currentTime+0.15);o.frequency.exponentialRampToValueAtTime(1320,ac.currentTime+0.3);g.gain.setValueAtTime(0.3,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.8);o.start();o.stop(ac.currentTime+0.8);}catch(e){}
+}
+window.doAltarSacrifice=doAltarSacrifice;
+
+function cancelAltarConfirm(){
+  _altarConfirmPending=false;
+  renderAltarUI();
+}
+window.cancelAltarConfirm=cancelAltarConfirm;
+
+// ═══════════ SHADOW WORLD ═══════════
+let currentWorld='main'; // 'main' | 'shadow'
+let _shadowAltarLuckBonus=0;
+let _shadowAltarSacrificed=new Set();
+let _shadowAltarConfirmPending=false;
+let shadowAltarOpen=false;
+
+function isShadowOre(o){ return !!o.shadowWorld; }
+
+function getShadowAltarOres(){
+  return ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden);
+}
+
+function rollOreShadow(roll,depthFrac,lk){
+  const candidates=ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden);
+  let totalW=0;
+  const weights=candidates.map(o=>{const w=lk/o.exact;totalW+=w;return w;});
+  let r=roll*totalW;
+  for(let i=0;i<candidates.length;i++){r-=weights[i];if(r<=0)return ORES.indexOf(candidates[i]);}
+  return ORES.indexOf(candidates[candidates.length-1]);
+}
+
+// Portal SFX helper  
+function _playPortalSfx(isShadow){
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const g=ac.createGain();g.connect(ac.destination);
+    // Layered whoosh: low rumble + high sweep
+    for(let i=0;i<3;i++){
+      const o=ac.createOscillator();
+      o.connect(g);
+      o.type=i===0?'sawtooth':'sine';
+      const baseFreq=isShadow?[60,300,800][i]:[80,400,900][i];
+      const endFreq =isShadow?[30,150,200][i]:[200,600,1200][i];
+      o.frequency.setValueAtTime(baseFreq,ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(endFreq,ac.currentTime+1.2);
+      g.gain.setValueAtTime(isShadow?0.18:0.14,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+1.5);
+      o.start(ac.currentTime+i*0.05);
+      o.stop(ac.currentTime+1.6);
+    }
+  }catch(e){}
+}
+
+// Build the portal structure (3-tall portal frame like nether portal)
+function _buildPortalStructure(){
+  const portalIdx=ORES.findIndex(o=>o.name==='MainPortal');
+  if(portalIdx<0)return;
+  const cx=Math.floor(W/2)+5, cz=Math.floor(D/2); // 5 blocks east of spawn
+  let topY=TOP_SOLID_Y;
+  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
+  const baseY=topY+1;
+  // Portal frame: 4 wide, 5 tall arch shape
+  const portalBlocks=[
+    // Two pillars
+    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},{x:cx,y:baseY+3,z:cz},{x:cx,y:baseY+4,z:cz},
+    {x:cx+3,y:baseY,z:cz},{x:cx+3,y:baseY+1,z:cz},{x:cx+3,y:baseY+2,z:cz},{x:cx+3,y:baseY+3,z:cz},{x:cx+3,y:baseY+4,z:cz},
+    // Top arch
+    {x:cx+1,y:baseY+4,z:cz},{x:cx+2,y:baseY+4,z:cz},
+    // Portal fill (inner 2x3)
+    {x:cx+1,y:baseY,z:cz},{x:cx+2,y:baseY,z:cz},
+    {x:cx+1,y:baseY+1,z:cz},{x:cx+2,y:baseY+1,z:cz},
+    {x:cx+1,y:baseY+2,z:cz},{x:cx+2,y:baseY+2,z:cz},
+    {x:cx+1,y:baseY+3,z:cz},{x:cx+2,y:baseY+3,z:cz},
+  ];
+  for(const p of portalBlocks){
+    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
+    const bi=idx(p.x,p.y,p.z);
+    blocks[bi]=1;oreIdx[bi]=portalIdx;oreRevealed[bi]=1;
+    _syncBlockWrite(p.x,p.y,p.z);
+  }
+}
+
+function _buildShadowPortalStructure(){
+  const portalIdx=ORES.findIndex(o=>o.name==='ShadowPortal');
+  if(portalIdx<0)return;
+  const cx=Math.floor(W/2)+5, cz=Math.floor(D/2);
+  let topY=TOP_SOLID_Y;
+  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
+  const baseY=topY+1;
+  const portalBlocks=[
+    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},{x:cx,y:baseY+3,z:cz},{x:cx,y:baseY+4,z:cz},
+    {x:cx+3,y:baseY,z:cz},{x:cx+3,y:baseY+1,z:cz},{x:cx+3,y:baseY+2,z:cz},{x:cx+3,y:baseY+3,z:cz},{x:cx+3,y:baseY+4,z:cz},
+    {x:cx+1,y:baseY+4,z:cz},{x:cx+2,y:baseY+4,z:cz},
+    {x:cx+1,y:baseY,z:cz},{x:cx+2,y:baseY,z:cz},
+    {x:cx+1,y:baseY+1,z:cz},{x:cx+2,y:baseY+1,z:cz},
+    {x:cx+1,y:baseY+2,z:cz},{x:cx+2,y:baseY+2,z:cz},
+    {x:cx+1,y:baseY+3,z:cz},{x:cx+2,y:baseY+3,z:cz},
+  ];
+  for(const p of portalBlocks){
+    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
+    const bi=idx(p.x,p.y,p.z);
+    blocks[bi]=1;oreIdx[bi]=portalIdx;oreRevealed[bi]=1;
+    _syncBlockWrite(p.x,p.y,p.z);
+  }
+}
+
+function _buildShadowAltarStructure(){
+  const altarIdx=ORES.findIndex(o=>o.isShadowAltarBlock);
+  if(altarIdx<0)return;
+  const cx=Math.floor(W/2), cz=Math.floor(D/2)-6;
+  let topY=TOP_SOLID_Y;
+  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(cx,y,cz)]){topY=y;break;}}
+  const baseY=topY+1;
+  const places=[
+    {x:cx,y:baseY,z:cz},{x:cx,y:baseY+1,z:cz},{x:cx,y:baseY+2,z:cz},
+    {x:cx-1,y:baseY,z:cz},{x:cx+1,y:baseY,z:cz},
+    {x:cx,y:baseY,z:cz-1},{x:cx,y:baseY,z:cz+1},
+    {x:cx-1,y:baseY,z:cz-1},{x:cx+1,y:baseY,z:cz-1},
+    {x:cx-1,y:baseY,z:cz+1},{x:cx+1,y:baseY,z:cz+1},
+  ];
+  for(const p of places){
+    if(p.x<0||p.x>=W||p.y<0||p.y>=H||p.z<0||p.z>=D)continue;
+    const bi=idx(p.x,p.y,p.z);
+    blocks[bi]=1;oreIdx[bi]=altarIdx;oreRevealed[bi]=1;
+    _syncBlockWrite(p.x,p.y,p.z);
+  }
+}
+
+function travelToShadow(){
+  _playPortalSfx(true);
+  currentWorld='shadow';
+  // Apply shadow sky: pitch black with green fog
+  scene.background=new THREE.Color(0x000005);
+  scene.fog.color.set(0x001100);
+  scene.fog.near=8;scene.fog.far=25;
+  // Rebuild world with shadow ores
+  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  const side=RENDER_DIST*2+1;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+  _rebuildWindowFromChunks();
+  _buildShadowAltarStructure();
+  _buildShadowPortalStructure();
+  _buildWorldMeshReal();
+  spawnPlayer();
+  _scanCachedBestOre=null;_scanCachedTopOres=null;
+  showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':'🌑 Shadow World — welcome to the dark','#00ff44',true,null);
+}
+
+function travelToMain(){
+  _playPortalSfx(false);
+  currentWorld='main';
+  // Restore sky
+  scene.background=new THREE.Color(0x87ceeb);
+  scene.fog.color.set(0x87ceeb);
+  applyRenderDist(_renderDist);
+  // Rebuild main world
+  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  const side=RENDER_DIST*2+1;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGenerated(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+  _rebuildWindowFromChunks();
+  _buildAltarStructure();
+  _buildPortalStructure();
+  _buildWorldMeshReal();
+  spawnPlayer();
+  _scanCachedBestOre=null;_scanCachedTopOres=null;
+  showSpawn(lang==='fr'?'☀ Retour au monde principal !':'☀ Back to the main world!','#9900ff',true,null);
+}
+
+function _ensureChunkGeneratedShadow(cx,cz){
+  const key=cx+','+cz;
+  if(_chunks.has(key))return;
+  // Fill chunk with shadow rock and shadow ores
+  const bk=new Uint8Array(CHUNK_SIZE*H*CHUNK_SIZE);
+  const oi=new Uint16Array(CHUNK_SIZE*H*CHUNK_SIZE);
+  const rev=new Uint8Array(CHUNK_SIZE*H*CHUNK_SIZE);
+  const stoneIdx=0; // stone = index 0
+  const shadowLk=luck+_shadowAltarLuckBonus+_altarLuckBonus;
+  for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
+    const wx=cx*CHUNK_SIZE+lx,wz=cz*CHUNK_SIZE+lz;
+    const li=(lx*H+y)*CHUNK_SIZE+lz;
+    if(y<=1){bk[li]=1;oi[li]=ORES.findIndex(o=>o.isBarrier&&o.name==='Bedrock');continue;}
+    bk[li]=1;
+    const roll=h3(wx,y,wz,cx^cz^y)/65535;
+    const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
+    oi[li]=rollOreShadow(roll,depthFrac,shadowLk);
+  }
+  _chunks.set(key,{blocks:bk,oreIdx:oi,oreRevealed:rev});
+}
+
+// Shadow altar UI
+function openShadowAltar(){
+  shadowAltarOpen=true;
+  altarOpen=false;
+  _shadowAltarConfirmPending=false;
+  if(isLocked)document.exitPointerLock();
+  document.getElementById('shadow-altar-ov').classList.add('open');
+  renderShadowAltarUI();
+}
+function closeShadowAltar(){
+  shadowAltarOpen=false;
+  _shadowAltarConfirmPending=false;
+  document.getElementById('shadow-altar-ov').classList.remove('open');
+}
+window.closeShadowAltar=closeShadowAltar;
+
+function _getShadowReady(){
+  return getShadowAltarOres()
+    .filter(o=>!_shadowAltarSacrificed.has(o.name))
+    .map(o=>({ore:o,qty:inventory[o.name]||0}))
+    .filter(e=>e.qty>0);
+}
+function _getShadowMissing(){
+  return getShadowAltarOres()
+    .filter(o=>!_shadowAltarSacrificed.has(o.name)&&!(inventory[o.name]>0));
+}
+
+function renderShadowAltarUI(){
+  const grid=document.getElementById('shadow-altar-grid');
+  grid.innerHTML='';
+  const ready=_getShadowReady();
+  const luckGain=ready.length*0.5;
+
+  for(const ore of getShadowAltarOres()){
+    if(_shadowAltarSacrificed.has(ore.name))continue;
+    const qty=inventory[ore.name]||0;
+    const rc=RC[ore.rarity]||ore.color||'#aaa';
+    const row=document.createElement('div');
+    row.className='altar-ore-row';
+    row.style.opacity=qty>0?'1':'0.45';
+    row.innerHTML=`<div class="altar-ore-dot" style="background:${ore.color||'#888'}"></div>`+
+      `<span class="altar-ore-name" style="color:${rc}">${ore.name}</span>`+
+      `<span class="altar-ore-qty ${qty>0?'ok':'no'}">${qty} ${qty>0?'✓':'✗'}</span>`;
+    grid.appendChild(row);
+  }
+  if(_shadowAltarSacrificed.size>0){
+    const done=document.createElement('div');
+    done.style.cssText='font-size:7px;color:rgba(0,255,68,0.4);margin-bottom:8px;font-family:sans-serif;padding:4px 6px;border-top:1px solid rgba(0,255,68,0.15)';
+    done.textContent=`⬡ ${_shadowAltarSacrificed.size} type${_shadowAltarSacrificed.size>1?'s':''} déjà sacrifié${_shadowAltarSacrificed.size>1?'s':''}`;
+    grid.appendChild(done);
+  }
+  const btn=document.getElementById('shadow-sacrifice-btn');
+  const previewEl=document.getElementById('shadow-altar-preview');
+  const missingLbl=document.getElementById('shadow-missing-lbl');
+  const missing=_getShadowMissing();
+  document.getElementById('shadow-altar-luck-val').textContent='+'+_shadowAltarLuckBonus.toFixed(2);
+
+  if(ready.length===0){
+    btn.disabled=true;btn.textContent='⬡ '+(lang==='fr'?'RIEN À SACRIFIER':'NOTHING TO SACRIFICE');
+    btn.style.borderColor='rgba(255,255,255,0.15)';btn.style.color='rgba(255,255,255,0.3)';
+    previewEl.style.display='none';
+    missingLbl.textContent=missing.length>0?(lang==='fr'?'Manque: ':'Missing: ')+missing.map(o=>o.name).slice(0,5).join(', '):'';
+    document.getElementById('shadow-cancel-btn').style.display='none';
+    _shadowAltarConfirmPending=false;return;
+  }
+  previewEl.style.display='block';
+  const cancelBtn=document.getElementById('shadow-cancel-btn');
+
+  if(!_shadowAltarConfirmPending){
+    cancelBtn.style.display='none';
+    btn.disabled=false;btn.style.borderColor='rgba(0,255,68,0.5)';btn.style.color='#00ff44';
+    btn.textContent=lang==='fr'?`⬡ SACRIFIER ${ready.length} TYPE${ready.length>1?'S':''} — APERÇU`:`⬡ SACRIFICE ${ready.length} TYPE${ready.length>1?'S':''} — PREVIEW`;
+    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
+    previewEl.innerHTML=`<span style="color:#00ff44;font-size:9px">+${luckGain.toFixed(1)} Luck</span>`+
+      `<span style="color:rgba(255,255,255,0.4);font-size:7px;margin-left:8px">`+(lang==='fr'?`depuis ${ready.length} type${ready.length>1?'s':''} (${totalItems} objets consommés)`:
+      `from ${ready.length} type${ready.length>1?'s':''} (${totalItems} total items consumed)`)+`</span>`;
+    missingLbl.textContent=missing.length>0?(lang==='fr'?'Manque encore: ':'Still missing: ')+missing.map(o=>o.name).slice(0,4).join(', ')+(missing.length>4?' +more':''):'';
+  }else{
+    cancelBtn.style.display='block';
+    btn.disabled=false;btn.style.borderColor='#ffdd44';btn.style.color='#ffdd44';
+    btn.textContent=lang==='fr'?`✓ CONFIRMER (+${luckGain.toFixed(1)} Luck)`:`✓ CONFIRM SACRIFICE (+${luckGain.toFixed(1)} Luck)`;
+    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
+    previewEl.innerHTML=`<span style="color:#ffdd44;font-size:8px">⚠ ${lang==='fr'?'Irréversible !':'This cannot be undone!'}</span><br>`+
+      ready.map(e=>`<span style="color:${RC[e.ore.rarity]||e.ore.color||'#aaa'};font-size:7px">${e.ore.name} ×${e.qty}</span>`).join(' &nbsp;');
+    missingLbl.textContent='';
+  }
+}
+
+function doShadowSacrifice(){
+  const ready=_getShadowReady();
+  if(ready.length===0)return;
+  if(!_shadowAltarConfirmPending){_shadowAltarConfirmPending=true;renderShadowAltarUI();return;}
+  _shadowAltarConfirmPending=false;
+  let gained=0;
+  for(const{ore,qty}of ready){
+    delete inventory[ore.name];
+    _shadowAltarSacrificed.add(ore.name);
+    gained+=0.5;
+  }
+  _shadowAltarLuckBonus+=gained;
+  luck+=gained;
+  saveGame();markInvDirty();updateHUD();renderShadowAltarUI();
+  const msg=lang==='fr'?`⬡ Sacrifice de l'ombre ! +${gained.toFixed(1)} Luck (Total: +${_shadowAltarLuckBonus.toFixed(1)})`:
+    `⬡ Shadow Sacrifice! +${gained.toFixed(1)} Luck (Total: +${_shadowAltarLuckBonus.toFixed(1)})`;
+  showSpawn(msg,'#00ff44',true,null);
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.type='triangle';o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(220,ac.currentTime);o.frequency.exponentialRampToValueAtTime(440,ac.currentTime+0.2);o.frequency.exponentialRampToValueAtTime(880,ac.currentTime+0.4);g.gain.setValueAtTime(0.25,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+1.0);o.start();o.stop(ac.currentTime+1.0);}catch(e){}
+}
+window.doShadowSacrifice=doShadowSacrifice;
+
+function cancelShadowConfirm(){_shadowAltarConfirmPending=false;renderShadowAltarUI();}
+window.cancelShadowConfirm=cancelShadowConfirm;
 
 // ═══════════ GEAR DATA ═══════════
 const GEAR_DATA={
@@ -1560,7 +2180,10 @@ function saveGame(){
     localStorage.setItem('mrng3d_v6',JSON.stringify({
       inventory,mined,luck,currentPickId,useQwerty:_useQwerty,
       picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped})),
-      ownedGears,equippedGears
+      ownedGears,equippedGears,altarLuckBonus:_altarLuckBonus,
+      altarSacrificed:[..._altarSacrificed],
+      shadowAltarLuckBonus:_shadowAltarLuckBonus,
+      shadowAltarSacrificed:[..._shadowAltarSacrificed]
     }));
     const el=document.getElementById('save-ind');
     el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);
@@ -1575,6 +2198,10 @@ function loadGame(){
     if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
     if(d.ownedGears)ownedGears=d.ownedGears;
     if(d.equippedGears)equippedGears=d.equippedGears;
+    if(typeof d.altarLuckBonus==='number')_altarLuckBonus=d.altarLuckBonus;
+    if(Array.isArray(d.altarSacrificed))_altarSacrificed=new Set(d.altarSacrificed);
+    if(typeof d.shadowAltarLuckBonus==='number')_shadowAltarLuckBonus=d.shadowAltarLuckBonus;
+    if(Array.isArray(d.shadowAltarSacrificed))_shadowAltarSacrificed=new Set(d.shadowAltarSacrificed);
     return true;
   }catch(e){return false;}
 }
@@ -1585,7 +2212,9 @@ function getSaveData(){
   return JSON.stringify({
     inventory,mined,luck,currentPickId,useQwerty:_useQwerty,
     picks:PICKAXES.map(p=>({id:p.id,owned:p.owned,equipped:p.equipped})),
-    ownedGears,equippedGears
+    ownedGears,equippedGears,
+    altarLuckBonus:_altarLuckBonus,altarSacrificed:[..._altarSacrificed],
+    shadowAltarLuckBonus:_shadowAltarLuckBonus,shadowAltarSacrificed:[..._shadowAltarSacrificed]
   },null,2);
 }
 function applySaveData(d){
@@ -1597,6 +2226,10 @@ function applySaveData(d){
   if(d.picks)d.picks.forEach(s=>{const p=PICKAXES.find(x=>x.id===s.id);if(p){p.owned=s.owned;p.equipped=s.equipped;}});
   if(d.ownedGears)ownedGears=d.ownedGears;
   if(d.equippedGears)equippedGears=d.equippedGears;
+  if(typeof d.altarLuckBonus==='number')_altarLuckBonus=d.altarLuckBonus;
+  if(Array.isArray(d.altarSacrificed))_altarSacrificed=new Set(d.altarSacrificed);
+  if(typeof d.shadowAltarLuckBonus==='number')_shadowAltarLuckBonus=d.shadowAltarLuckBonus;
+  if(Array.isArray(d.shadowAltarSacrificed))_shadowAltarSacrificed=new Set(d.shadowAltarSacrificed);
 }
 window.openSaveMenu=function(){
   document.getElementById('savemod-ov').style.display='flex';
@@ -1694,6 +2327,7 @@ function rollOreNormal(roll, depthFrac, lk) {
     const o = ORES[i];
     if (isCaveExclusiveOre(o)) continue;
     if (o.isBarrier) continue; // bedrock never spawns via RNG
+    if (o.shadowWorld) continue; // shadow ores only spawn in shadow world
     if (o.event && o.event !== currentEvent) continue;
 
     // Poids de base pour tous les ores, sans influence de depthFrac
@@ -1755,6 +2389,9 @@ function genWorld(){
     if(rx<0||rx>=W||rz<0||rz>=D)continue;
     revealAdjacentSolid(rx,TOP_SOLID_Y+1,rz,ox*31+oz*17);
   }
+  // Build the Ore Altar and Portal near spawn
+  _buildAltarStructure();
+  _buildPortalStructure();
 }
 
 // ═══════════ MINE COUNTER (top bar, resets every 100000 mines) ═══════════
@@ -1786,6 +2423,15 @@ function resetMine(){
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.exponentialRampToValueAtTime(1760,ac.currentTime+0.1);g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);o.start();o.stop(ac.currentTime+0.6);}catch(e){}
   genWorld();
   // Chunk-aware: genWorld already rebuilt window from fresh chunks
+  // If in shadow world, overlay shadow ores on top
+  if(currentWorld==='shadow'){
+    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    const side2=RENDER_DIST*2+1;
+    for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+    _rebuildWindowFromChunks();
+    _buildShadowAltarStructure();
+    _buildShadowPortalStructure();
+  }
   _buildWorldMeshReal();
   spawnPlayer();
   _scanCachedBestOre=null;_scanCachedTopOres=null;
@@ -2211,6 +2857,15 @@ function goToSurface(){
   }
   _scanCachedBestOre=null;_scanCachedTopOres=null;
   spawnPlayer();
+  // Rebuild correct structures for current world
+  if(currentWorld==='shadow'){
+    _buildShadowAltarStructure();
+    _buildShadowPortalStructure();
+  }else{
+    _buildAltarStructure();
+    _buildPortalStructure();
+  }
+  markMeshDirty();
   showSpawn(lang==='fr'?'⬆ Téléporté à la surface !':'⬆ Teleported to surface!','#60dd60',false);
 }
 
@@ -2346,7 +3001,7 @@ function init3D(){
   spawnPlayer();
 
   const cv=document.getElementById('c');
-  cv.addEventListener('click',()=>{if(!isLocked&&!isFreeMouse&&!shopOpen)cv.requestPointerLock();});
+  cv.addEventListener('click',()=>{if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen)cv.requestPointerLock();});
   document.addEventListener('pointerlockchange',()=>{
     isLocked=document.pointerLockElement===cv;
     if(!isLocked&&!isFreeMouse){document.getElementById('free-ind').style.display='none';}
@@ -2359,7 +3014,7 @@ function init3D(){
   });
   document.addEventListener('mousedown',e=>{
     if(e.button===0){
-      if(!isLocked&&!isFreeMouse&&!shopOpen){cv.requestPointerLock();return;}
+      if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen){cv.requestPointerLock();return;}
       if(_autoMine){_cancelAutoMine();return;} // tap cancels auto-mine
       miningHeld=true;
     }
@@ -2373,6 +3028,16 @@ function init3D(){
   document.addEventListener('keydown',e=>{
     keys[e.code]=true;
     if(e.code==='Space')e.preventDefault();
+    if(altarOpen){
+      if(e.code===(_useQwerty?'KeyA':'KeyQ'))doAltarSacrifice();
+      if(e.code==='KeyE'||e.code==='Escape'){closeAltar();return;}
+      return;
+    }
+    if(shadowAltarOpen){
+      if(e.code===(_useQwerty?'KeyA':'KeyQ'))doShadowSacrifice();
+      if(e.code==='KeyE'||e.code==='Escape'){closeShadowAltar();return;}
+      return;
+    }
     if(e.code==='KeyE')shopOpen?closeShop():openShop();
     if(e.code==='Escape'&&shopOpen){closeShop();return;}
     if(e.code==='ControlLeft'||e.code==='ControlRight')toggleFree();
@@ -2453,10 +3118,10 @@ function hitPos(h,inside){
 // ═══════════ MINING ═══════════
 function tickMine(dt){
   // Determine if the mine action should fire this tick
-  const shouldMine=(_autoMine||miningHeld)&&!isFreeMouse&&!shopOpen;
+  const shouldMine=(_autoMine||miningHeld)&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen;
 
   // ── Hold-to-auto-mine progress ──
-  if(miningHeld&&!_autoMine&&!isFreeMouse&&!shopOpen){
+  if(miningHeld&&!_autoMine&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen){
     _holdMineTimer+=dt;
     _updateMineRing(_holdMineTimer/AUTO_MINE_HOLD);
     if(_holdMineTimer>=AUTO_MINE_HOLD){
@@ -2526,6 +3191,25 @@ function doMine(){
   }
   const oI=oreIdx[i]||0;
   const ore=ORES[oI];
+
+  // ── Altar block — open altar UI instead of mining ──
+  if(ore&&ore.isAltarBlock){
+    openAltar();
+    return;
+  }
+
+  // ── Shadow Altar block ──
+  if(ore&&ore.isShadowAltarBlock){
+    openShadowAltar();
+    return;
+  }
+
+  // ── Portal block — teleport ──
+  if(ore&&ore.isPortal){
+    if(ore.portalDest==='shadow')travelToShadow();
+    else travelToMain();
+    return;
+  }
 
   // ── Phantom block pickup — handle first and return early ──
   if(phantomBlock&&phantomBlock.x===x&&phantomBlock.y===y&&phantomBlock.z===z){
@@ -3408,6 +4092,30 @@ function updateHUD(){
     if(_gearEl)_gearEl.textContent=equippedGears.length?equippedGears.join(' + '):'—';
     el_luck.textContent='x'+totalLuck.toFixed(2);
     el_luck.style.color=totalLuck>=10?'#df03fc':totalLuck>=5?'#ffeb3b':totalLuck>=2?'#00ff88':'#dddddd';
+    // Altar luck bonus row
+    const altarRow=document.getElementById('altar-luck-row');
+    const altarEl=document.getElementById('s-altar-luck');
+    if(altarRow&&altarEl){
+      if(_altarLuckBonus>0){altarRow.style.display='flex';altarEl.textContent='+'+_altarLuckBonus.toFixed(2);}
+      else{altarRow.style.display='none';}
+    }
+    // Shadow altar luck bonus row
+    const sAltarRow=document.getElementById('shadow-altar-luck-row');
+    const sAltarEl=document.getElementById('s-shadow-altar-luck');
+    if(sAltarRow&&sAltarEl){
+      if(_shadowAltarLuckBonus>0){sAltarRow.style.display='flex';sAltarEl.textContent='+'+_shadowAltarLuckBonus.toFixed(2);}
+      else{sAltarRow.style.display='none';}
+    }
+    // World indicator
+    const worldRow=document.getElementById('world-row');
+    const worldLbl=document.getElementById('world-lbl');
+    if(worldRow&&worldLbl){
+      if(currentWorld==='shadow'){
+        worldRow.style.display='flex';
+        worldLbl.textContent='🌑 '+(lang==='fr'?'Monde des Ombres':'Shadow World');
+        worldLbl.style.color='#00ff44';
+      }else{worldRow.style.display='none';}
+    }
   }
   const bigCount=Object.entries(inventory).reduce((acc,[n,q])=>{const o=ORES.find(x=>x.name===n);return acc+(o&&o.exact>=100000000?q:0);},0);
   const el_sc=document.getElementById('s-counter');if(el_sc)el_sc.textContent=bigCount;
@@ -4514,7 +5222,7 @@ let lastT=0,lastHudTick=0;
 function loop(t=0){
   requestAnimationFrame(loop);
   const dt=Math.min((t-lastT)/1000,0.05);lastT=t;
-  if(!shopOpen&&!isFreeMouse)movePlayer(dt);
+  if(!shopOpen&&!altarOpen&&!shadowAltarOpen&&!isFreeMouse)movePlayer(dt);
   tickMine(dt);
 
   // Update chunk window (shift if player moved to new chunk)
@@ -4538,9 +5246,24 @@ function loop(t=0){
       else{selMesh.visible=false;}
       const ore=getCellOreForUI(x,y,z)||ORES[0];
       const rc=RC[ore.rarity]||ore.color||'#aaa';
-      document.getElementById('tooltip').innerHTML=
-        `<span style="color:${rc}">${ore.name}</span> | 1/${fmtExact(ore.exact)} | <span style="color:${rc}">${getRarityDisplay(ore.rarity)}</span>`+
-        (isP?' <span style="color:rgba(255,255,255,0.5)">[PHANTOM]</span>':'');
+      if(ore.isAltarBlock){
+        document.getElementById('tooltip').innerHTML=
+          `<span style="color:#df03fc">⬡ ${lang==='fr'?'Autel des Minerais':'Ore Altar'}</span> — <span style="color:rgba(200,200,200,0.6)">${lang==='fr'?'Clic pour ouvrir [A = sacrifier]':'Click to open [A = sacrifice]'}</span>`;
+      }else if(ore.isShadowAltarBlock){
+        document.getElementById('tooltip').innerHTML=
+          `<span style="color:#00ff44">⬡ ${lang==='fr'?'Autel des Ombres':'Shadow Altar'}</span> — <span style="color:rgba(180,255,180,0.5)">${lang==='fr'?'Clic pour ouvrir [A = sacrifier]':'Click to open [A = sacrifice]'}</span>`;
+      }else if(ore.isPortal){
+        const isShadowPortal=ore.portalDest==='shadow';
+        const col=isShadowPortal?'#9900ff':'#00ff44';
+        const label=isShadowPortal
+          ?(lang==='fr'?'◈ Portail des Ombres — Clic pour voyager':'◈ Shadow Portal — Click to travel')
+          :(lang==='fr'?'◈ Portail Principal — Clic pour rentrer':'◈ Main Portal — Click to return');
+        document.getElementById('tooltip').innerHTML=`<span style="color:${col}">${label}</span>`;
+      }else{
+        document.getElementById('tooltip').innerHTML=
+          `<span style="color:${rc}">${ore.name}</span> | 1/${fmtExact(ore.exact)} | <span style="color:${rc}">${getRarityDisplay(ore.rarity)}</span>`+
+          (isP?' <span style="color:rgba(255,255,255,0.5)">[PHANTOM]</span>':'');
+      }
     }
   }else{
     selMesh.visible=false;
@@ -4551,6 +5274,42 @@ function loop(t=0){
   else document.getElementById('scn-overlay').style.display='none';
   updateEpineAudio();
   tickFX(dt);
+
+  // ── Shadow world vignette overlay ──
+  if(currentWorld==='shadow'){
+    const pulse=0.04+0.02*Math.sin(Date.now()/800);
+    fx2d.save();
+    const grad=fx2d.createRadialGradient(fxCanvas.width/2,fxCanvas.height/2,fxCanvas.height*0.3,fxCanvas.width/2,fxCanvas.height/2,fxCanvas.height*0.8);
+    grad.addColorStop(0,'rgba(0,0,0,0)');
+    grad.addColorStop(1,`rgba(0,30,0,${pulse+0.12})`);
+    fx2d.fillStyle=grad;
+    fx2d.fillRect(0,0,fxCanvas.width,fxCanvas.height);
+    fx2d.restore();
+  }
+
+  // ── Portal particle effect — spawn green/purple wisps near portal blocks ──
+  if(Math.random()<0.15){
+    const portalName=currentWorld==='shadow'?'ShadowPortal':'MainPortal';
+    const pOreIdx=ORES.findIndex(o=>o.name===portalName);
+    if(pOreIdx>=0){
+      const cx2=Math.floor(W/2)+5,cz2=Math.floor(D/2);
+      const topY2=TOP_SOLID_Y+1;
+      FX_PARTICLES.push({
+        type:'spark',
+        color:currentWorld==='shadow'?'#00ff44':'#9900ff',
+        px:cx2+1.5+(Math.random()-0.5)*2,
+        py:topY2+1+Math.random()*3,
+        pz:cz2+(Math.random()-0.5)*0.4,
+        vx:(Math.random()-0.5)*0.5,
+        vy:1.5+Math.random()*2,
+        vz:(Math.random()-0.5)*0.3,
+        life:1.2+Math.random()*0.8,
+        maxLife:2,
+        trailPts:[]
+      });
+    }
+  }
+
   renderer.render(scene,camera);
   // (poison blocks are now visually green via oreIdx override — no overlay needed)
 }
