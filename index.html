@@ -393,7 +393,7 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
   </div>
   <div id="stats-panel" style="position:absolute;top:90px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;pointer-events:none;min-width:160px;max-width:200px;overflow:hidden">
     <h3 id="lbl-stats" style="font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55">STATS</h3>
-    <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined">0</span></div>
+    <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined" style="cursor:pointer;user-select:none" title="Cliquer pour compacter / Click to compact">0</span></div>
     <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
     <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">x1.00</span></div>
     <div class="stat-row" id="altar-luck-row" style="display:none"><span style="color:#df03fc;font-size:7px">⬡ Autel</span><span class="stat-v" id="s-altar-luck" style="color:#df03fc;font-size:7px">+0.00</span></div>
@@ -1511,7 +1511,7 @@ function doAltarSacrifice(){
     gained+=0.5;
   }
   _altarLuckBonus+=gained;
-  luck+=gained;
+  // Note: altar bonuses are additive flat bonuses via getTotalLuck(), not baked into base luck
   saveGame();
   markInvDirty();
   updateHUD();
@@ -1536,7 +1536,13 @@ window.cancelAltarConfirm=cancelAltarConfirm;
 function isShadowOre(o){ return !!o.shadowWorld; }
 
 function getShadowAltarOres(){
-  return ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden&&!isCaveExclusiveOre(o)&&o.name!=='ShadowStone');
+  return ORES.filter(o=>{
+    if(!o.shadowWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))return false;
+    if(o.name==='ShadowStone')return false;
+    // Only include event ores when their event is currently active
+    if(o.event&&o.event!==currentShadowEvent)return false;
+    return true;
+  });
 }
 
 function rollOreShadow(roll,depthFrac,lk){
@@ -1554,7 +1560,36 @@ function rollOreShadow(roll,depthFrac,lk){
   return ORES.indexOf(candidates[candidates.length-1]);
 }
 
-// Portal SFX helper  
+// ═══════════ ASYNC CHUNK GENERATION (no-lag portal/reset) ═══════════
+function _showTransition(icon,msg,color){
+  const ov=document.getElementById('world-transition-ov');
+  if(!ov)return;
+  document.getElementById('wt-icon').textContent=icon;
+  document.getElementById('wt-msg').textContent=msg;
+  document.getElementById('wt-msg').style.color=color||'#00ff44';
+  document.getElementById('wt-bar').style.background=color||'#00ff44';
+  document.getElementById('wt-bar').style.width='0%';
+  ov.style.display='flex';
+}
+function _hideTransition(){
+  const ov=document.getElementById('world-transition-ov');
+  if(ov){document.getElementById('wt-bar').style.width='100%';setTimeout(()=>ov.style.display='none',120);}
+}
+function _genChunksAsync(genFn,coords,onDone){
+  // Generate one chunk per animation frame to avoid main-thread freeze
+  let i=0;const total=coords.length;
+  function step(){
+    if(i>=total){onDone();return;}
+    genFn(coords[i][0],coords[i][1]);
+    i++;
+    const pct=Math.round(i/total*100);
+    const bar=document.getElementById('wt-bar');if(bar)bar.style.width=pct+'%';
+    // Process 2 chunks per frame if small RENDER_DIST, else 1
+    if(total<=9&&i<total){genFn(coords[i][0],coords[i][1]);i++;}
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}  
 function _playPortalSfx(isShadow){
   try{
     const ac=new(window.AudioContext||window.webkitAudioContext)();
@@ -1662,24 +1697,29 @@ function travelToShadow(){
   if(typeof _buildSkybox==='function')_buildSkybox(true);
   else{if(scene){scene.background=new THREE.Color(0x000005);scene.fog&&scene.fog.color.set(0x001100);}}
   if(scene&&scene.fog){scene.fog.near=8;scene.fog.far=25;}
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
-  const side=RENDER_DIST*2+1;
-  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
-  _rebuildWindowFromChunks();
-  _buildShadowAltarStructure();
-  _buildShadowPortalStructure();
-  _buildWorldMeshReal();
-  const pCX=Math.floor(W/2)+5, pCZ=Math.floor(D/2);
-  let pTopY=TOP_SOLID_Y;
-  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(pCX,y,pCZ)]){pTopY=y;break;}}
-  camera.position.set(pCX+1.5, pTopY+1+CAM_H, pCZ+1.5);
-  velY=0;onGround=true;
+  _showTransition('🌑',lang==='fr'?'MONDE DES OMBRES...':'SHADOW WORLD...','#00ff44');
   _portalCooldown=3.0;
-  _scanCachedBestOre=null;_scanCachedTopOres=null;
-  markInvDirty();updateHUD();
-  _startShadowEventSystem();
-  showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':
-    '🌑 Shadow World — welcome to the dark','#00ff44',true,null);
+  const side=RENDER_DIST*2+1;
+  const coords=[];
+  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
+  _genChunksAsync(_ensureChunkGeneratedShadow,coords,()=>{
+    _rebuildWindowFromChunks();
+    _buildShadowAltarStructure();
+    _buildShadowPortalStructure();
+    _buildWorldMeshReal();
+    const pCX=Math.floor(W/2)+5,pCZ=Math.floor(D/2);
+    let pTopY=TOP_SOLID_Y;
+    for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(pCX,y,pCZ)]){pTopY=y;break;}}
+    camera.position.set(pCX+1.5,pTopY+1+CAM_H,pCZ+1.5);
+    velY=0;onGround=true;
+    _scanCachedBestOre=null;_scanCachedTopOres=null;
+    markInvDirty();updateHUD();
+    _startShadowEventSystem();
+    _hideTransition();
+    showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':
+      '🌑 Shadow World — welcome to the dark','#00ff44',true,null);
+  });
 }
 
 function travelToMain(){
@@ -1688,24 +1728,29 @@ function travelToMain(){
   if(typeof _buildSkybox==='function')_buildSkybox(false);
   else{if(scene){scene.background=new THREE.Color(0x87ceeb);scene.fog&&scene.fog.color.set(0x87ceeb);}}
   applyRenderDist(_renderDist);
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
-  const side=RENDER_DIST*2+1;
-  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGenerated(_chunkOriginCX+ci,_chunkOriginCZ+ck);
-  _rebuildWindowFromChunks();
-  _buildAltarStructure();
-  _buildPortalStructure();
-  _buildWorldMeshReal();
-  const pCX=Math.floor(W/2)+5, pCZ=Math.floor(D/2);
-  let pTopY=TOP_SOLID_Y;
-  for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(pCX,y,pCZ)]){pTopY=y;break;}}
-  camera.position.set(pCX+1.5, pTopY+1+CAM_H, pCZ-1.5);
-  velY=0;onGround=true;
+  _showTransition('☀',lang==='fr'?'MONDE PRINCIPAL...':'MAIN WORLD...','#9900ff');
   _portalCooldown=3.0;
-  _scanCachedBestOre=null;_scanCachedTopOres=null;
-  markInvDirty();updateHUD();
-  _stopShadowEventSystem();
-  showSpawn(lang==='fr'?'☀ Retour au monde principal !':
-    '☀ Back to the main world!','#9900ff',true,null);
+  const side=RENDER_DIST*2+1;
+  const coords=[];
+  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
+  _genChunksAsync(_ensureChunkGenerated,coords,()=>{
+    _rebuildWindowFromChunks();
+    _buildAltarStructure();
+    _buildPortalStructure();
+    _buildWorldMeshReal();
+    const pCX=Math.floor(W/2)+5,pCZ=Math.floor(D/2);
+    let pTopY=TOP_SOLID_Y;
+    for(let y=TOP_SOLID_Y;y>=2;y--){if(blocks[idx(pCX,y,pCZ)]){pTopY=y;break;}}
+    camera.position.set(pCX+1.5,pTopY+1+CAM_H,pCZ-1.5);
+    velY=0;onGround=true;
+    _scanCachedBestOre=null;_scanCachedTopOres=null;
+    markInvDirty();updateHUD();
+    _stopShadowEventSystem();
+    _hideTransition();
+    showSpawn(lang==='fr'?'☀ Retour au monde principal !':
+      '☀ Back to the main world!','#9900ff',true,null);
+  });
 }
 
 function _ensureChunkGeneratedShadow(cx,cz){
@@ -1717,7 +1762,7 @@ function _ensureChunkGeneratedShadow(cx,cz){
   const rev=new Uint8Array(sz);
   const bedrockIdx2=ORES.findIndex(o=>o.isBarrier&&o.name==='Bedrock');
   const useBedrockIdx=bedrockIdx2>=0?bedrockIdx2:ORES.findIndex(o=>o.isBarrier);
-  const shadowLk=luck+(_shadowAltarLuckBonus||0)+(_altarLuckBonus||0);
+  const shadowLk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
   const ch={blocks:bk,oreIdx:oi,oreRevealed:rev,cx,cz};
   for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
     const wx=cx*CHUNK_SIZE+lx,wz=cz*CHUNK_SIZE+lz;
@@ -1838,7 +1883,7 @@ function doShadowSacrifice(){
     gained+=0.5;
   }
   _shadowAltarLuckBonus+=gained;
-  luck+=gained;
+  // Note: shadow altar bonuses are additive flat via getTotalLuck(), not baked into base luck
   saveGame();markInvDirty();updateHUD();renderShadowAltarUI();
   const msg=lang==='fr'?`⬡ Sacrifice de l'ombre ! +${gained.toFixed(1)} Luck (Total: +${_shadowAltarLuckBonus.toFixed(1)})`:
     `⬡ Shadow Sacrifice! +${gained.toFixed(1)} Luck (Total: +${_shadowAltarLuckBonus.toFixed(1)})`;
@@ -2526,6 +2571,13 @@ function _ensureChunkGenerated(cx,cz){
 // ═══════════ STATE ═══════════
 let inventory={};
 let mined=0,luck=1.0,currentPickId='t0';
+// getTotalLuck: base luck × pick multiplier × boost, + flat additive bonuses (gear + altars)
+function getTotalLuck(){
+  const pickLuck=typeof getPickLuck==='function'?getPickLuck():1;
+  const boostMult=(Date.now()<_luckBoostUntil)?_luckBoostMult:1;
+  const gearBonus=typeof getGearLuckBonus==='function'?getGearLuckBonus():0;
+  return luck*pickLuck*boostMult + gearBonus + (_altarLuckBonus||0) + (_shadowAltarLuckBonus||0);
+}
 let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilities
 let lastResetMined=0; // tracks when last mine reset fired
 let shopOpen=false,shopTab='all';
@@ -2765,7 +2817,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const j=idx(nx,ny,nz);
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const _lk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    const _lk=getTotalLuck();
     const oI=currentWorld==='shadow'
       ?rollOreShadow(h3(nx,ny,nz,(seedSalt^mined^j)&65535)/65535,depthFrac,_lk)
       :rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
@@ -2774,9 +2826,19 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     _syncBlockWrite(nx,ny,nz); // persist to chunk
     // Play sound + show message when a rare ore spawns into view
     const ore=ORES[oI];
-    if(ore&&ore.exact>=250000&&ore.spawnMsg){
+    if(ore&&ore.spawnMsg){
       if(CAVE_RARITY_SOUNDS[ore.rarity])playCaveSound(ore.rarity,ore);
-      else playSound(ore);
+      else if(ore.exact>=250000)playSound(ore);
+      else if(ore.shadowWorld){
+        // Shadow ores below Exotic threshold: play a short dark synth tone
+        try{const ac2=new(window.AudioContext||window.webkitAudioContext)();
+          const g2=ac2.createGain();g2.gain.setValueAtTime(0.15,ac2.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,ac2.currentTime+0.5);
+          g2.connect(ac2.destination);
+          const o2=ac2.createOscillator();o2.type='sine';o2.connect(g2);
+          o2.frequency.setValueAtTime(180,ac2.currentTime);
+          o2.frequency.exponentialRampToValueAtTime(80,ac2.currentTime+0.5);
+          o2.start();o2.stop(ac2.currentTime+0.5);}catch(_e2){}
+      }
       const col=RC[ore.rarity]||ore.color||'#ffffff';
       const _st=getOreTag(ore);const _sl=_st?' ['+_st.label+']':'';
       showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+_sl+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
@@ -2824,34 +2886,38 @@ function resetMine(){
   _blocksSinceCave=0;
   mineCountdownActive=false;
   if(mineCountdownInterval){clearInterval(mineCountdownInterval);mineCountdownInterval=null;}
-  // Kill ALL active FX particles and abilities
-  FX_PARTICLES.length=0;
-  _blackhole=null;
-
-  // Reset all ability counters so nothing fires stale
+  FX_PARTICLES.length=0;_blackhole=null;
   t1Counter=0;t2Counter=0;t3Counter=0;t3RingCount=0;t4Counter=0;t4LuckC=0;
   t5ShotC=0;t5GrowC=0;t5RainC=0;t6OrbC=0;t6ClrC=0;t6LuckC=0;
   t7BladeC=0;t7BurstC=0;t7BeamC=0;t8WispC=0;t8SlashC=0;t8VortexC=0;t8VortexAccum=0;
   t9SpamC=0;t9FireC=0;t9LimitPot=0;t10RefrC=0;t10ShotC=0;t10BurstC=0;t10ChaosBlocks=0;t11C=0;
-  // Play ding sound
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.exponentialRampToValueAtTime(1760,ac.currentTime+0.1);g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);o.start();o.stop(ac.currentTime+0.6);}catch(e){}
+
+  const icon=currentWorld==='shadow'?'🌑':'⛏';
+  const msg=lang==='fr'?'RÉGÉNÉRATION...':'RESET...';
+  const col=currentWorld==='shadow'?'#00ff44':'#60b060';
+  _showTransition(icon,msg,col);
   genWorld();
-  // Chunk-aware: genWorld already rebuilt window from fresh chunks
-  // If in shadow world, overlay shadow ores on top
+
   if(currentWorld==='shadow'){
-    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     const side2=RENDER_DIST*2+1;
-    for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
-    _rebuildWindowFromChunks();
-    _buildShadowAltarStructure();
-    _buildShadowPortalStructure();
+    const coords2=[];
+    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
+    _genChunksAsync(_ensureChunkGeneratedShadow,coords2,()=>{
+      _rebuildWindowFromChunks();
+      _buildShadowAltarStructure();_buildShadowPortalStructure();
+      _buildWorldMeshReal();spawnPlayer();
+      _scanCachedBestOre=null;_scanCachedTopOres=null;_meshDirty=false;
+      updateMineTopBar();_hideTransition();
+      showSpawn(lang==='fr'?'⛏ Mine régénérée ! Téléporté au spawn !':'⛏ Mine reset! Teleported to spawn!','#60b060',false);
+    });
+  }else{
+    _buildWorldMeshReal();spawnPlayer();
+    _scanCachedBestOre=null;_scanCachedTopOres=null;_meshDirty=false;
+    updateMineTopBar();_hideTransition();
+    showSpawn(lang==='fr'?'⛏ Mine régénérée ! Téléporté au spawn !':'⛏ Mine reset! Teleported to spawn!','#60b060',false);
   }
-  _buildWorldMeshReal();
-  spawnPlayer();
-  _scanCachedBestOre=null;_scanCachedTopOres=null;
-  _meshDirty=false;
-  updateMineTopBar();
-  showSpawn(lang==="fr"?"⛏ Mine régénérée ! Téléporté au spawn !":"⛏ Mine reset! Teleported to spawn!",'#60b060',false);
 }
 
 function getCurrentMineResetAt(){
@@ -2873,7 +2939,7 @@ function updateMineTopBar(){
   const pct=progress/cap;
   bar.style.width=(pct*100)+'%';
   bar.style.background=pct>=0.75?`rgba(255,${Math.round(255*(1-(pct-0.75)/0.25))},0,0.8)`:'rgba(255,255,255,0.3)';
-  if(txt)txt.textContent=progress+' / '+cap;
+  if(txt)txt.textContent=fmtQty(progress)+' / '+fmtQty(cap);
   if(cd){
     if(mineCountdownActive){cd.textContent='RESET: '+mineCountdownSec+'s';cd.style.display='inline';}
     else cd.style.display='none';
@@ -3419,10 +3485,17 @@ function init3D(){
   spawnPlayer();
 
   const cv=document.getElementById('c');
-  cv.addEventListener('click',()=>{if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen)cv.requestPointerLock();});
+  cv.addEventListener('click',()=>{
+    if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen&&document.visibilityState==='visible')
+      cv.requestPointerLock();
+  });
   document.addEventListener('pointerlockchange',()=>{
     isLocked=document.pointerLockElement===cv;
     if(!isLocked&&!isFreeMouse){document.getElementById('free-ind').style.display='none';}
+  });
+  // Stop trying to grab pointer lock when page is hidden/minimized
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden&&isLocked){document.exitPointerLock();}
   });
   document.addEventListener('mousemove',e=>{
     if(!isLocked)return;
@@ -3432,7 +3505,7 @@ function init3D(){
   });
   document.addEventListener('mousedown',e=>{
     if(e.button===0){
-      if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen){cv.requestPointerLock();return;}
+      if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen&&document.visibilityState==='visible'){cv.requestPointerLock();return;}
       if(_autoMine){_cancelAutoMine();return;} // tap cancels auto-mine
       miningHeld=true;
     }
@@ -3723,7 +3796,7 @@ function spawnCave(cx,cy,cz){
     if(!blocks[i])return; // already air
     blocks[i]=1;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
-    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    const combinedLuck=getTotalLuck();
     // Roll for a cave common ore first (50% chance on each wall block)
     let assignedIdx=-1;
     if(chosen.commons&&chosen.commons.length>0&&Math.random()<0.5){
@@ -3801,7 +3874,7 @@ function spawnCave(cx,cy,cz){
     const [nx,ny,nz]=key.split('_').map(Number);
     const ii=idx(nx,ny,nz);
     if(!blocks[ii])continue;
-    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    const combinedLuck=getTotalLuck();
     for(const exName of chosen.exclusives){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
@@ -4404,6 +4477,13 @@ window.shopEquip=function(id){equipPick(id);};
 window.shopUnequip=function(id){unequipPick(id);};
 function openShop(){shopOpen=true;if(isLocked)document.exitPointerLock();document.getElementById('shop-ov').classList.add('open');renderShop();}
 function closeShop(){window.closeShop();}
+// Mined counter compact toggle
+let _minedCompact=false;
+document.getElementById('s-mined').addEventListener('click',()=>{
+  _minedCompact=!_minedCompact;
+  document.getElementById('s-mined').textContent=_minedCompact?fmtQty(mined):mined;
+});
+
 document.getElementById('lbl-idx').addEventListener('click',()=>{
   window._showOtherWorldIdx=!window._showOtherWorldIdx;
   markInvDirty();rebuildInvPanel();
@@ -4524,12 +4604,11 @@ window.toggleGear=function(gid){
 // updateHUD: always updates stats numbers; only rebuilds inventory DOM when dirty or 1/min
 function updateHUD(){
   // ── Stats (always fast) ──
-  document.getElementById('s-mined').textContent=mined;
+  document.getElementById('s-mined').textContent=_minedCompact?fmtQty(mined):mined;
   const el_luck=document.getElementById('s-luck');
   if(el_luck){
-    const pickLuck=getPickLuck();
-    const now2=Date.now();const activeMult=now2<_luckBoostUntil?_luckBoostMult:1;
-    const totalLuck=luck*pickLuck*activeMult+getGearLuckBonus();
+    const now2=Date.now();
+    const totalLuck=getTotalLuck();
     // Update gear HUD
     const _gearEl=document.getElementById('s-gear');
     if(_gearEl)_gearEl.textContent=equippedGears.length?equippedGears.join(' + '):'—';
@@ -4574,7 +4653,7 @@ function updateHUD(){
 }
 
 function updateHudStatsOnly(){
-  document.getElementById('s-mined').textContent=mined;
+  document.getElementById('s-mined').textContent=_minedCompact?fmtQty(mined):mined;
   updateMineTopBar();
 }
 
@@ -4784,7 +4863,7 @@ function abilityMine(wx,wy,wz){
   if(!oreRevealed[i]||(ORES[oreIdx[i]||0]&&ORES[oreIdx[i]||0].caveBase)){
     const depthDen=Math.max(1,TOP_SOLID_Y);
     const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
-    const combinedLuck=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+    const combinedLuck=getTotalLuck();
     // Use Math.random() so each ability mine gets a fresh roll (not deterministic by position)
     oreIdx[i]=rollOreNormal(Math.random(),depthFrac,combinedLuck);
     oreRevealed[i]=1;
