@@ -232,130 +232,162 @@ canvas.free{cursor:default}
 .shop-close{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:5px;transition:all .12s}
 .shop-close:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.25)}
 
-/* ── Mobile Controls ── */
+/* ══════════════════════════════════════════
+   MOBILE CONTROLS — clean redesign
+   ══════════════════════════════════════════ */
 #mobile-controls{
-  display:none;  /* shown via JS on touch devices */
-  position:absolute;inset:0;pointer-events:none;z-index:40
+  display:none;
+  position:absolute;inset:0;pointer-events:none;z-index:40;
 }
 #mobile-controls.mob-active{display:block}
-/* Joystick zone — bottom left */
+
+/* ── Look zone (full screen, behind everything) ── */
+#look-zone{
+  position:absolute;inset:0;
+  pointer-events:all;touch-action:none;
+}
+
+/* ── Joystick — bottom-left ── */
 #joystick-zone{
-  position:absolute;bottom:20px;left:20px;
-  width:140px;height:140px;
-  pointer-events:all;
-  touch-action:none;
+  position:absolute;
+  bottom:calc(24px + env(safe-area-inset-bottom));
+  left:24px;
+  width:130px;height:130px;
+  pointer-events:all;touch-action:none;
 }
 #joystick-base{
-  position:absolute;inset:0;
-  border-radius:50%;
-  background:rgba(255,255,255,0.08);
-  border:2px solid rgba(255,255,255,0.25);
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(255,255,255,0.22);
+  box-shadow:0 0 18px rgba(0,0,0,0.4);
 }
 #joystick-knob{
   position:absolute;
-  width:52px;height:52px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.28);
-  border:2px solid rgba(255,255,255,0.6);
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,0.26);
+  border:2px solid rgba(255,255,255,0.55);
   top:50%;left:50%;
   transform:translate(-50%,-50%);
+  box-shadow:0 2px 8px rgba(0,0,0,0.5);
 }
-/* Mine button — bottom right */
+
+/* ── Mine button — bottom-right ── */
 #mine-btn{
-  position:absolute;bottom:30px;right:20px;
-  width:90px;height:90px;
-  border-radius:50%;
-  background:rgba(200,80,40,0.35);
-  border:3px solid rgba(255,120,60,0.7);
-  color:rgba(255,200,160,0.95);
-  font-family:'Press Start 2P',monospace;
-  font-size:9px;
-  display:flex;align-items:center;justify-content:center;text-align:center;
-  pointer-events:all;
-  touch-action:none;
-  cursor:pointer;
-  user-select:none;
-  line-height:1.6;
-  -webkit-tap-highlight-color:transparent;
-  flex-direction:column;
-  gap:2px;
+  position:absolute;
+  bottom:calc(28px + env(safe-area-inset-bottom));
+  right:24px;
+  width:88px;height:88px;border-radius:50%;
+  background:rgba(200,80,40,0.4);
+  border:3px solid rgba(255,130,60,0.75);
+  color:rgba(255,210,170,0.95);
+  font-family:'Press Start 2P',monospace;font-size:9px;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:2px;text-align:center;
+  pointer-events:all;touch-action:none;cursor:pointer;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 4px 16px rgba(0,0,0,0.5);
 }
-#mine-btn.active{background:rgba(255,80,20,0.6);border-color:rgba(255,180,80,1);}
-#gif-anim-pool{position:fixed;left:-1000px;top:0;width:800px;display:flex;flex-wrap:wrap;pointer-events:none;overflow:visible;}
+#mine-btn.active{background:rgba(255,80,20,0.65);border-color:rgba(255,190,80,1);}
 #mine-btn.auto-active{background:rgba(255,140,0,0.7);border-color:#ffcc00;box-shadow:0 0 14px #ffcc0088;animation:autoMinePulse 0.6s infinite alternate;}
 @keyframes autoMinePulse{0%{box-shadow:0 0 8px #ffcc0066}100%{box-shadow:0 0 22px #ffcc00cc}}
-/* SVG ring overlay on mine button for hold-progress */
-#mine-btn-ring{position:absolute;bottom:25px;right:15px;width:100px;height:100px;pointer-events:none;z-index:41;display:none;}
+
+/* ── Mine ring SVG ── */
+#mine-btn-ring{
+  position:absolute;
+  bottom:calc(22px + env(safe-area-inset-bottom));
+  right:19px;width:100px;height:100px;
+  pointer-events:none;z-index:41;display:none;
+}
 #mine-btn-ring circle{fill:none;stroke:#ffcc00;stroke-width:4;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transform-origin:50px 50px;transform:rotate(-90deg);transition:stroke-dashoffset 0.05s linear;filter:drop-shadow(0 0 4px #ffcc00);}
 #mine-btn-ring.show{display:block;}
-/* Jump button — above mine button */
+
+/* ── Jump button — left of mine, above ── */
 #jump-btn{
-  position:absolute;bottom:130px;right:30px;
-  width:60px;height:60px;
-  border-radius:50%;
-  background:rgba(60,140,200,0.3);
-  border:2px solid rgba(100,180,255,0.6);
+  position:absolute;
+  bottom:calc(130px + env(safe-area-inset-bottom));
+  right:30px;
+  width:58px;height:58px;border-radius:50%;
+  background:rgba(60,140,200,0.32);
+  border:2px solid rgba(100,180,255,0.65);
   color:rgba(180,220,255,0.9);
-  font-family:'Press Start 2P',monospace;
-  font-size:7px;
+  font-family:'Press Start 2P',monospace;font-size:7px;
   display:flex;align-items:center;justify-content:center;text-align:center;
-  pointer-events:all;
-  touch-action:none;
-  cursor:pointer;
-  user-select:none;
-  -webkit-tap-highlight-color:transparent;
+  pointer-events:all;touch-action:none;cursor:pointer;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 2px 10px rgba(0,0,0,0.4);
 }
 #jump-btn.active{background:rgba(80,160,255,0.5);}
-/* Shop button — top right of mobile controls */
+
+/* ── Mobile action row — SHOP + SETTINGS ── */
 #mob-shop-btn{
-  position:absolute;top:64px;right:10px;
+  position:absolute;
+  top:calc(28px + env(safe-area-inset-top));
+  right:10px;
   font-family:'Press Start 2P',monospace;font-size:7px;
-  background:rgba(4,4,8,0.92);
-  border:1px solid rgba(255,255,255,0.25);
-  border-radius:3px;color:rgba(255,255,255,0.8);
-  padding:10px 14px;
-  pointer-events:all;
-  touch-action:manipulation;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  z-index:41;
-  display:none; /* shown when mob-active */
+  background:rgba(4,4,8,0.9);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:4px;color:rgba(255,255,255,0.85);
+  padding:9px 14px;
+  pointer-events:all;touch-action:manipulation;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;z-index:41;
+  display:none;box-shadow:0 2px 10px rgba(0,0,0,0.5);
 }
 #mobile-controls.mob-active #mob-shop-btn{display:block}
-/* Look area */
-#look-zone{
+
+#mob-settings-btn{
   position:absolute;
-  inset:0;
-  pointer-events:all;
-  touch-action:none;
+  bottom:calc(175px + env(safe-area-inset-bottom));
+  left:24px;
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  background:rgba(4,4,8,0.88);border:1px solid rgba(255,255,255,0.18);
+  border-radius:4px;color:rgba(255,255,255,0.72);
+  padding:8px 11px;pointer-events:all;touch-action:manipulation;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  z-index:41;display:none;
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
 }
-/* When mobile active: hide desktop-only UI */
+#mobile-controls.mob-active #mob-settings-btn{display:block}
+
+/* ── When mobile is active: rearrange HUD ── */
 body.mob-active #hint{display:none!important}
 body.mob-active #xhair{display:none}
 body.mob-active #save-export-btn{display:none}
 body.mob-active #ability-panel{display:none!important}
-body.mob-active #left-col{max-height:40vh;top:64px}
-body.mob-active #inv-panel{max-height:130px}
-body.mob-active #idx-panel{max-height:110px}
-body.mob-active #stats-panel{display:block;right:4px;top:64px;min-width:120px}
-body.mob-active #stats-panel .stat-row{font-size:6px;gap:6px}
-body.mob-active #shop-btn{display:none}
-body.mob-active #surface-btn{top:64px;right:140px}
-/* Mobile settings button — bottom left above joystick */
-#mob-settings-btn{
-  position:absolute;bottom:175px;left:20px;
-  font-family:'Press Start 2P',monospace;font-size:6px;
-  background:rgba(4,4,8,0.88);border:1px solid rgba(255,255,255,0.2);
-  border-radius:3px;color:rgba(255,255,255,0.7);
-  padding:8px 10px;pointer-events:all;touch-action:manipulation;
-  cursor:pointer;-webkit-tap-highlight-color:transparent;
-  z-index:41;display:none;
+body.mob-active #left-col{
+  top:calc(58px + env(safe-area-inset-top));
+  max-height:42vh;
+  overflow:hidden;
 }
-#mobile-controls.mob-active #mob-settings-btn{display:block}
-/* Mobile shop: always reachable close button */
+body.mob-active #inv-panel{max-height:22vh;overflow-y:auto}
+body.mob-active #idx-panel{max-height:18vh;overflow-y:auto}
+body.mob-active #stats-panel{
+  display:block;
+  right:4px;
+  top:calc(58px + env(safe-area-inset-top));
+  min-width:118px;max-width:145px;
+  padding:7px 9px;
+}
+body.mob-active #stats-panel .stat-row{font-size:6px;gap:4px}
+body.mob-active #stats-panel h3{font-size:6px;margin-bottom:5px}
+body.mob-active #shop-btn{display:none}
+body.mob-active #surface-btn{display:none}
+#mobile-controls.mob-active #mob-surface-btn{display:block!important}
+/* Mine top bar on mobile */
+body.mob-active #mine-top{
+  padding-top:env(safe-area-inset-top);
+  height:calc(22px + env(safe-area-inset-top));
+}
+/* Mobile shop overlay */
 body.mob-active #shop-box{padding:12px;width:min(780px,96vw);max-height:85vh}
 body.mob-active #shop-box .shop-close{position:sticky;bottom:0;display:block;width:100%;background:var(--shop-bg);border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.8);font-size:8px;padding:12px;z-index:2}
 body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
+/* Altars on mobile: full screen */
+body.mob-active #altar-ov,
+body.mob-active #shadow-altar-ov{padding:0}
+body.mob-active #altar-box,
+body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;margin:0}
+/* gif pool */
+#gif-anim-pool{position:fixed;left:-1000px;top:0;width:800px;display:flex;flex-wrap:wrap;pointer-events:none;overflow:visible;}
 </style>
 </head>
 <body>
@@ -446,15 +478,18 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
     <div id="joystick-base"></div>
     <div id="joystick-knob"></div>
   </div>
-  <!-- Mine button -->
+  <!-- Mine button bottom-right -->
   <div id="mine-btn">⛏<br>MINE</div>
   <!-- Auto-mine hold progress ring (SVG overlay) -->
   <svg id="mine-btn-ring" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45"/></svg>
-  <!-- Jump button -->
+  <!-- Jump button above mine -->
   <div id="jump-btn">↑<br>JUMP</div>
-  <!-- Mobile shop -->
-  <div id="mob-shop-btn">SHOP</div>
+  <!-- Mobile shop top-right -->
+  <div id="mob-shop-btn">🏪 SHOP</div>
+  <!-- Settings bottom-left above joystick -->
   <div id="mob-settings-btn" onclick="document.getElementById('settings-panel')&&(document.getElementById('settings-panel').style.display=document.getElementById('settings-panel').style.display==='none'?'block':'none')">⚙</div>
+  <!-- Surface button bottom-center -->
+  <div id="mob-surface-btn" onclick="goToSurface()" style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.88);border:1px solid rgba(100,200,100,0.35);border-radius:4px;color:rgba(150,220,150,0.9);padding:7px 12px;pointer-events:all;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:41;display:none;white-space:nowrap;">⬆ SURFACE</div>
 </div>
 <button id="surface-btn" onclick="goToSurface()" title="Teleport to surface spawn">⬆ SURFACE</button>
 <button onclick="toggleSettingsPanel()" style="position:absolute;bottom:14px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:#ddccaa;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;">⚙ SETTINGS</button>
@@ -521,7 +556,7 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
   <div id="shadow-altar-box">
     <h2>⬡ AUTEL DES OMBRES</h2>
     <div class="altar-sub" style="color:rgba(0,255,68,0.3)">
-      Sacrifiez tout votre stock de chaque minerai des ombres (une fois par type) pour +0.5 Luck.
+      Sacrifiez 1 de chaque type de minerai des ombres (une fois par type) pour +0.5 Luck.
     </div>
     <div class="altar-luck-bar" style="background:rgba(0,255,68,0.06);border-color:rgba(0,255,68,0.25);color:rgba(0,255,68,0.8)">
       <span>Bonus de luck total (autel des ombres)</span>
@@ -1698,7 +1733,7 @@ function travelToShadow(){
   else{if(scene){scene.background=new THREE.Color(0x000005);scene.fog&&scene.fog.color.set(0x001100);}}
   if(scene&&scene.fog){scene.fog.near=8;scene.fog.far=25;}
   _showTransition('🌑',lang==='fr'?'MONDE DES OMBRES...':'SHADOW WORLD...','#00ff44');
-  _portalCooldown=3.0;
+  _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;
   const coords=[];
   _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
@@ -1729,7 +1764,7 @@ function travelToMain(){
   else{if(scene){scene.background=new THREE.Color(0x87ceeb);scene.fog&&scene.fog.color.set(0x87ceeb);}}
   applyRenderDist(_renderDist);
   _showTransition('☀',lang==='fr'?'MONDE PRINCIPAL...':'MAIN WORLD...','#9900ff');
-  _portalCooldown=3.0;
+  _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;
   const coords=[];
   _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
@@ -3577,7 +3612,7 @@ function movePlayer(dt){
   const r=moveAABB(p.x,p.y,p.z,dx,velY*dt,dz);
   p.set(r.x,r.y,r.z);
   if(p.y < -5){ spawnPlayer(); return; }
-  // Portal walk-through detection — player enters fill zone triggers travel
+  // Portal walk-through detection — rate limited to once per 5 seconds to avoid lag
   if(_portalCooldown<=0){
     const zone=currentWorld==='shadow'?_shadowPortalFillZone:_mainPortalFillZone;
     if(zone){
@@ -3586,6 +3621,7 @@ function movePlayer(dt){
       const inY=py2>=zone.minY&&py2<zone.maxY;
       const inZ=(pz2===zone.z||pz2===zone.z-1||pz2===zone.z+1);
       if(inX&&inY&&inZ){
+        _portalCooldown=5.0; // 5s cooldown — prevents repeated TP attempts
         if(currentWorld==='shadow')travelToMain();
         else travelToShadow();
         return;
