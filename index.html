@@ -149,10 +149,11 @@ canvas.free{cursor:default}
 .altar-close-btn{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:4px;transition:all .12s}
 .altar-close-btn:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.25)}
 /* ── Shadow Altar UI (green-tinted version of altar) ── */
-#shadow-altar-ov{position:absolute;inset:0;background:rgba(0,2,0,0.97);display:none;z-index:55;align-items:center;justify-content:center;pointer-events:all}
+#shadow-altar-ov{position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:55;align-items:center;justify-content:center;pointer-events:all}
 #shadow-altar-ov.open{display:flex}
-#shadow-altar-box{background:#010a01;border:1px solid rgba(0,255,68,0.3);border-radius:8px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(0,255,68,0.1) transparent;font-family:'Press Start 2P',monospace}
+#shadow-altar-box{background:#06060d;border:1px solid rgba(0,255,68,0.35);border-radius:8px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(0,255,68,0.08) transparent;font-family:'Press Start 2P',monospace}
 #shadow-altar-box h2{font-size:10px;color:#00ff44;margin-bottom:4px;letter-spacing:3px}
+#shadow-altar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:14px}
 /* ── Portal ambient glow blocks ── */
 @keyframes portalPulse{0%,100%{opacity:.55;filter:brightness(1)}50%{opacity:1;filter:brightness(1.4)}}
 .portal-glow{animation:portalPulse 1.8s ease-in-out infinite}
@@ -172,6 +173,11 @@ canvas.free{cursor:default}
 #event-box.ev-mlp{color:#ff66cc;border-color:#ff66cc55;text-shadow:0 0 8px #ff66cc}
 #event-box.ev-terraria{color:#adff2f;border-color:#adff2f55;text-shadow:0 0 8px #adff2f}
 #event-box.ev-evolie{color:#9c6a28;border-color:#ff66cc55;text-shadow:0 0 8px #9c6a28}
+/* Shadow world event classes */
+#event-box.ev-void_rift{color:#cc44ff;border-color:#cc44ff55;text-shadow:0 0 8px #cc44ff}
+#event-box.ev-blood_moon{color:#ff2222;border-color:#ff222255;text-shadow:0 0 8px #ff2222}
+#event-box.ev-phantom_storm{color:#44ddff;border-color:#44ddff55;text-shadow:0 0 8px #44ddff}
+#event-box.ev-corruption_wave{color:#aa00ff;border-color:#aa00ff55;text-shadow:0 0 8px #aa00ff}
 #mine-top{position:absolute;top:0;left:0;right:0;height:22px;background:rgba(4,4,8,0.85);display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace}
 #mine-top-track{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
 #mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
@@ -381,7 +387,7 @@ body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
       <div id="inv-list"></div>
     </div>
     <div class="panel" id="idx-panel">
-      <h3 id="lbl-idx">INDEX</h3>
+      <h3 id="lbl-idx" style="cursor:pointer;user-select:none" title="Click to toggle other world index">INDEX</h3>
       <div id="idx-list"></div>
     </div>
   </div>
@@ -1264,6 +1270,69 @@ const EVENT_ORES=[
 EVENT_ORES.forEach(eo=>{
   if(!ORES.find(o=>o.name===eo.name))ORES.push(eo);
 });
+
+// ═══════════ SHADOW WORLD EVENT ORES ═══════════
+const SHADOW_EVENT_ORES=[
+  // ── Void Rift ──
+  {name:'RiftShard',       rarity:'ShadowExotic',      exact:800000,      color:'#cc44ff',symbol:'RS', shadowWorld:true,event:'void_rift',
+   spawnMsg:'A rift tears open the void!',spawnMsgFr:'Une fissure déchire le vide !'},
+  {name:'VoidRiftCore',    rarity:'ShadowTranscendent', exact:48000000,    color:'#9900cc',symbol:'VRC',shadowWorld:true,event:'void_rift',
+   spawnMsg:'The rift core pulses with dark energy!',spawnMsgFr:'Le noyau de fissure pulse d\'énergie sombre !'},
+  {name:'NullTearGem',     rarity:'ShadowEnigmatic',   exact:95000000,    color:'#770099',symbol:'NTG',shadowWorld:true,event:'void_rift',
+   spawnMsg:'Reality tears apart!',spawnMsgFr:'La réalité se déchire !'},
+  {name:'AbyssalRiftHeart',rarity:'ShadowUnfathomable', exact:260000000,   color:'#550077',symbol:'ARH',shadowWorld:true,event:'void_rift',
+   spawnMsg:'The abyss gazes back!',spawnMsgFr:'L\'abîme vous regarde en retour !'},
+  {name:'VoidSingularityX',rarity:'ShadowOtherworldly', exact:750000000,   color:'#330055',symbol:'VSX',shadowWorld:true,event:'void_rift',
+   spawnMsg:'A void singularity collapses!',spawnMsgFr:'Une singularité du vide s\'effondre !'},
+  {name:'RiftEternal',     rarity:'ShadowZenith',       exact:11000000000, color:'#ff88ff',symbol:'RE', shadowWorld:true,event:'void_rift',
+   spawnMsg:'THE RIFT CONSUMES ALL!',spawnMsgFr:'LA FISSURE CONSUME TOUT !'},
+
+  // ── Blood Moon ──
+  {name:'CrimsonDust',     rarity:'ShadowExotic',       exact:850000,      color:'#cc0022',symbol:'CD2',shadowWorld:true,event:'blood_moon',
+   spawnMsg:'Blood rains from above!',spawnMsgFr:'Du sang pleut d\'en haut !'},
+  {name:'MoonbloodShard',  rarity:'ShadowTranscendent', exact:50000000,    color:'#990011',symbol:'MBS',shadowWorld:true,event:'blood_moon',
+   spawnMsg:'The moon bleeds!',spawnMsgFr:'La lune saigne !'},
+  {name:'HemoCrystal',     rarity:'ShadowEnigmatic',    exact:97000000,    color:'#770000',symbol:'HC2',shadowWorld:true,event:'blood_moon',
+   spawnMsg:'Ancient blood crystallises!',spawnMsgFr:'Du sang ancien se cristallise !'},
+  {name:'SanguinePrime',   rarity:'ShadowUnfathomable',  exact:280000000,   color:'#550000',symbol:'SP', shadowWorld:true,event:'blood_moon',
+   spawnMsg:'The shadow moon weeps!',spawnMsgFr:'La lune d\'ombre pleure !'},
+  {name:'LunarHemolith',  rarity:'ShadowOtherworldly',  exact:820000000,   color:'#330000',symbol:'LH', shadowWorld:true,event:'blood_moon',
+   spawnMsg:'Lunar blood hardens to stone!',spawnMsgFr:'Le sang lunaire durcit !'},
+  {name:'BloodMoonCore',   rarity:'ShadowZenith',        exact:13000000000, color:'#ff0033',symbol:'BMC',shadowWorld:true,event:'blood_moon',
+   spawnMsg:'THE BLOOD MOON RISES!',spawnMsgFr:'LA LUNE DE SANG SE LÈVE !'},
+
+  // ── Phantom Storm ──
+  {name:'GhostFlare',      rarity:'ShadowExotic',        exact:900000,      color:'#44ddff',symbol:'GF', shadowWorld:true,event:'phantom_storm',
+   spawnMsg:'A phantom surge crackles!',spawnMsgFr:'Une décharge fantôme crépite !'},
+  {name:'EctoplasmShard',  rarity:'ShadowTranscendent',  exact:52000000,    color:'#22aacc',symbol:'ES2',shadowWorld:true,event:'phantom_storm',
+   spawnMsg:'Ectoplasm coalesces!',spawnMsgFr:'L\'ectoplasme se solidifie !'},
+  {name:'SpectreCrystal',  rarity:'ShadowEnigmatic',     exact:99000000,    color:'#118899',symbol:'SC2',shadowWorld:true,event:'phantom_storm',
+   spawnMsg:'The spectre screams!',spawnMsgFr:'Le spectre hurle !'},
+  {name:'WailingEssence',  rarity:'ShadowUnfathomable',  exact:295000000,   color:'#006677',symbol:'WE', shadowWorld:true,event:'phantom_storm',
+   spawnMsg:'A chorus of wails fills the void!',spawnMsgFr:'Un chœur de gémissements emplit le vide !'},
+  {name:'PhantomNova',     rarity:'ShadowOtherworldly',  exact:860000000,   color:'#004455',symbol:'PN', shadowWorld:true,event:'phantom_storm',
+   spawnMsg:'The phantom storm peaks!',spawnMsgFr:'La tempête fantôme atteint son apogée !'},
+  {name:'StormEternal',    rarity:'ShadowZenith',        exact:14000000000, color:'#88ffff',symbol:'SE', shadowWorld:true,event:'phantom_storm',
+   spawnMsg:'THE ETERNAL STORM HOWLS!',spawnMsgFr:'LA TEMPÊTE ÉTERNELLE HURLE !'},
+
+  // ── Corruption Wave ──
+  {name:'BlightSpark',     rarity:'ShadowExotic',        exact:950000,      color:'#aa00ff',symbol:'BS2',shadowWorld:true,event:'corruption_wave',
+   spawnMsg:'Corruption spreads!',spawnMsgFr:'La corruption se répand !'},
+  {name:'MaligCore',       rarity:'ShadowTranscendent',  exact:55000000,    color:'#7700cc',symbol:'MC2',shadowWorld:true,event:'corruption_wave',
+   spawnMsg:'A malignant pulse surges!',spawnMsgFr:'Une impulsion maligne surgit !'},
+  {name:'ViralObsidian',   rarity:'ShadowEnigmatic',     exact:100000000,   color:'#550099',symbol:'VO', shadowWorld:true,event:'corruption_wave',
+   spawnMsg:'The infection spreads to stone!',spawnMsgFr:'L\'infection atteint la pierre !'},
+  {name:'CorruptHeart',    rarity:'ShadowUnfathomable',  exact:310000000,   color:'#330066',symbol:'CH2',shadowWorld:true,event:'corruption_wave',
+   spawnMsg:'The corruption heart beats!',spawnMsgFr:'Le cœur de corruption bat !'},
+  {name:'AbyssalPlague',   rarity:'ShadowOtherworldly',  exact:900000000,   color:'#220044',symbol:'AP2',shadowWorld:true,event:'corruption_wave',
+   spawnMsg:'Nothing can stop the corruption!',spawnMsgFr:'Rien ne peut arrêter la corruption !'},
+  {name:'CorruptionZenith',rarity:'ShadowZenith',        exact:16000000000, color:'#dd00ff',symbol:'CZ', shadowWorld:true,event:'corruption_wave',
+   spawnMsg:'THE CORRUPTION REACHES ZENITH!',spawnMsgFr:'LA CORRUPTION ATTEINT LE ZÉNITH !'},
+];
+SHADOW_EVENT_ORES.forEach(eo=>{
+  if(!ORES.find(o=>o.name===eo.name))ORES.push(eo);
+});
+
 // Build sorted index AFTER event ores are included
 ORES_SORTED=[...ORES].sort((a,b)=>b.exact-a.exact);
 
@@ -1471,7 +1540,12 @@ function getShadowAltarOres(){
 }
 
 function rollOreShadow(roll,depthFrac,lk){
-  const candidates=ORES.filter(o=>o.shadowWorld&&!o.isBarrier&&!o.hidden&&!isCaveExclusiveOre(o));
+  const candidates=ORES.filter(o=>{
+    if(!o.shadowWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))return false;
+    // Filter shadow event ores: only include if their event is active
+    if(o.event&&o.event!==currentShadowEvent)return false;
+    return true;
+  });
   let totalW=0;
   const weights=candidates.map(o=>{const w=lk/o.exact;totalW+=w;return w;});
   if(!totalW)return ORES.findIndex(o=>o.name==='ShadowStone')||0;
@@ -1602,6 +1676,8 @@ function travelToShadow(){
   velY=0;onGround=true;
   _portalCooldown=3.0;
   _scanCachedBestOre=null;_scanCachedTopOres=null;
+  markInvDirty();updateHUD();
+  _startShadowEventSystem();
   showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':
     '🌑 Shadow World — welcome to the dark','#00ff44',true,null);
 }
@@ -1626,6 +1702,8 @@ function travelToMain(){
   velY=0;onGround=true;
   _portalCooldown=3.0;
   _scanCachedBestOre=null;_scanCachedTopOres=null;
+  markInvDirty();updateHUD();
+  _stopShadowEventSystem();
   showSpawn(lang==='fr'?'☀ Retour au monde principal !':
     '☀ Back to the main world!','#9900ff',true,null);
 }
@@ -1653,6 +1731,7 @@ function _ensureChunkGeneratedShadow(cx,cz){
     const roll=h3(wx,y,wz,(cx^cz^y)&65535)/65535;
     const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
     oi[li]=rollOreShadow(roll,depthFrac,shadowLk);
+    rev[li]=1; // Shadow world: all blocks revealed so correct shadow textures show
   }
   _chunks.set(key,ch);
 }
@@ -1905,6 +1984,17 @@ const EVENT_DISPLAY={
   terraria:{en:'The world shifts into a harder state',     fr:'Le monde bascule dans un état plus dur',        cls:'ev-terraria'},
 };
 
+// ── Shadow world events ──
+const SHADOW_EVENT_TYPES=['void_rift','blood_moon','phantom_storm','corruption_wave'];
+const SHADOW_EVENT_DISPLAY={
+  void_rift:       {en:'The void tears open around you',            fr:'Le vide se déchire autour de vous',              cls:'ev-void_rift'},
+  blood_moon:      {en:'A blood moon rises in the shadow sky',      fr:'Une lune de sang se lève dans l\'ombre',         cls:'ev-blood_moon'},
+  phantom_storm:   {en:'Phantom winds howl through the darkness',   fr:'Des vents fantômes hurlent dans les ténèbres',   cls:'ev-phantom_storm'},
+  corruption_wave: {en:'A corruption wave sweeps the shadow world', fr:'Une vague de corruption balaie le monde d\'ombre',cls:'ev-corruption_wave'},
+};
+let currentShadowEvent=null;
+let _shadowEventInterval=null;
+
 function startEventSystem(){
   setTimeout(()=>{rotateEvent();setInterval(rotateEvent,300000);},500);
 }
@@ -1913,19 +2003,46 @@ function rotateEvent(){
   let newEv;
   do{newEv=EVENT_TYPES[Math.floor(Math.random()*EVENT_TYPES.length)];}while(newEv===currentEvent);
   currentEvent=newEv;
+  if(currentWorld!=='shadow')_applyEventBox(EVENT_DISPLAY[currentEvent]);
+}
+
+function rotateShadowEvent(){
+  let newEv;
+  do{newEv=SHADOW_EVENT_TYPES[Math.floor(Math.random()*SHADOW_EVENT_TYPES.length)];}while(newEv===currentShadowEvent);
+  currentShadowEvent=newEv;
+  if(currentWorld==='shadow')_applyEventBox(SHADOW_EVENT_DISPLAY[currentShadowEvent]);
+}
+
+function _applyEventBox(display){
   const box=document.getElementById('event-box');
   if(!box)return;
   box.style.display='block';
-  box.className=''; // reset
-  box.classList.add(EVENT_DISPLAY[currentEvent].cls);
-  box.textContent=lang==='fr'?EVENT_DISPLAY[currentEvent].fr:EVENT_DISPLAY[currentEvent].en;
-  showSpawn(lang==='fr'?'✦ Évènement : '+EVENT_DISPLAY[currentEvent].fr:'✦ Event: '+EVENT_DISPLAY[currentEvent].en,'#ffdd44',false);
+  box.className='';
+  box.classList.add(display.cls);
+  box.textContent=lang==='fr'?display.fr:display.en;
+  showSpawn(lang==='fr'?'✦ Évènement : '+display.fr:'✦ Event: '+display.en,'#ffdd44',false);
+}
+
+function _startShadowEventSystem(){
+  // Stop any existing shadow interval
+  if(_shadowEventInterval)clearInterval(_shadowEventInterval);
+  rotateShadowEvent();
+  _shadowEventInterval=setInterval(rotateShadowEvent,300000);
+}
+
+function _stopShadowEventSystem(){
+  if(_shadowEventInterval){clearInterval(_shadowEventInterval);_shadowEventInterval=null;}
+  // Restore main world event box
+  if(currentEvent&&EVENT_DISPLAY[currentEvent])_applyEventBox(EVENT_DISPLAY[currentEvent]);
 }
 
 // Check if an event ore should be eligible for rolling given current event
 function isEventOreActive(ore){
   if(!ore.event)return true; // not an event ore, always eligible
-  return ore.event===currentEvent; // only eligible during its event
+  // Shadow ores: check shadow event
+  if(ore.shadowWorld)return ore.event===currentShadowEvent;
+  // Normal ores: check main event
+  return ore.event===currentEvent;
 }
 
 // ═══════════ CAVE TYPES ═══════════
@@ -2080,6 +2197,14 @@ function fmtExact(n){
   if(n>=1e9)return(n/1e9).toFixed(1)+'B';
   if(n>=1e6)return(n/1e6).toFixed(1)+'M';
   if(n>=1e3)return(n/1e3).toFixed(0)+'K';
+  return n.toString();
+}
+function fmtQty(n){
+  if(n>=1e15)return(n/1e15).toFixed(1)+'Q';
+  if(n>=1e12)return(n/1e12).toFixed(1)+'T';
+  if(n>=1e9)return(n/1e9).toFixed(1)+'B';
+  if(n>=1e6)return(n/1e6).toFixed(2)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'k';
   return n.toString();
 }
 
@@ -2641,7 +2766,9 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     if(!blocks[j]||oreRevealed[j])continue;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
     const _lk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
-    const oI=rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
+    const oI=currentWorld==='shadow'
+      ?rollOreShadow(h3(nx,ny,nz,(seedSalt^mined^j)&65535)/65535,depthFrac,_lk)
+      :rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
     _syncBlockWrite(nx,ny,nz); // persist to chunk
@@ -3018,7 +3145,11 @@ function solid(x,y,z){
   const bx=Math.floor(x),by=Math.floor(y),bz=Math.floor(z);
   if(bx<0||bx>=W||bz<0||bz>=D)return false; // out of world = air
   if(by<0||by>=H)return false; // below void or above world = air (fall into void)
-  return blocks[idx(bx,by,bz)]!==0;
+  if(!blocks[idx(bx,by,bz)])return false;
+  // Portal fill blocks are passable (player can walk through them)
+  const o=ORES[oreIdx[idx(bx,by,bz)]||0];
+  if(o&&o.noSolid)return false;
+  return true;
 }
 
 function moveAABB(ox,oy,oz,dx,dy,dz){
@@ -3373,6 +3504,21 @@ function movePlayer(dt){
   const r=moveAABB(p.x,p.y,p.z,dx,velY*dt,dz);
   p.set(r.x,r.y,r.z);
   if(p.y < -5){ spawnPlayer(); return; }
+  // Portal walk-through detection — player enters fill zone triggers travel
+  if(_portalCooldown<=0){
+    const zone=currentWorld==='shadow'?_shadowPortalFillZone:_mainPortalFillZone;
+    if(zone){
+      const px2=Math.floor(p.x),pz2=Math.floor(p.z),py2=Math.floor(p.y-0.4);
+      const inX=px2>=zone.minX&&px2<zone.maxX;
+      const inY=py2>=zone.minY&&py2<zone.maxY;
+      const inZ=(pz2===zone.z||pz2===zone.z-1||pz2===zone.z+1);
+      if(inX&&inY&&inZ){
+        if(currentWorld==='shadow')travelToMain();
+        else travelToShadow();
+        return;
+      }
+    }
+  }
   const feet=p.y-CAM_H;
   const cap=minCeilingAbove(p.x,feet,p.z);
   const maxEye=cap-0.1;
@@ -4128,7 +4274,8 @@ function updateScanner(h){
       if(!blocks[ci]||!oreRevealed[ci])continue;
       const ore=ORES[oreIdx[ci]||0];
       if(!ore||ore.exact<pick.scanMin)continue;
-      if(ore.isBarrier)continue; // bedrock is immune to scanner
+      if(ore.isBarrier)continue; // bedrock and portal frames immune to scanner
+      if(ore.isPortal)continue; // skip portal fill blocks in scanner
       found.push({ore,x,y,z});
     }
     // Sort by rarity (rarest first)
@@ -4257,6 +4404,10 @@ window.shopEquip=function(id){equipPick(id);};
 window.shopUnequip=function(id){unequipPick(id);};
 function openShop(){shopOpen=true;if(isLocked)document.exitPointerLock();document.getElementById('shop-ov').classList.add('open');renderShop();}
 function closeShop(){window.closeShop();}
+document.getElementById('lbl-idx').addEventListener('click',()=>{
+  window._showOtherWorldIdx=!window._showOtherWorldIdx;
+  markInvDirty();rebuildInvPanel();
+});
 document.getElementById('shop-btn').addEventListener('click',openShop);
 
 function renderShop(){
@@ -4432,11 +4583,15 @@ function updateHudStatsOnly(){
 // Returns {label, color} tag for event ores and cave ores, null for normal ores.
 const EVENT_TAG_COLORS={
   space:'#aaaaff', ocean:'#00bfff', nuclear:'#39ff14', fire:'#ff6600',
-  computer:'#00ffcc', mlp:'#ff66cc', terraria:'#adff2f', evolie:'#9c6a28'
+  computer:'#00ffcc', mlp:'#ff66cc', terraria:'#adff2f', evolie:'#9c6a28',
+  // Shadow events
+  void_rift:'#cc44ff', blood_moon:'#ff2222', phantom_storm:'#44ddff', corruption_wave:'#aa00ff'
 };
 const EVENT_TAG_LABELS={
   space:'SPACE', ocean:'OCEAN', nuclear:'NUCLEAR', fire:'FIRE',
-  computer:'COMPUTER', mlp:'MLP', terraria:'TERRARIA', evolie:'EVOLIE'
+  computer:'COMPUTER', mlp:'MLP', terraria:'TERRARIA', evolie:'EVOLIE',
+  // Shadow events
+  void_rift:'VOID RIFT', blood_moon:'BLOOD MOON', phantom_storm:'PHANTOM', corruption_wave:'CORRUPT'
 };
 
 // Map cave rarity prefix → cave display info
@@ -4508,16 +4663,23 @@ function oreTagHTML(ore,fontSize){
 
 function rebuildInvPanel(){
   const isShadow=currentWorld==='shadow';
+  const showOtherInv=!!window._showOtherWorldIdx;
+  const displayShadowInv=showOtherInv?(currentWorld!=='shadow'):isShadow;
   const list=document.getElementById('inv-list');
   const entries=Object.entries(inventory).filter(([n,q])=>{
     if(q<=0)return false;
     const ore=ORES.find(o=>o.name===n);
     if(!ore||ore.hidden)return false;
-    // Show only ores matching current world
     const isShadowOre=!!(ore.shadowWorld||isCaveExclusiveOre(ore)&&(ore.caveType||'').includes('Shadow'));
-    if(isShadow)return !!(ore.shadowWorld||isShadowOre);
+    if(displayShadowInv)return !!(ore.shadowWorld||isShadowOre);
     return !ore.shadowWorld;
   }).sort((a,b)=>(ORES.find(o=>o.name===b[0])?.exact||0)-(ORES.find(o=>o.name===a[0])?.exact||0));
+  // Update inventory panel label to reflect which world is shown
+  const invLabel=document.getElementById('lbl-inv');
+  if(invLabel){
+    const worldTag=showOtherInv?(displayShadowInv?' 🌑':'☀'):'';
+    invLabel.textContent=(lang==='fr'?'INVENTAIRE':'INVENTORY')+worldTag;
+  }
   list.innerHTML='';
   if(!entries.length){
     list.innerHTML=`<div style="color:rgba(200,200,200,0.2);font-size:6px">${lang==='fr'?'Rien encore...':'Nothing yet...'}</div>`;
@@ -4527,7 +4689,7 @@ function rebuildInvPanel(){
       const rc=ore?(RC[ore.rarity]||ore.color||'#ddd'):'#ddd';
       const row=document.createElement('div');
       row.className='ore-row'+(selectedInv===n?' sel':'');
-      row.innerHTML=`<div class="ore-dot" style="background:${ore?ore.color:'#888'}"></div><span style="color:${rc}">${n}</span>${oreTagHTML(ore,'4.5px')}<span class="ore-qty">x${q}</span>`;
+      row.innerHTML=`<div class="ore-dot" style="background:${ore?ore.color:'#888'}"></div><span style="color:${rc}">${n}</span>${oreTagHTML(ore,'4.5px')}<span class="ore-qty">x${fmtQty(q)}</span>`;
       row.addEventListener('mouseenter',()=>{
         if(!ore)return;
         const tip=document.getElementById('ore-tip');
@@ -4549,13 +4711,17 @@ function rebuildInvPanel(){
   const idxList=document.getElementById('idx-list');
   idxList.innerHTML='';
   const isShadow2=currentWorld==='shadow';
+  // _showOtherWorldIdx toggles whether index shows the other world
+  const showOther=!!window._showOtherWorldIdx;
+  const displayShadow=showOther?(currentWorld!=='shadow'):isShadow2;
   const visibleOres=ORES_SORTED.filter(o=>{
     if(o.hidden)return false;
-    if(isShadow2)return !!(o.shadowWorld||isCaveExclusiveOre(o)&&(o.caveType||'').includes('Shadow'));
+    if(displayShadow)return !!(o.shadowWorld||isCaveExclusiveOre(o)&&(o.caveType||'').includes('Shadow'));
     return !o.shadowWorld;
   });
   const ownedCount=visibleOres.filter(o=>(inventory[o.name]||0)>0).length;
-  document.getElementById('lbl-idx').textContent=(lang==='fr'?'INDEX ':'INDEX ')+`(${ownedCount}/${visibleOres.length})`;
+  const otherLabel=showOther?(displayShadow?' 🌑':'☀'):'';
+  document.getElementById('lbl-idx').textContent=(lang==='fr'?'INDEX ':'INDEX ')+`(${ownedCount}/${visibleOres.length})`+otherLabel;
   visibleOres.forEach(ore=>{
     const qty=inventory[ore.name]||0;
     const owned=qty>0;
@@ -5524,6 +5690,7 @@ let lastT=0,lastHudTick=0;
 function loop(t=0){
   requestAnimationFrame(loop);
   const dt=Math.min((t-lastT)/1000,0.05);lastT=t;
+  if(_portalCooldown>0)_portalCooldown-=dt;
   if(!shopOpen&&!altarOpen&&!shadowAltarOpen&&!isFreeMouse)movePlayer(dt);
   tickMine(dt);
 
