@@ -746,6 +746,7 @@ const RC={
   'CaveExclusive-Mythical':'#df03fc',
   'CaveExclusive-Eternal':'#00fbff',
   // Shadow world rarities
+  'ShadowFill':'#444455',
   'ShadowCommon':'#6666aa',
   'ShadowUncommon':'#8855cc',
   'ShadowRare':'#aa44ee',
@@ -1079,16 +1080,20 @@ const ORES=[
   // ── SHADOW BEDROCK (floor of shadow world) ──
   // Shadow world uses regular Bedrock for floor (isShadowBedrock removed)
   // Base block (shadow stone — filler like Stone in main world)
-  {name:'ShadowStone',   rarity:'ShadowCommon',      exact:3,          color:'#2a2a3a',shadowWorld:true},
-  {name:'DarkCoal',      rarity:'ShadowCommon',       exact:10,         color:'#1a1a2a',shadowWorld:true},
-  {name:'VoidIron',      rarity:'ShadowUncommon',     exact:20,         color:'#44446a',shadowWorld:true},
-  {name:'UmbraEmerald',  rarity:'ShadowRare',         exact:35,         color:'#0d3322',shadowWorld:true,symbol:'UE'},
-  {name:'ShadowRuby',    rarity:'ShadowEpic',         exact:50,         color:'#4a0020',shadowWorld:true,symbol:'SR'},
-  {name:'DarkSapphire',  rarity:'ShadowLegendary',    exact:75,         color:'#0a0a2e',shadowWorld:true,symbol:'DS'},
-  {name:'VoidTopaz',     rarity:'ShadowLegendary',    exact:100,        color:'#3a1a00',shadowWorld:true,symbol:'VT'},
-  {name:'AbyssDiamond',  rarity:'ShadowLegendary',    exact:150,        color:'#002233',shadowWorld:true,symbol:'AD'},
-  {name:'NullVoid',      rarity:'ShadowLegendary',    exact:250,        color:'#110022',shadowWorld:true,symbol:'NV'},
-  {name:'ShadowGold',    rarity:'ShadowLegendary+',   exact:1000,       color:'#4a3a00',shadowWorld:true,symbol:'SG'},
+  // ── Shadow World base blocks ──
+  // ShadowRock: the neutral "stone" fill of the shadow world — dark mid-gray, no symbol
+  // Makes ~50% of blocks so ores stand out against it
+  {name:'ShadowRock',    rarity:'ShadowFill',        exact:1,          color:'#1e1e28',shadowWorld:true},
+  {name:'ShadowStone',   rarity:'ShadowCommon',      exact:3,          color:'#3a3a4e',shadowWorld:true},
+  {name:'DarkCoal',      rarity:'ShadowCommon',       exact:10,         color:'#28283c',shadowWorld:true,symbol:'◆'},
+  {name:'VoidIron',      rarity:'ShadowUncommon',     exact:20,         color:'#5a5a8a',shadowWorld:true,symbol:'VI'},
+  {name:'UmbraEmerald',  rarity:'ShadowRare',         exact:35,         color:'#115533',shadowWorld:true,symbol:'UE'},
+  {name:'ShadowRuby',    rarity:'ShadowEpic',         exact:50,         color:'#8a1040',shadowWorld:true,symbol:'SR'},
+  {name:'DarkSapphire',  rarity:'ShadowLegendary',    exact:75,         color:'#141466',shadowWorld:true,symbol:'DS'},
+  {name:'VoidTopaz',     rarity:'ShadowLegendary',    exact:100,        color:'#664400',shadowWorld:true,symbol:'VT'},
+  {name:'AbyssDiamond',  rarity:'ShadowLegendary',    exact:150,        color:'#004455',shadowWorld:true,symbol:'AD'},
+  {name:'NullVoid',      rarity:'ShadowLegendary',    exact:250,        color:'#330055',shadowWorld:true,symbol:'NV'},
+  {name:'ShadowGold',    rarity:'ShadowLegendary+',   exact:1000,       color:'#776600',shadowWorld:true,symbol:'SG'},
   {name:'DarkMega',      rarity:'ShadowMythic',       exact:10000,      color:'#3a1800',shadowWorld:true,symbol:'DM'},
   {name:'VoidUltraMega', rarity:'ShadowMythic',       exact:25000,      color:'#220011',shadowWorld:true,symbol:'VM'},
   {name:'NullHyperMega', rarity:'ShadowMythic',       exact:50000,      color:'#1a0022',shadowWorld:true,symbol:'NH'},
@@ -1379,6 +1384,7 @@ function getAltarOres(){
     !o.event &&
     !o.isBarrier &&
     !o.hidden &&
+    !o.shadowWorld &&
     o.name!=='Stone'
   );
 }
@@ -1573,26 +1579,54 @@ function isShadowOre(o){ return !!o.shadowWorld; }
 function getShadowAltarOres(){
   return ORES.filter(o=>{
     if(!o.shadowWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))return false;
-    if(o.name==='ShadowStone')return false;
+    if(o.name==='ShadowStone'||o.name==='ShadowRock')return false;
     // Only include event ores when their event is currently active
     if(o.event&&o.event!==currentShadowEvent)return false;
     return true;
   });
 }
 
+// ── Shadow ore roll table — rebuilt once per event change, not per block ──
+let _shadowRollCache=null; // {event, lk, table:[{idx,cumW}], totalW}
+let _shadowDeepRollCache=null; // same but excludes ShadowRock (for deep blocks)
+
+function _buildShadowRollTable(lk, excludeShadowRock){
+  const candidates=[];
+  for(let i=0;i<ORES.length;i++){
+    const o=ORES[i];
+    if(!o.shadowWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))continue;
+    if(o.event&&o.event!==currentShadowEvent)continue;
+    if(excludeShadowRock&&o.name==='ShadowRock')continue;
+    candidates.push({idx:i,w:lk/o.exact});
+  }
+  let cum=0;
+  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum};});
+  return {event:currentShadowEvent,lk,table,totalW:cum};
+}
+
 function rollOreShadow(roll,depthFrac,lk){
-  const candidates=ORES.filter(o=>{
-    if(!o.shadowWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))return false;
-    // Filter shadow event ores: only include if their event is active
-    if(o.event&&o.event!==currentShadowEvent)return false;
-    return true;
-  });
-  let totalW=0;
-  const weights=candidates.map(o=>{const w=lk/o.exact;totalW+=w;return w;});
-  if(!totalW)return ORES.findIndex(o=>o.name==='ShadowStone')||0;
-  let r=roll*totalW;
-  for(let i=0;i<candidates.length;i++){r-=weights[i];if(r<=0)return ORES.indexOf(candidates[i]);}
-  return ORES.indexOf(candidates[candidates.length-1]);
+  if(!_shadowRollCache||_shadowRollCache.event!==currentShadowEvent||Math.abs(_shadowRollCache.lk-lk)>0.01){
+    _shadowRollCache=_buildShadowRollTable(lk,false);
+  }
+  const {table,totalW}=_shadowRollCache;
+  if(!totalW||!table.length)return ORES.findIndex(o=>o.name==='ShadowRock')||0;
+  const target=roll*totalW;
+  let lo=0,hi=table.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(table[mid].cumW<target)lo=mid+1;else hi=mid;}
+  return table[lo].idx;
+}
+
+function rollOreShadowDeep(roll,depthFrac,lk,shadowRockIdx){
+  // Deep blocks never roll ShadowRock — it's surface-only
+  if(!_shadowDeepRollCache||_shadowDeepRollCache.event!==currentShadowEvent||Math.abs(_shadowDeepRollCache.lk-lk)>0.01){
+    _shadowDeepRollCache=_buildShadowRollTable(lk,true);
+  }
+  const {table,totalW}=_shadowDeepRollCache;
+  if(!totalW||!table.length)return shadowRockIdx>=0?shadowRockIdx:0;
+  const target=roll*totalW;
+  let lo=0,hi=table.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(table[mid].cumW<target)lo=mid+1;else hi=mid;}
+  return table[lo].idx;
 }
 
 // ═══════════ ASYNC CHUNK GENERATION (no-lag portal/reset) ═══════════
@@ -1724,6 +1758,8 @@ function travelToShadow(){
     const pct=Math.floor(mined/SHADOW_WORLD_UNLOCK*100);
     showSpawn(lang==='fr'?`🌑 Portail verrouillé — Minez encore ${need} blocs (${pct}%)`:
       `🌑 Portal locked — Mine ${need} more blocks (${pct}%)`, '#ff4444',true,null);
+    _travelInProgress=false; // release freeze so player can move away
+    _portalCooldown=3.0;     // short cooldown so message doesn't spam
     return;
   }
   _playPortalSfx(true);
@@ -1752,6 +1788,7 @@ function travelToShadow(){
     markInvDirty();updateHUD();
     _startShadowEventSystem();
     _hideTransition();
+    _travelInProgress=false;
     showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':
       '🌑 Shadow World — welcome to the dark','#00ff44',true,null);
   });
@@ -1783,6 +1820,7 @@ function travelToMain(){
     markInvDirty();updateHUD();
     _stopShadowEventSystem();
     _hideTransition();
+    _travelInProgress=false;
     showSpawn(lang==='fr'?'☀ Retour au monde principal !':
       '☀ Back to the main world!','#9900ff',true,null);
   });
@@ -1795,23 +1833,31 @@ function _ensureChunkGeneratedShadow(cx,cz){
   const bk=new Uint8Array(sz);
   const oi=new Uint16Array(sz);
   const rev=new Uint8Array(sz);
-  const bedrockIdx2=ORES.findIndex(o=>o.isBarrier&&o.name==='Bedrock');
-  const useBedrockIdx=bedrockIdx2>=0?bedrockIdx2:ORES.findIndex(o=>o.isBarrier);
-  const shadowLk=luck*getPickLuck()*(Date.now()<_luckBoostUntil?_luckBoostMult:1)+getGearLuckBonus();
+  const useBedrockIdx=ORES.findIndex(o=>o.name==='Bedrock');
+  const shadowRockIdx=ORES.findIndex(o=>o.name==='ShadowRock');
+  const shadowLk=getTotalLuck();
   const ch={blocks:bk,oreIdx:oi,oreRevealed:rev,cx,cz};
   for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
     const wx=cx*CHUNK_SIZE+lx,wz=cz*CHUNK_SIZE+lz;
     const li=_chunkIdx(lx,y,lz);
     bk[li]=1;
     if(y<=1){
+      // Bedrock floor
       oi[li]=useBedrockIdx>=0?useBedrockIdx:0;
       rev[li]=1;
       continue;
     }
-    const roll=h3(wx,y,wz,(cx^cz^y)&65535)/65535;
+    if(y===TOP_SOLID_Y){
+      // Surface layer is always ShadowRock — gives ores a background to stand out against
+      oi[li]=shadowRockIdx>=0?shadowRockIdx:0;
+      rev[li]=1;
+      continue;
+    }
+    // Deep blocks: roll for ores (ShadowRock excluded from pool — it's surface-only)
+    const roll=h3(wx,y,wz,(cx^cz^y)&65535);
     const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
-    oi[li]=rollOreShadow(roll,depthFrac,shadowLk);
-    rev[li]=1; // Shadow world: all blocks revealed so correct shadow textures show
+    oi[li]=rollOreShadowDeep(roll,depthFrac,shadowLk,shadowRockIdx);
+    rev[li]=1;
   }
   _chunks.set(key,ch);
 }
@@ -1844,29 +1890,35 @@ function _getShadowMissing(){
 }
 
 function renderShadowAltarUI(){
+  const allAltarOres=getShadowAltarOres();
   const grid=document.getElementById('shadow-altar-grid');
   grid.innerHTML='';
+
   const ready=_getShadowReady();
   const luckGain=ready.length*0.5;
 
-  for(const ore of getShadowAltarOres()){
+  for(const ore of allAltarOres){
     if(_shadowAltarSacrificed.has(ore.name))continue;
     const qty=inventory[ore.name]||0;
+    const hasAny=qty>0;
     const rc=RC[ore.rarity]||ore.color||'#aaa';
     const row=document.createElement('div');
     row.className='altar-ore-row';
-    row.style.opacity=qty>0?'1':'0.45';
-    row.innerHTML=`<div class="altar-ore-dot" style="background:${ore.color||'#888'}"></div>`+
+    row.style.opacity=hasAny?'1':'0.45';
+    row.innerHTML=
+      `<div class="altar-ore-dot" style="background:${ore.color||'#888'}"></div>`+
       `<span class="altar-ore-name" style="color:${rc}">${ore.name}</span>`+
-      `<span class="altar-ore-qty ${qty>0?'ok':'no'}">${qty} ${qty>0?'✓':'✗'}</span>`;
+      `<span class="altar-ore-qty ${hasAny?'ok':'no'}">${qty} ${hasAny?'✓':'✗'}</span>`;
     grid.appendChild(row);
   }
+
   if(_shadowAltarSacrificed.size>0){
     const done=document.createElement('div');
     done.style.cssText='font-size:7px;color:rgba(0,255,68,0.4);margin-bottom:8px;font-family:sans-serif;padding:4px 6px;border-top:1px solid rgba(0,255,68,0.15)';
-    done.textContent=`⬡ ${_shadowAltarSacrificed.size} type${_shadowAltarSacrificed.size>1?'s':''} déjà sacrifié${_shadowAltarSacrificed.size>1?'s':''}`;
+    done.textContent=`⬡ ${_shadowAltarSacrificed.size} ore type${_shadowAltarSacrificed.size>1?'s':''} already sacrificed`;
     grid.appendChild(done);
   }
+
   const btn=document.getElementById('shadow-sacrifice-btn');
   const previewEl=document.getElementById('shadow-altar-preview');
   const missingLbl=document.getElementById('shadow-missing-lbl');
@@ -1874,32 +1926,40 @@ function renderShadowAltarUI(){
   document.getElementById('shadow-altar-luck-val').textContent='+'+_shadowAltarLuckBonus.toFixed(2);
 
   if(ready.length===0){
-    btn.disabled=true;btn.textContent='⬡ '+(lang==='fr'?'RIEN À SACRIFIER':'NOTHING TO SACRIFICE');
+    btn.disabled=true;
+    btn.textContent=lang==='fr'?'⬡ RIEN À SACRIFIER':'⬡ NOTHING TO SACRIFICE';
     btn.style.borderColor='rgba(255,255,255,0.15)';btn.style.color='rgba(255,255,255,0.3)';
     previewEl.style.display='none';
-    missingLbl.textContent=missing.length>0?(lang==='fr'?'Manque: ':'Missing: ')+missing.map(o=>o.name).slice(0,5).join(', '):'';
+    missingLbl.textContent=missing.length>0?(lang==='fr'?'Il vous manque: ':'Missing: ')+missing.map(o=>o.name).slice(0,5).join(', ')+(missing.length>5?' +more':''):'';
+    _shadowAltarConfirmPending=false;
     document.getElementById('shadow-cancel-btn').style.display='none';
-    _shadowAltarConfirmPending=false;return;
+    return;
   }
+
   previewEl.style.display='block';
   const cancelBtn=document.getElementById('shadow-cancel-btn');
 
   if(!_shadowAltarConfirmPending){
     cancelBtn.style.display='none';
-    btn.disabled=false;btn.style.borderColor='rgba(0,255,68,0.5)';btn.style.color='#00ff44';
-    btn.textContent=lang==='fr'?`⬡ SACRIFIER ${ready.length} TYPE${ready.length>1?'S':''} — APERÇU`:`⬡ SACRIFICE ${ready.length} TYPE${ready.length>1?'S':''} — PREVIEW`;
-    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
-    previewEl.innerHTML=`<span style="color:#00ff44;font-size:9px">+${luckGain.toFixed(1)} Luck</span>`+
-      `<span style="color:rgba(255,255,255,0.4);font-size:7px;margin-left:8px">`+(lang==='fr'?`depuis ${ready.length} type${ready.length>1?'s':''} (${totalItems} objets consommés)`:
-      `from ${ready.length} type${ready.length>1?'s':''} (${totalItems} total items consumed)`)+`</span>`;
+    btn.disabled=false;
+    btn.style.borderColor='rgba(0,255,68,0.5)';btn.style.color='#00ff44';
+    btn.textContent=lang==='fr'
+      ?`⬡ SACRIFIER ${ready.length} TYPE${ready.length>1?'S':''} — VOIR APERÇU`
+      :`⬡ SACRIFICE ${ready.length} TYPE${ready.length>1?'S':''} — PREVIEW`;
+    previewEl.innerHTML=
+      `<span style="color:#00ff44;font-size:9px">+${luckGain.toFixed(1)} Luck</span>`+
+      `<span style="color:rgba(255,255,255,0.4);font-size:7px;margin-left:8px">1× each of ${ready.length} ore type${ready.length>1?'s':''}</span>`;
     missingLbl.textContent=missing.length>0?(lang==='fr'?'Manque encore: ':'Still missing: ')+missing.map(o=>o.name).slice(0,4).join(', ')+(missing.length>4?' +more':''):'';
   }else{
     cancelBtn.style.display='block';
-    btn.disabled=false;btn.style.borderColor='#ffdd44';btn.style.color='#ffdd44';
-    btn.textContent=lang==='fr'?`✓ CONFIRMER (+${luckGain.toFixed(1)} Luck)`:`✓ CONFIRM SACRIFICE (+${luckGain.toFixed(1)} Luck)`;
-    const totalItems=ready.reduce((a,e)=>a+e.qty,0);
-    previewEl.innerHTML=`<span style="color:#ffdd44;font-size:8px">⚠ ${lang==='fr'?'Irréversible !':'This cannot be undone!'}</span><br>`+
-      ready.map(e=>`<span style="color:${RC[e.ore.rarity]||e.ore.color||'#aaa'};font-size:7px">${e.ore.name} ×${e.qty}</span>`).join(' &nbsp;');
+    btn.disabled=false;
+    btn.style.borderColor='#ffdd44';btn.style.color='#ffdd44';
+    btn.textContent=lang==='fr'
+      ?`✓ CONFIRMER (+${luckGain.toFixed(1)} Luck)`
+      :`✓ CONFIRM SACRIFICE (+${luckGain.toFixed(1)} Luck)`;
+    previewEl.innerHTML=
+      `<span style="color:#ffdd44;font-size:8px">⚠ ${lang==='fr'?'Cette action est irréversible!':'This cannot be undone!'}</span><br>`+
+      ready.map(e=>`<span style="color:${RC[e.ore.rarity]||e.ore.color||'#aaa'};font-size:7px">${e.ore.name} ×1 (vous en avez ${e.qty})</span>`).join(' &nbsp;');
     missingLbl.textContent='';
   }
 }
@@ -1907,21 +1967,26 @@ function renderShadowAltarUI(){
 function doShadowSacrifice(){
   const ready=_getShadowReady();
   if(ready.length===0)return;
-  if(!_shadowAltarConfirmPending){_shadowAltarConfirmPending=true;renderShadowAltarUI();return;}
+
+  if(!_shadowAltarConfirmPending){
+    _shadowAltarConfirmPending=true;
+    renderShadowAltarUI();
+    return;
+  }
+
   _shadowAltarConfirmPending=false;
   let gained=0;
   for(const{ore}of ready){
-    // Consume exactly 1
     inventory[ore.name]=(inventory[ore.name]||1)-1;
     if((inventory[ore.name]||0)<=0)delete inventory[ore.name];
     _shadowAltarSacrificed.add(ore.name);
     gained+=0.5;
   }
   _shadowAltarLuckBonus+=gained;
-  // Note: shadow altar bonuses are additive flat via getTotalLuck(), not baked into base luck
   saveGame();markInvDirty();updateHUD();renderShadowAltarUI();
-  const msg=lang==='fr'?`⬡ Sacrifice de l'ombre ! +${gained.toFixed(1)} Luck (Total: +${_shadowAltarLuckBonus.toFixed(1)})`:
-    `⬡ Shadow Sacrifice! +${gained.toFixed(1)} Luck (Total: +${_shadowAltarLuckBonus.toFixed(1)})`;
+  const msg=lang==='fr'
+    ?`⬡ Sacrifice de l'ombre ! +${gained.toFixed(1)} Luck (Autel des Ombres total: +${_shadowAltarLuckBonus.toFixed(1)})`
+    :`⬡ Shadow Sacrifice! +${gained.toFixed(1)} Luck (Shadow Altar total: +${_shadowAltarLuckBonus.toFixed(1)})`;
   showSpawn(msg,'#00ff44',true,null);
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.type='triangle';o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(220,ac.currentTime);o.frequency.exponentialRampToValueAtTime(440,ac.currentTime+0.2);o.frequency.exponentialRampToValueAtTime(880,ac.currentTime+0.4);g.gain.setValueAtTime(0.25,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+1.0);o.start();o.stop(ac.currentTime+1.0);}catch(e){}
 }
@@ -2083,6 +2148,7 @@ function rotateEvent(){
   let newEv;
   do{newEv=EVENT_TYPES[Math.floor(Math.random()*EVENT_TYPES.length)];}while(newEv===currentEvent);
   currentEvent=newEv;
+  _normalRollCache=null; // invalidate cached roll table
   if(currentWorld!=='shadow')_applyEventBox(EVENT_DISPLAY[currentEvent]);
 }
 
@@ -2090,6 +2156,7 @@ function rotateShadowEvent(){
   let newEv;
   do{newEv=SHADOW_EVENT_TYPES[Math.floor(Math.random()*SHADOW_EVENT_TYPES.length)];}while(newEv===currentShadowEvent);
   currentShadowEvent=newEv;
+  _shadowRollCache=null;_shadowDeepRollCache=null; // invalidate cached roll tables
   if(currentWorld==='shadow')_applyEventBox(SHADOW_EVENT_DISPLAY[currentShadowEvent]);
 }
 
@@ -2471,20 +2538,14 @@ function _chunkKey(cx,cz){return cx+'x'+cz;}
 function _getOrCreateChunk(cx,cz){
   const k=_chunkKey(cx,cz);
   if(_chunks.has(k))return _chunks.get(k);
-  const sz=CHUNK_SIZE*H*CHUNK_SIZE;
-  const ch={blocks:new Uint8Array(sz),oreIdx:new Uint16Array(sz),oreRevealed:new Uint8Array(sz),cx,cz};
-  // Fill with solid rock up to TOP_SOLID_Y, bedrock at y=0 and y=1
-  const bedrockIdx=ORES.findIndex(o=>o.isBarrier);
-  for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
-    const li=lx*H*CHUNK_SIZE+y*CHUNK_SIZE+lz;
-    ch.blocks[li]=1;
-    if(y<=1&&bedrockIdx>=0){
-      ch.oreIdx[li]=bedrockIdx;
-      ch.oreRevealed[li]=1;
-    }
+  // Generate a proper chunk rather than blank Stone fill
+  // This is called for out-of-window writes — generate the right chunk type
+  if(currentWorld==='shadow'){
+    _ensureChunkGeneratedShadow(cx,cz);
+  }else{
+    _ensureChunkGenerated(cx,cz);
   }
-  _chunks.set(k,ch);
-  return ch;
+  return _chunks.get(k);
 }
 
 // Convert local chunk block index to flat chunk array index
@@ -2600,7 +2661,41 @@ function _updateChunkWindow(){
 
 // Generate a chunk if not yet generated (fill with rock, no ores yet)
 function _ensureChunkGenerated(cx,cz){
-  _getOrCreateChunk(cx,cz); // creates with rock if missing
+  const k=_chunkKey(cx,cz);
+  if(_chunks.has(k))return;
+  // Run the normal-world chunk generator for this chunk
+  const sz=CHUNK_SIZE*H*CHUNK_SIZE;
+  const bk=new Uint8Array(sz);
+  const oi=new Uint16Array(sz);
+  const rev=new Uint8Array(sz);
+  const bedrockIdx=ORES.findIndex(o=>o.name==='Bedrock');
+  const lk=getTotalLuck();
+  const ch={blocks:bk,oreIdx:oi,oreRevealed:rev,cx,cz};
+  for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<=TOP_SOLID_Y;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
+    const wx=cx*CHUNK_SIZE+lx,wz=cz*CHUNK_SIZE+lz;
+    const li=_chunkIdx(lx,y,lz);
+    bk[li]=1;
+    if(y<=1){oi[li]=bedrockIdx>=0?bedrockIdx:0;rev[li]=1;continue;}
+    const roll=h3(wx,y,wz,(cx^cz^y)&65535);
+    const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
+    oi[li]=rollOreNormal(roll,depthFrac,lk);
+  }
+  _chunks.set(k,ch);
+}
+
+function _getOrCreateChunk(cx,cz){
+  const k=_chunkKey(cx,cz);
+  if(_chunks.has(k))return _chunks.get(k);
+  // Called for out-of-window block writes — generate correct chunk type
+  if(currentWorld==='shadow') _ensureChunkGeneratedShadow(cx,cz);
+  else _ensureChunkGenerated(cx,cz);
+  // If still missing (shouldn't happen), return a minimal safe chunk
+  if(!_chunks.has(k)){
+    const sz=CHUNK_SIZE*H*CHUNK_SIZE;
+    const ch={blocks:new Uint8Array(sz),oreIdx:new Uint16Array(sz),oreRevealed:new Uint8Array(sz),cx,cz};
+    _chunks.set(k,ch);
+  }
+  return _chunks.get(k);
 }
 
 // ═══════════ STATE ═══════════
@@ -2618,7 +2713,7 @@ let lastResetMined=0; // tracks when last mine reset fired
 let shopOpen=false,shopTab='all';
 let isFreeMouse=false;
 // ── Portal & world state ──
-let _mainPortalFillZone=null;
+let _travelInProgress=false;
 let _shadowPortalFillZone=null;
 let _portalCooldown=0;
 let currentWorld='main';
@@ -2819,29 +2914,32 @@ function getPickLuck(){
   return luckMap[pick.id]||1;
 }
 
-function rollOreNormal(roll, depthFrac, lk) {
-  let tot = 0;
-  const parts = [];
-  for (let i = 0; i < ORES.length; i++) {
-    const o = ORES[i];
-    if (isCaveExclusiveOre(o)) continue;
-    if (o.isBarrier) continue; // bedrock never spawns via RNG
-    if (o.shadowWorld) continue; // shadow ores only spawn in shadow world
-    if (o.event && o.event !== currentEvent) continue;
-
-    // Poids de base pour tous les ores, sans influence de depthFrac
-    let w = lk / o.exact;
-
-    parts.push({ i, w });
-    tot += w;
+// ── Normal ore roll table — rebuilt when event or luck changes ──
+let _normalRollCache=null;
+function _buildNormalRollTable(lk){
+  let cum=0;
+  const table=[];
+  for(let i=0;i<ORES.length;i++){
+    const o=ORES[i];
+    if(isCaveExclusiveOre(o))continue;
+    if(o.isBarrier)continue;
+    if(o.shadowWorld)continue;
+    if(o.event&&o.event!==currentEvent)continue;
+    cum+=lk/o.exact;
+    table.push({idx:i,cumW:cum});
   }
-
-  let r = roll * tot;
-  for (const { i, w } of parts) {
-    r -= w;
-    if (r <= 0) return i;
+  _normalRollCache={event:currentEvent,lk,table,totalW:cum};
+}
+function rollOreNormal(roll,depthFrac,lk){
+  if(!_normalRollCache||_normalRollCache.event!==currentEvent||Math.abs(_normalRollCache.lk-lk)>0.01){
+    _buildNormalRollTable(lk);
   }
-  return 0;
+  const {table,totalW}=_normalRollCache;
+  if(!totalW||!table.length)return 0;
+  const target=roll*totalW;
+  let lo=0,hi=table.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(table[mid].cumW<target)lo=mid+1;else hi=mid;}
+  return table[lo].idx;
 }
 
 function revealAdjacentSolid(ax,ay,az,seedSalt){
@@ -2854,7 +2952,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
     const _lk=getTotalLuck();
     const oI=currentWorld==='shadow'
-      ?rollOreShadow(h3(nx,ny,nz,(seedSalt^mined^j)&65535)/65535,depthFrac,_lk)
+      ?rollOreShadow(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk)
       :rollOreNormal(h3(nx,ny,nz,(seedSalt^mined^j)&65535),depthFrac,_lk);
     oreIdx[j]=oI;
     oreRevealed[j]=1;
@@ -2932,9 +3030,10 @@ function resetMine(){
   const msg=lang==='fr'?'RÉGÉNÉRATION...':'RESET...';
   const col=currentWorld==='shadow'?'#00ff44':'#60b060';
   _showTransition(icon,msg,col);
-  genWorld();
 
   if(currentWorld==='shadow'){
+    // Shadow world reset: generate fresh shadow chunks only — do NOT run genWorld()
+    // which would overwrite with main-world data
     const side2=RENDER_DIST*2+1;
     const coords2=[];
     _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
@@ -2948,6 +3047,7 @@ function resetMine(){
       showSpawn(lang==='fr'?'⛏ Mine régénérée ! Téléporté au spawn !':'⛏ Mine reset! Teleported to spawn!','#60b060',false);
     });
   }else{
+    genWorld();
     _buildWorldMeshReal();spawnPlayer();
     _scanCachedBestOre=null;_scanCachedTopOres=null;_meshDirty=false;
     updateMineTopBar();_hideTransition();
@@ -3612,8 +3712,8 @@ function movePlayer(dt){
   const r=moveAABB(p.x,p.y,p.z,dx,velY*dt,dz);
   p.set(r.x,r.y,r.z);
   if(p.y < -5){ spawnPlayer(); return; }
-  // Portal walk-through detection — rate limited to once per 5 seconds to avoid lag
-  if(_portalCooldown<=0){
+  // Portal walk-through detection — blocked while a travel is already in progress
+  if(_portalCooldown<=0&&!_travelInProgress){
     const zone=currentWorld==='shadow'?_shadowPortalFillZone:_mainPortalFillZone;
     if(zone){
       const px2=Math.floor(p.x),pz2=Math.floor(p.z),py2=Math.floor(p.y-0.4);
@@ -3621,7 +3721,8 @@ function movePlayer(dt){
       const inY=py2>=zone.minY&&py2<zone.maxY;
       const inZ=(pz2===zone.z||pz2===zone.z-1||pz2===zone.z+1);
       if(inX&&inY&&inZ){
-        _portalCooldown=5.0; // 5s cooldown — prevents repeated TP attempts
+        _portalCooldown=5.0;
+        _travelInProgress=true;
         if(currentWorld==='shadow')travelToMain();
         else travelToShadow();
         return;
@@ -3843,7 +3944,7 @@ function spawnCave(cx,cy,cz){
     }
     if(assignedIdx<0){
       if(currentWorld==='shadow'){
-        assignedIdx=rollOreShadow(h3(nx,ny,nz,(cy^cx^cz)&65535)/65535,depthFrac,combinedLuck);
+        assignedIdx=rollOreShadow(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
       }else if(chosen.type==='NormalCave'){
         assignedIdx=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
       }else{
@@ -4385,6 +4486,7 @@ function updateScanner(h){
       if(!ore||ore.exact<pick.scanMin)continue;
       if(ore.isBarrier)continue; // bedrock and portal frames immune to scanner
       if(ore.isPortal)continue; // skip portal fill blocks in scanner
+      if(ore.name==='ShadowRock')continue; // base filler — not worth scanning
       found.push({ore,x,y,z});
     }
     // Sort by rarity (rarest first)
@@ -5806,6 +5908,7 @@ function loop(t=0){
   requestAnimationFrame(loop);
   const dt=Math.min((t-lastT)/1000,0.05);lastT=t;
   if(_portalCooldown>0)_portalCooldown-=dt;
+  if(_travelInProgress)return; // freeze movement/physics during world transition
   if(!shopOpen&&!altarOpen&&!shadowAltarOpen&&!isFreeMouse)movePlayer(dt);
   tickMine(dt);
 
