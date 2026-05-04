@@ -1850,14 +1850,14 @@ function _ensureChunkGeneratedShadow(cx,cz){
     if(y===TOP_SOLID_Y){
       // Surface layer is always ShadowRock — gives ores a background to stand out against
       oi[li]=shadowRockIdx>=0?shadowRockIdx:0;
-      rev[li]=1;
+      rev[li]=1; // surface is always visible (player walks on it)
       continue;
     }
-    // Deep blocks: roll for ores (ShadowRock excluded from pool — it's surface-only)
+    // Deep blocks: roll for ores, start hidden — revealed when adjacent block is mined
     const roll=h3(wx,y,wz,(cx^cz^y)&65535);
     const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
     oi[li]=rollOreShadowDeep(roll,depthFrac,shadowLk,shadowRockIdx);
-    rev[li]=1;
+    rev[li]=0; // hidden until revealed by mining
   }
   _chunks.set(key,ch);
 }
@@ -2377,10 +2377,14 @@ const SHADOW_RARITY_SOUNDS={
 };
 function getAudioId(ore){
   // Shadow ores: use rarity-based mapping
-  if(ore&&ore.shadowWorld&&SHADOW_RARITY_SOUNDS.hasOwnProperty(ore.rarity)){
-    return SHADOW_RARITY_SOUNDS[ore.rarity]||null;
+  if(ore&&ore.shadowWorld){
+    // Event ores use exact-based thresholds (their rarity names don't match power level)
+    if(!ore.event&&SHADOW_RARITY_SOUNDS.hasOwnProperty(ore.rarity)){
+      return SHADOW_RARITY_SOUNDS[ore.rarity]||null;
+    }
+    // Fall through to exact-based for event ores
   }
-  // Normal ores: exact-based thresholds
+  // Exact-based thresholds (used for normal ores and shadow event ores)
   const ex=(ore&&ore.exact)||0;
   if(ex<250000)return null;
   if(ex<6000000)return'Achillgoesdownyourspine';
