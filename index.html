@@ -2355,7 +2355,32 @@ function fmtQty(n){
   return n.toString();
 }
 
+// Shadow rarity → audio mapping — only Mythical and rarer get sounds
+const SHADOW_RARITY_SOUNDS={
+  'ShadowFill':null,
+  'ShadowCommon':null,
+  'ShadowUncommon':null,
+  'ShadowRare':null,
+  'ShadowEpic':null,
+  'ShadowLegendary':null,
+  'ShadowLegendary+':null,
+  'ShadowMythic':null,
+  'ShadowMythical':null,
+  'ShadowExotic':'Achillgoesdownyourspine',
+  'ShadowExquisite':'Yourheartskipsabeat',
+  'ShadowTranscendent':'Transcendent',
+  'ShadowEnigmatic':'Enigmatic',
+  'ShadowUnfathomable':'Unfathomable',
+  'ShadowOtherworldly':'Otherworldly',
+  'ShadowZenith':'Zenith',
+  'ShadowEternal':'Eternal',
+};
 function getAudioId(ore){
+  // Shadow ores: use rarity-based mapping
+  if(ore&&ore.shadowWorld&&SHADOW_RARITY_SOUNDS.hasOwnProperty(ore.rarity)){
+    return SHADOW_RARITY_SOUNDS[ore.rarity]||null;
+  }
+  // Normal ores: exact-based thresholds
   const ex=(ore&&ore.exact)||0;
   if(ex<250000)return null;
   if(ex<6000000)return'Achillgoesdownyourspine';
@@ -2611,9 +2636,10 @@ function _updateChunkWindow(){
   const dCZ=desiredOriginCZ-_chunkOriginCZ;
   _chunkOriginCX=desiredOriginCX;
   _chunkOriginCZ=desiredOriginCZ;
-  // Ensure new chunks exist (generate them)
+  // Ensure new chunks exist with the correct generator for current world
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
-    _ensureChunkGenerated(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+    if(currentWorld==='shadow') _ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
+    else _ensureChunkGenerated(_chunkOriginCX+ci,_chunkOriginCZ+ck);
   }
   // Update player position offset by chunk shift (so physics stays consistent)
   if(camera){
@@ -2650,20 +2676,13 @@ function _updateChunkWindow(){
     if(p.zigzag){for(const pt of p.zigzag){pt[0]-=shiftX;pt[2]-=shiftZ;}}
   }
   _rebuildWindowFromChunks();
-  // Rebuild structures that need to be in the new window origin
-  if(currentWorld==='shadow'){
-    if(typeof _ensureChunkGeneratedShadow==='function'){
-      for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)_ensureChunkGeneratedShadow(_chunkOriginCX+ci,_chunkOriginCZ+ck);
-    }
-  }
   return true;
 }
 
-// Generate a chunk if not yet generated (fill with rock, no ores yet)
+// Generate a chunk if not yet generated
 function _ensureChunkGenerated(cx,cz){
   const k=_chunkKey(cx,cz);
   if(_chunks.has(k))return;
-  // Run the normal-world chunk generator for this chunk
   const sz=CHUNK_SIZE*H*CHUNK_SIZE;
   const bk=new Uint8Array(sz);
   const oi=new Uint16Array(sz);
@@ -2679,6 +2698,7 @@ function _ensureChunkGenerated(cx,cz){
     const roll=h3(wx,y,wz,(cx^cz^y)&65535);
     const depthFrac=(TOP_SOLID_Y-y)/Math.max(1,TOP_SOLID_Y);
     oi[li]=rollOreNormal(roll,depthFrac,lk);
+    rev[li]=0; // hidden until mined — no pre-revealed ores on surface
   }
   _chunks.set(k,ch);
 }
@@ -2961,16 +2981,9 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
     const ore=ORES[oI];
     if(ore&&ore.spawnMsg){
       if(CAVE_RARITY_SOUNDS[ore.rarity])playCaveSound(ore.rarity,ore);
-      else if(ore.exact>=250000)playSound(ore);
-      else if(ore.shadowWorld){
-        // Shadow ores below Exotic threshold: play a short dark synth tone
-        try{const ac2=new(window.AudioContext||window.webkitAudioContext)();
-          const g2=ac2.createGain();g2.gain.setValueAtTime(0.15,ac2.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,ac2.currentTime+0.5);
-          g2.connect(ac2.destination);
-          const o2=ac2.createOscillator();o2.type='sine';o2.connect(g2);
-          o2.frequency.setValueAtTime(180,ac2.currentTime);
-          o2.frequency.exponentialRampToValueAtTime(80,ac2.currentTime+0.5);
-          o2.start();o2.stop(ac2.currentTime+0.5);}catch(_e2){}
+      else{
+        const snd=getAudioId(ore);
+      if(snd)playSound(ore);
       }
       const col=RC[ore.rarity]||ore.color||'#ffffff';
       const _st=getOreTag(ore);const _sl=_st?' ['+_st.label+']':'';
