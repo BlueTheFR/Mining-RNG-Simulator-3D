@@ -162,7 +162,18 @@ if __name__ == "__main__":
     app = web.Application()
     app.router.add_get("/", handle_connection)
     app.router.add_get("/health", handle_health)
-    app.on_startup.append(lambda app: asyncio.create_task(_stale_checker()))
+
+    async def _start_background_tasks(app):
+        app["stale_checker"] = asyncio.create_task(_stale_checker())
+
+    async def _cleanup_background_tasks(app):
+        task = app.get("stale_checker")
+        if task:
+            task.cancel()
+
+    app.on_startup.append(_start_background_tasks)
+    app.on_cleanup.append(_cleanup_background_tasks)
+
     print("Mining RNG Simulator 3D - Multiplayer Server")
-    print(f"Listening on ws://0.0.0.0:{port}")
-    web.run_app(app, port=port, print=None)
+    print(f"Listening on 0.0.0.0:{port}")
+    web.run_app(app, host="0.0.0.0", port=port)
