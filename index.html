@@ -9107,7 +9107,7 @@ function tryJoin(){
   let host=document.getElementById('mp-host-input').value.trim()||'localhost:3000';
   // Auto-detect protocol: wss:// for remote, ws:// for localhost
   const useWss=host.startsWith('wss://')||(!host.startsWith('ws://')&&!/^localhost(:\d+)?$/i.test(host)&&!/^127\./.test(host));
-  host=host.replace(/^ws:\/\//i,'').replace(/^wss:\/\//i,'');
+  host=host.replace(/^(ws:\/\/|wss:\/\/|https:\/\/|http:\/\/)/i,'');
   _wsWss=useWss;
   _wsUsername=username;
   _wsServerHost=host;
