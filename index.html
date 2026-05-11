@@ -9120,13 +9120,6 @@ function closeChat(){
   if(!document.pointerLockElement&&cv&&!isFreeMouse)cv.requestPointerLock();
 }
 
-function sendChat(){
-  const inp=document.getElementById('chat-input');
-  const msg=inp.value.trim();
-  if(msg&&_ws&&_wsConnected)_ws.send(JSON.stringify({type:'chat',message:msg}));
-  closeChat();
-}
-
 function tryJoin(){
   const username=document.getElementById('mp-join-input').value.trim();
   if(!username||username.length>20)return;
@@ -9138,6 +9131,7 @@ function tryJoin(){
   _wsUsername=username;
   _wsServerHost=host;
   try{localStorage.setItem('mp_server_host',host);}catch(e){}
+  document.getElementById('mp-join-ov').style.display='none';
   document.getElementById('mp-status-bar').style.display='flex';
   document.getElementById('mp-status').textContent='CONNECTING...';
   document.getElementById('mp-status-dot').className='off';
