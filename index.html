@@ -8964,10 +8964,14 @@ function connectToServer(){
   try{_ws=new WebSocket(proto+host);}catch(e){return;}
   _ws.onopen=()=>{_ws.send(JSON.stringify({type:'join',username:_wsUsername}));};
   _ws.onmessage=e=>{try{_handleServerMsg(JSON.parse(e.data));}catch(ex){}};
+  _ws.onerror=e=>{console.error('WS error:',e);};
   _ws.onclose=()=>{
     _wsConnected=false;
     document.getElementById('mp-status').textContent='OFFLINE';
     document.getElementById('mp-status-dot').className='off';
+    // If still in the join flow, re-show the overlay
+    const ov=document.getElementById('mp-join-ov');
+    if(ov&&ov.style.display!=='flex'){setTimeout(()=>{ov.style.display='flex';},500);}
   };
 }
 
@@ -9045,21 +9049,43 @@ function _handleServerMsg(msg){
   }
 }
 
+function _wsSendSafe(data){
+  if(!_ws||_ws.readyState!==WebSocket.OPEN)return;
+  try{_ws.send(data);}catch(e){_wsConnected=false;}
+}
+
 function sendPosition(){
   if(!_ws||!_wsConnected||!_wsPlayerId)return;
   const p=camera.position;
   const feetY=p.y-CAM_H;
-  _ws.send(JSON.stringify({type:'position',px:p.x,py:feetY,pz:p.z,ry:euler.y,world:currentWorld||'main'}));
+  _wsSendSafe(JSON.stringify({type:'position',px:p.x,py:feetY,pz:p.z,ry:euler.y,world:currentWorld||'main'}));
 }
 
 function _broadcastPhantomPlace(){
   if(!_ws||!_wsConnected||!phantomBlock)return;
-  _ws.send(JSON.stringify({type:'phantom_place',x:phantomBlock.x,y:phantomBlock.y,z:phantomBlock.z,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
+  _wsSendSafe(JSON.stringify({type:'phantom_place',x:phantomBlock.x,y:phantomBlock.y,z:phantomBlock.z,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
 }
 
 function _broadcastPhantomRemove(){
   if(!_ws||!_wsConnected)return;
-  _ws.send(JSON.stringify({type:'phantom_remove'}));
+  _wsSendSafe(JSON.stringify({type:'phantom_remove'}));
+}
+
+function sendChat(){
+  const inp=document.getElementById('chat-input');
+  const msg=inp.value.trim();
+  if(msg&&_ws&&_wsConnected)_wsSendSafe(JSON.stringify({type:'chat',message:msg}));
+  closeChat();
+}
+
+function _broadcastPhantomPlace(){
+  if(!_ws||!_wsConnected||!phantomBlock)return;
+  _wsSendSafe(JSON.stringify({type:'phantom_place',x:phantomBlock.x,y:phantomBlock.y,z:phantomBlock.z,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
+}
+
+function _broadcastPhantomRemove(){
+  if(!_ws||!_wsConnected)return;
+  _wsSendSafe(JSON.stringify({type:'phantom_remove'}));
 }
 
 function _addChatMessage(username,message){
