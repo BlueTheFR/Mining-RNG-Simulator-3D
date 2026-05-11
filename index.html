@@ -9136,9 +9136,9 @@ function _handleServerMsg(msg){
           const localX=p.px-_chunkOriginCX*CHUNK_SIZE;
           const localZ=p.pz-_chunkOriginCZ*CHUNK_SIZE;
           ph.targetX=localX;ph.targetY=p.py+_PHANTOM_Y_OFS;ph.targetZ=localZ;
-          ph.targetRy=p.ry;ph.world=p.world||'main';
+          ph.targetRy=p.ry+Math.PI;ph.world=p.world||'main';
           ph.group.position.set(localX,p.py+_PHANTOM_Y_OFS,localZ);
-          ph.group.rotation.y=p.ry;
+          ph.group.rotation.y=p.ry+Math.PI;
         }
       }
       document.getElementById('mp-status').textContent='ONLINE';
@@ -9164,7 +9164,7 @@ function _handleServerMsg(msg){
         const localX=msg.px-_chunkOriginCX*CHUNK_SIZE;
         const localZ=msg.pz-_chunkOriginCZ*CHUNK_SIZE;
         ph.targetX=localX;ph.targetY=msg.py+_PHANTOM_Y_OFS;ph.targetZ=localZ;
-        ph.targetRy=msg.ry;ph.world=msg.world||'main';
+        ph.targetRy=msg.ry+Math.PI;ph.world=msg.world||'main';
       }
       break;
     }
