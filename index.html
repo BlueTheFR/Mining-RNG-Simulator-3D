@@ -248,10 +248,16 @@ canvas.free{cursor:default}
 #placing-ind{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:5px;color:var(--hud-accent);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:4px 10px;display:none;pointer-events:none}
 
 /* ── Multiplayer Chat ── */
-#chat-box{position:absolute;bottom:190px;right:10px;width:min(350px,40vw);max-height:200px;pointer-events:all;z-index:40;font-family:'Press Start 2P',monospace;display:flex;flex-direction:column;gap:4px}
-#chat-msg-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;flex-shrink:0;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
-#chat-msg-list:empty::after{content:'No messages';color:rgba(255,255,255,0.15);font-size:7px}
+#chat-box{position:absolute;bottom:190px;right:10px;width:min(350px,40vw);max-height:200px;pointer-events:all;z-index:40;font-family:'Press Start 2P',monospace;display:none;flex-direction:column;gap:4px}
+#chat-box.online{display:flex}
+#chat-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:4px 8px}
+#chat-header-title{font-size:6px;color:rgba(255,255,255,0.35);flex:1;letter-spacing:1px}
+#chat-close-btn{font-family:'Press Start 2P',monospace;font-size:9px;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;transition:color .12s}
+#chat-close-btn:hover{color:rgba(255,255,255,0.8)}
+#chat-msg-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;flex-shrink:0;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+#chat-msg-list:empty::after{content:attr(data-empty);color:rgba(255,255,255,0.15);font-size:7px}
 .chat-msg{font-size:7px;color:rgba(220,220,220,0.8);margin-bottom:4px;line-height:1.6;word-break:break-word;overflow-wrap:break-word;font-family:sans-serif}
+.chat-ts{font-size:6px;color:rgba(255,255,255,0.2);margin-right:4px;font-family:sans-serif}
 .chat-name{font-weight:bold;font-size:8px;font-family:'Press Start 2P',monospace}
 .chat-text{color:rgba(220,220,220,0.7);font-family:sans-serif}
 #chat-input-area{display:none;pointer-events:all}
@@ -579,6 +585,10 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 
 <!-- Chat UI -->
 <div id="chat-box">
+  <div id="chat-header">
+    <span id="chat-header-title">CHAT</span>
+    <button id="chat-close-btn" onclick="closeChat()">✕</button>
+  </div>
   <div id="chat-msg-list"></div>
   <div id="chat-input-area">
     <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200" autocomplete="off">
@@ -590,12 +600,13 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="mp-join-box">
     <h2>MINING RNG SIMULATOR</h2>
     <div id="mp-join-sub">Connect to multiplayer — each player has their own world</div>
-    <input id="mp-join-input" type="text" placeholder="Your username" maxlength="20" autocomplete="off">
-    <input id="mp-host-input" type="text" value="localhost:3000" placeholder="Server address (host:port)">
+    <input id="mp-join-input" type="text" placeholder="Your username" maxlength="20" autocomplete="off" autofocus>
+    <input id="mp-host-input" type="text" value="localhost:3000" placeholder="Server address (host:port)" style="display:none" readonly tabindex="-1">
+    <div id="mp-host-display" style="font-size:5px;color:rgba(200,200,200,0.12);margin-bottom:12px;font-family:monospace;pointer-events:none;user-select:none;-webkit-user-select:none">localhost:3000</div>
     <div id="mp-join-err"></div>
     <button id="mp-join-btn">CONNECT</button>
     <div style="font-size:6px;color:rgba(200,200,200,0.15);margin-top:10px;font-family:sans-serif">Start the server first: python server.py</div>
-    <button id="mp-join-skip" onclick="document.getElementById('mp-join-ov').style.display='none';document.getElementById('mp-status-bar').style.display='flex';document.getElementById('mp-status').textContent='OFFLINE';document.getElementById('mp-status-dot').className='off'">Skip — Play Offline</button>
+    <button id="mp-join-skip">Skip — Play Offline</button>
   </div>
 </div>
 
@@ -639,6 +650,10 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
     <button id="rd-btn-low" onclick="setRenderDist('low')" style="font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(30,30,50,0.9);border:2px solid rgba(255,255,255,0.2);border-radius:3px;color:#88ccff;padding:7px 10px;cursor:pointer;flex:1;">LOW<br><span style="color:#666;font-size:4px">~10 blocs</span></button>
     <button id="rd-btn-medium" onclick="setRenderDist('medium')" style="font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(30,30,50,0.9);border:2px solid rgba(255,255,255,0.2);border-radius:3px;color:#88ffcc;padding:7px 10px;cursor:pointer;flex:1;">MED<br><span style="color:#666;font-size:4px">~50 blocs</span></button>
     <button id="rd-btn-high" onclick="setRenderDist('high')" style="font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(30,30,50,0.9);border:2px solid rgba(255,255,255,0.2);border-radius:3px;color:#ffcc88;padding:7px 10px;cursor:pointer;flex:1;">HIGH<br><span style="color:#666;font-size:4px">~100 blocs</span></button>
+  </div>
+  <div id="settings-color-row" style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
+    <label id="lbl-player-color" for="color-picker" style="font-size:6px;color:#aaa;cursor:pointer;flex:1">COULEUR DU JOUEUR</label>
+    <input id="color-picker" type="color" value="#ff4444" style="width:32px;height:32px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;cursor:pointer;background:transparent;padding:2px">
   </div>
   <div style="margin-top:8px;font-size:5px;color:#555;">Mobile: LOW · PC: MEDIUM par défaut</div>
   <button onclick="toggleSettingsPanel()" style="margin-top:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(60,20,20,0.8);border:1px solid rgba(200,60,60,0.4);border-radius:3px;color:#cc6666;padding:5px 12px;cursor:pointer;width:100%;">✕ FERMER</button>
@@ -795,6 +810,24 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 const MAX_ORE_EXACT=5000000000;
 // ═══════════ I18N ═══════════
 const lang=(navigator.language||navigator.userLanguage||'fr').toLowerCase().startsWith('fr')?'fr':'en';
+const _playerColors={};
+const _savedColor=localStorage.getItem('player_color');
+function _getPlayerColor(username){
+  if(username===_wsUsername){
+    const el=document.getElementById('color-picker');
+    return el?el.value:'#ff4444';
+  }
+  return _usernameColor(username);
+}
+(function(){
+  const cp=document.getElementById('color-picker');
+  if(cp){
+    if(_savedColor)cp.value=_savedColor;
+    cp.addEventListener('input',function(){
+      try{localStorage.setItem('player_color',this.value);}catch(e){}
+    });
+  }
+})();
 const T={
   fr:{inv:'INVENTAIRE',idx:'INDEX',stats:'STATS',mined:'Blocs mines',pick:'Pioche',luck:'Luck',
       atelier:'ATELIER DES PIOCHES',craftsub:'Craftez, equipez ou desequipez vos outils',
@@ -818,7 +851,12 @@ const T={
       altarDoneCount:(n)=>`⬡ ${n} type${n>1?'s':''} de minerai déjà sacrifié${n>1?'s':''}`,
       altarConsumed:(n,t)=>`depuis ${n} type${n>1?'s':''} (${t} objets consommés au total)`,
       altarSuccess:(g,tot)=>`⬡ Sacrifice ! +${g} Luck (Total autel : +${tot})`,
-      altarTooltip:'⬡ Autel des Minerais — Cliquer pour ouvrir'},
+      altarTooltip:'⬡ Autel des Minerais — Cliquer pour ouvrir',
+      chatTitle:'CHAT',chatPlaceholder:'Écrivez un message...',noMessages:'Aucun message',
+      connectBtn:'CONNEXION',skipBtn:'Passer — Jouer hors ligne',
+      joinSub:'Connectez-vous au multijoueur — chaque joueur a son propre monde',
+      playerColor:'COULEUR DU JOUEUR',usernamePlaceholder:'Votre pseudo',
+      statusOnline:'EN LIGNE',statusOffline:'HORS LIGNE',statusConnecting:'CONNEXION...'},
   en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
       atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
       all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
@@ -841,7 +879,12 @@ const T={
       altarDoneCount:(n)=>`⬡ ${n} ore type${n>1?'s':''} already sacrificed`,
       altarConsumed:(n,t)=>`from ${n} ore type${n>1?'s':''} (${t} total items consumed)`,
       altarSuccess:(g,tot)=>`⬡ Sacrifice! +${g} Luck (Altar total: +${tot})`,
-      altarTooltip:'⬡ Ore Altar — Click to open'}
+      altarTooltip:'⬡ Ore Altar — Click to open',
+      chatTitle:'CHAT',chatPlaceholder:'Type a message...',noMessages:'No messages',
+      connectBtn:'CONNECT',skipBtn:'Skip — Play Offline',
+      joinSub:'Connect to multiplayer — each player has their own world',
+      playerColor:'PLAYER COLOR',usernamePlaceholder:'Your username',
+      statusOnline:'ONLINE',statusOffline:'OFFLINE',statusConnecting:'CONNECTING...'}
 }[lang];
 
 let _useQwerty=lang!=='fr';
@@ -890,6 +933,15 @@ function applyI18N(){
   const _hc=document.getElementById('hint-ctrl');if(_hc)_hc.textContent=lang==='fr'?'Ctrl : libérer souris':'Ctrl : free mouse';
   const _hs=document.getElementById('hint-shop');if(_hs)_hs.textContent=lang==='fr'?'E : boutique':'E : shop';
   const _hchat=document.getElementById('hint-chat');if(_hchat)_hchat.textContent=lang==='fr'?'T : chat':'T : chat';
+  // Chat / Join / Settings i18n
+  const _cht=document.getElementById('chat-header-title');if(_cht)_cht.textContent=T.chatTitle;
+  const _cip=document.getElementById('chat-input');if(_cip)_cip.placeholder=T.chatPlaceholder;
+  const _cml=document.getElementById('chat-msg-list');if(_cml)_cml.dataset.empty=T.noMessages;
+  const _jsb=document.getElementById('mp-join-sub');if(_jsb)_jsb.textContent=T.joinSub;
+  const _jip=document.getElementById('mp-join-input');if(_jip)_jip.placeholder=T.usernamePlaceholder;
+  const _jbn=document.getElementById('mp-join-btn');if(_jbn)_jbn.textContent=T.connectBtn;
+  const _jsk=document.getElementById('mp-join-skip');if(_jsk)_jsk.textContent=T.skipBtn;
+  const _pcl=document.getElementById('lbl-player-color');if(_pcl)_pcl.textContent=T.playerColor;
   // Save modal
   const _sm=document.getElementById('savemod-title');if(_sm)_sm.textContent=lang==='fr'?'SAUVEGARDE':'SAVE';
   const _ss=document.getElementById('savemod-sub');if(_ss)_ss.textContent=lang==='fr'?'Exportez ou importez votre progression':'Export or import your progress';
@@ -8972,7 +9024,7 @@ function _updatePlayerCountDisplay(count){
   const pc=document.getElementById('mp-players');
   if(!pc)return;
   if(count>0){
-    pc.textContent='| '+count+' online';
+    pc.textContent='| '+count+' '+(lang==='fr'?'en ligne':'online');
     pc.style.display='inline';
   }else{
     pc.style.display='none';
@@ -9067,6 +9119,8 @@ function connectToServer(){
   _ws.onclose=()=>{
     _wsConnected=false;
     if(_playerCountTimer){clearInterval(_playerCountTimer);_playerCountTimer=null;}
+    const cb=document.getElementById('chat-box');
+    if(cb){cb.className='';cb.style.display='none';}
     const ov=document.getElementById('mp-join-ov');
     if(ov&&ov.style.display!=='flex'){_scheduleReconnect();}
     else if(ov){setTimeout(()=>{ov.style.display='flex';},500);}
@@ -9141,10 +9195,14 @@ function _handleServerMsg(msg){
           ph.group.rotation.y=p.ry+Math.PI;
         }
       }
-      document.getElementById('mp-status').textContent='ONLINE';
+      document.getElementById('mp-status').textContent=T.statusOnline;
       document.getElementById('mp-status-dot').className='on';
       _updatePlayerCountDisplay(msg.players.length+1);
       _startPlayerCountTimer();
+      const chatBox=document.getElementById('chat-box');
+      if(chatBox){chatBox.className='online';chatBox.style.display='flex';}
+      const hl=document.getElementById('hint-chat');
+      if(hl)hl.style.display='inline';
       break;
     case'player_join':
       _addPhantomPlayer(msg.id,msg.username);
@@ -9224,10 +9282,14 @@ function _broadcastPhantomRemove(){
 function _addChatMessage(username,message){
   const list=document.getElementById('chat-msg-list');
   if(!list)return;
+  const box=document.getElementById('chat-box');
+  if(box&&_wsConnected){box.className='online';box.style.display='flex';}
   const row=document.createElement('div');
   row.className='chat-msg';
-  const col=_usernameColor(username);
-  row.innerHTML='<span class="chat-name" style="color:'+col+'">'+_escHtml(username)+'</span> <span class="chat-text">'+_escHtml(message)+'</span>';
+  const d=new Date();
+  const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  const col=_getPlayerColor(username);
+  row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-name" style="color:'+col+'">'+_escHtml(username)+'</span> <span class="chat-text">'+_escHtml(message)+'</span>';
   list.appendChild(row);
   list.scrollTop=list.scrollHeight;
   while(list.children.length>100)list.removeChild(list.firstChild);
@@ -9240,15 +9302,21 @@ function _escHtml(s){
 function openChat(){
   if(_chatOpen||!_wsConnected)return;
   _chatOpen=true;
+  const box=document.getElementById('chat-box');
+  box.className='online';
+  box.style.display='flex';
   document.getElementById('chat-input-area').style.display='block';
   const inp=document.getElementById('chat-input');
   inp.value='';inp.focus();
 }
 
 function closeChat(){
+  if(!_chatOpen)return;
   _chatOpen=false;
   document.getElementById('chat-input-area').style.display='none';
   document.getElementById('chat-input').blur();
+  const box=document.getElementById('chat-box');
+  if(box){box.className='';box.style.display='none';}
   const cv=document.getElementById('c');
   if(!document.pointerLockElement&&cv&&!isFreeMouse)cv.requestPointerLock();
 }
@@ -9264,14 +9332,26 @@ function tryJoin(){
   _wsUsername=username;
   _wsServerHost=host;
   try{localStorage.setItem('mp_server_host',host);}catch(e){}
+  const hd=document.getElementById('mp-host-display');
+  if(hd)hd.textContent=host;
   document.getElementById('mp-join-ov').style.display='none';
   document.getElementById('mp-status-bar').style.display='flex';
-  document.getElementById('mp-status').textContent='CONNECTING...';
+  document.getElementById('mp-status').textContent=T.statusConnecting;
   document.getElementById('mp-status-dot').className='off';
   connectToServer();
 }
 document.getElementById('mp-join-btn').addEventListener('click',tryJoin);
 document.getElementById('mp-join-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryJoin();});
+document.getElementById('mp-join-skip').addEventListener('click',function(){
+  document.getElementById('mp-join-ov').style.display='none';
+  document.getElementById('mp-status-bar').style.display='flex';
+  document.getElementById('mp-status').textContent=T.statusOffline;
+  document.getElementById('mp-status-dot').className='off';
+  const cb=document.getElementById('chat-box');
+  if(cb){cb.className='';cb.style.display='none';}
+  const hl=document.getElementById('hint-chat');
+  if(hl)hl.style.display='none';
+});
 
 // ═══════════════════════════════════════
 // Auto-detect server address
@@ -9279,8 +9359,14 @@ document.getElementById('mp-join-input').addEventListener('keydown',e=>{if(e.key
   const h=window.location.hostname;
   const isLocal=/^localhost$/i.test(h)||/^127\./.test(h)||h==='';
   const saved=localStorage.getItem('mp_server_host');
-  if(saved){document.getElementById('mp-host-input').value=saved;}
-  else if(!isLocal){document.getElementById('mp-host-input').value='mining-rng-simulator-3d.onrender.com';}
+  let host;
+  if(saved){host=saved;}
+  else if(!isLocal){host='mining-rng-simulator-3d.onrender.com';}
+  else{host='localhost:3000';}
+  const hi=document.getElementById('mp-host-input');
+  if(hi)hi.value=host;
+  const hd=document.getElementById('mp-host-display');
+  if(hd)hd.textContent=host;
 })();
 const hasSave=loadGame();
 applyI18N();
