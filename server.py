@@ -2,10 +2,12 @@
 import asyncio
 import json
 import os
+import time
 import uuid
 from aiohttp import web
 
 players = {}
+STALE_TIMEOUT = 60  # seconds without any message → disconnect
 
 async def handle_connection(request):
     """Handle root path — health check or WebSocket upgrade."""
@@ -17,16 +19,45 @@ async def handle_connection(request):
 async def handle_health(request):
     return web.Response(text="OK")
 
+async def _cleanup_player(pid):
+    """Remove a player and broadcast leave + phantom_remove."""
+    p = players.get(pid)
+    if not p:
+        return
+    p["username"] = None
+    leave = json.dumps({"type": "player_leave", "id": pid})
+    phantom_rm = json.dumps({"type": "phantom_remove", "id": pid})
+    others = [p2 for p2 in players.values() if p2["username"]]
+    await asyncio.gather(*[p2["ws"].send_str(leave) for p2 in others], return_exceptions=True)
+    await asyncio.gather(*[p2["ws"].send_str(phantom_rm) for p2 in others], return_exceptions=True)
+    players.pop(pid, None)
+
+async def _stale_checker():
+    """Periodically disconnect players who haven't sent a message in STALE_TIMEOUT seconds."""
+    while True:
+        await asyncio.sleep(STALE_TIMEOUT)
+        now = time.time()
+        stale = [pid for pid, p in list(players.items()) if p["username"] and now - p.get("last_seen", 0) > STALE_TIMEOUT]
+        for pid in stale:
+            p = players.get(pid)
+            if p:
+                try:
+                    await p["ws"].close()
+                except Exception:
+                    pass
+                await _cleanup_player(pid)
+
 async def handle_ws(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
 
     pid = str(uuid.uuid4())
-    p = {"id": pid, "ws": ws, "username": None, "px": 0, "py": 0, "pz": 0, "ry": 0, "world": "main"}
+    p = {"id": pid, "ws": ws, "username": None, "px": 0, "py": 0, "pz": 0, "ry": 0, "world": "main", "last_seen": time.time()}
     players[pid] = p
 
     try:
         async for msg in ws:
+            p["last_seen"] = time.time()
             if msg.type == web.WSMsgType.TEXT:
                 try:
                     data = json.loads(msg.data)
@@ -120,19 +151,8 @@ async def handle_ws(request):
     except Exception:
         pass
     finally:
-        if p["username"]:
-            p["username"] = None
-            leave = json.dumps({"type": "player_leave", "id": pid})
-            phantom_rm = json.dumps({"type": "phantom_remove", "id": pid})
-            await asyncio.gather(*[
-                p2["ws"].send_str(leave) for pid2, p2 in players.items()
-                if pid2 != pid and p2["username"]
-            ], return_exceptions=True)
-            await asyncio.gather(*[
-                p2["ws"].send_str(phantom_rm) for pid2, p2 in players.items()
-                if pid2 != pid and p2["username"]
-            ], return_exceptions=True)
-        players.pop(pid, None)
+        if pid in players:
+            await _cleanup_player(pid)
 
     return ws
 
@@ -142,6 +162,7 @@ if __name__ == "__main__":
     app = web.Application()
     app.router.add_get("/", handle_connection)
     app.router.add_get("/health", handle_health)
+    app.on_startup.append(lambda app: asyncio.create_task(_stale_checker()))
     print("Mining RNG Simulator 3D - Multiplayer Server")
     print(f"Listening on ws://0.0.0.0:{port}")
     web.run_app(app, port=port, print=None)

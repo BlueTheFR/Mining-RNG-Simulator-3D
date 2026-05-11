@@ -278,6 +278,8 @@ canvas.free{cursor:default}
 #mp-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 #mp-status-dot.on{background:#44dd44;box-shadow:0 0 6px #44dd44}
 #mp-status-dot.off{background:#ff4444;box-shadow:0 0 6px #ff4444}
+#mp-status-dot.connecting{background:#ffcc00;box-shadow:0 0 6px #ffcc00;animation:mpPulse 1s ease-in-out infinite}
+@keyframes mpPulse{0%,100%{opacity:.4}50%{opacity:1}}
 #mp-status-label{font-size:6px;color:rgba(255,255,255,0.5)}
 #mp-status{font-size:6px;color:rgba(255,255,255,0.35)}
 #mp-players{font-size:6px;color:rgba(100,200,255,0.6)}
@@ -4745,6 +4747,20 @@ function _updateChunkWindow(){
     if(p.targetX!==undefined){p.targetX-=shiftX;p.targetZ-=shiftZ;}
     if(p.zigzag){for(const pt of p.zigzag){pt[0]-=shiftX;pt[2]-=shiftZ;}}
   }
+  // Shift multiplayer phantoms with the window
+  for(const[,p]of _phantoms){
+    p.group.position.x-=shiftX;
+    p.group.position.z-=shiftZ;
+    p.targetX-=shiftX;
+    p.targetZ-=shiftZ;
+  }
+  // Shift other players' phantom block overlays with the window
+  for(const[,pb]of _otherPhantomBlocks){
+    if(pb.mesh){
+      pb.mesh.position.x-=shiftX;
+      pb.mesh.position.z-=shiftZ;
+    }
+  }
   _rebuildWindowFromChunks();
   return true;
 }
@@ -9037,22 +9053,40 @@ function _showChatBubble(id,message){
   p._bubbleTimer=5;
 }
 
+let _wsReconnectTimer=null;
+let _wsRetryCount=0;
+
 function connectToServer(){
+  _clearReconnect();
   const host=_wsServerHost||'localhost:3000';
   const proto=_wsWss?'wss://':'ws://';
-  try{_ws=new WebSocket(proto+host);}catch(e){return;}
-  _ws.onopen=()=>{_ws.send(JSON.stringify({type:'join',username:_wsUsername}));};
+  try{_ws=new WebSocket(proto+host);}catch(e){_scheduleReconnect();return;}
+  _ws.onopen=()=>{_clearReconnect();_wsRetryCount=0;_ws.send(JSON.stringify({type:'join',username:_wsUsername}));};
   _ws.onmessage=e=>{try{_handleServerMsg(JSON.parse(e.data));}catch(ex){}};
   _ws.onerror=e=>{console.error('WS error:',e);};
   _ws.onclose=()=>{
     _wsConnected=false;
     if(_playerCountTimer){clearInterval(_playerCountTimer);_playerCountTimer=null;}
-    document.getElementById('mp-status').textContent='OFFLINE';
-    document.getElementById('mp-status-dot').className='off';
-    // If still in the join flow, re-show the overlay
     const ov=document.getElementById('mp-join-ov');
-    if(ov&&ov.style.display!=='flex'){setTimeout(()=>{ov.style.display='flex';},500);}
+    if(ov&&ov.style.display!=='flex'){_scheduleReconnect();}
+    else if(ov){setTimeout(()=>{ov.style.display='flex';},500);}
   };
+}
+
+function _scheduleReconnect(){
+  _clearReconnect();
+  _wsRetryCount++;
+  const dot=document.getElementById('mp-status-dot');
+  const label=document.getElementById('mp-status');
+  if(dot){dot.className='connecting';}
+  if(label){label.textContent='STARTING...';}
+  _wsReconnectTimer=setTimeout(()=>{
+    if(!_wsConnected&&_wsUsername)connectToServer();
+  },3000);
+}
+
+function _clearReconnect(){
+  if(_wsReconnectTimer){clearTimeout(_wsReconnectTimer);_wsReconnectTimer=null;}
 }
 
 const _PHANTOM_Y_OFS = -0.08; // phantom group origin → feet bottom
