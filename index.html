@@ -9096,7 +9096,9 @@ function _addOtherPhantomBlock(id,x,y,z,oreIdx,name,world){
   const col=ORES[oreIdx]?ORES[oreIdx].color||'#888':'#888';
   const mat=new THREE.MeshLambertMaterial({color:new THREE.Color(col),transparent:true,opacity:0.4,depthWrite:false,emissive:new THREE.Color(col),emissiveIntensity:0.2});
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat);
-  mesh.position.set(x+0.5,y+0.5,z+0.5);
+  const localX=x-_chunkOriginCX*CHUNK_SIZE;
+  const localZ=z-_chunkOriginCZ*CHUNK_SIZE;
+  mesh.position.set(localX+0.5,y+0.5,localZ+0.5);
   mesh.userData.oreIdx=oreIdx;
   const wire=new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(1.01,1.01,1.01)),
@@ -9113,16 +9115,30 @@ function _removeOtherPhantomBlock(id){
   if(pb){scene.remove(pb.mesh);_otherPhantomBlocks.delete(id);}
 }
 
+function _clearAllMultiplayerState(){
+  for(const[,p]of _phantoms){scene.remove(p.group);}
+  _phantoms.clear();
+  for(const[,pb]of _otherPhantomBlocks){scene.remove(pb.mesh);}
+  _otherPhantomBlocks.clear();
+  if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
+  phantomBlock=null;
+}
+
 function _handleServerMsg(msg){
   switch(msg.type){
     case'joined':
       _wsConnected=true;_wsPlayerId=msg.id;
+      _clearAllMultiplayerState();
       for(const p of(msg.players||[])){
         _addPhantomPlayer(p.id,p.username);
         const ph=_phantoms.get(p.id);
         if(ph){
-          ph.targetX=p.px;ph.targetY=p.py+_PHANTOM_Y_OFS;ph.targetZ=p.pz;ph.targetRy=p.ry;ph.world=p.world||'main';
-          ph.group.position.set(p.px,p.py+_PHANTOM_Y_OFS,p.pz);ph.group.rotation.y=p.ry;
+          const localX=p.px-_chunkOriginCX*CHUNK_SIZE;
+          const localZ=p.pz-_chunkOriginCZ*CHUNK_SIZE;
+          ph.targetX=localX;ph.targetY=p.py+_PHANTOM_Y_OFS;ph.targetZ=localZ;
+          ph.targetRy=p.ry;ph.world=p.world||'main';
+          ph.group.position.set(localX,p.py+_PHANTOM_Y_OFS,localZ);
+          ph.group.rotation.y=p.ry;
         }
       }
       document.getElementById('mp-status').textContent='ONLINE';
@@ -9145,7 +9161,9 @@ function _handleServerMsg(msg){
     case'position':{
       const ph=_phantoms.get(msg.id);
       if(ph){
-        ph.targetX=msg.px;ph.targetY=msg.py+_PHANTOM_Y_OFS;ph.targetZ=msg.pz;
+        const localX=msg.px-_chunkOriginCX*CHUNK_SIZE;
+        const localZ=msg.pz-_chunkOriginCZ*CHUNK_SIZE;
+        ph.targetX=localX;ph.targetY=msg.py+_PHANTOM_Y_OFS;ph.targetZ=localZ;
         ph.targetRy=msg.ry;ph.world=msg.world||'main';
       }
       break;
@@ -9179,7 +9197,9 @@ function sendPosition(){
   if(!_ws||!_wsConnected||!_wsPlayerId)return;
   const p=camera.position;
   const feetY=p.y-CAM_H;
-  _wsSendSafe(JSON.stringify({type:'position',px:p.x,py:feetY,pz:p.z,ry:euler.y,world:currentWorld||'main'}));
+  const absX=p.x+_chunkOriginCX*CHUNK_SIZE;
+  const absZ=p.z+_chunkOriginCZ*CHUNK_SIZE;
+  _wsSendSafe(JSON.stringify({type:'position',px:absX,py:feetY,pz:absZ,ry:euler.y,world:currentWorld||'main'}));
 }
 
 function sendChat(){
@@ -9191,7 +9211,9 @@ function sendChat(){
 
 function _broadcastPhantomPlace(){
   if(!_ws||!_wsConnected||!phantomBlock)return;
-  _wsSendSafe(JSON.stringify({type:'phantom_place',x:phantomBlock.x,y:phantomBlock.y,z:phantomBlock.z,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
+  const absX=phantomBlock.x+_chunkOriginCX*CHUNK_SIZE;
+  const absZ=phantomBlock.z+_chunkOriginCZ*CHUNK_SIZE;
+  _wsSendSafe(JSON.stringify({type:'phantom_place',x:absX,y:phantomBlock.y,z:absZ,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
 }
 
 function _broadcastPhantomRemove(){
