@@ -9111,6 +9111,7 @@ function tryJoin(){
   _wsWss=useWss;
   _wsUsername=username;
   _wsServerHost=host;
+  try{localStorage.setItem('mp_server_host',host);}catch(e){}
   document.getElementById('mp-status-bar').style.display='flex';
   document.getElementById('mp-status').textContent='CONNECTING...';
   document.getElementById('mp-status-dot').className='off';
@@ -9120,6 +9121,14 @@ document.getElementById('mp-join-btn').addEventListener('click',tryJoin);
 document.getElementById('mp-join-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryJoin();});
 
 // ═══════════════════════════════════════
+// Auto-detect server address
+(function(){
+  const h=window.location.hostname;
+  const isLocal=/^localhost$/i.test(h)||/^127\./.test(h)||h==='';
+  const saved=localStorage.getItem('mp_server_host');
+  if(saved){document.getElementById('mp-host-input').value=saved;}
+  else if(!isLocal){document.getElementById('mp-host-input').value='mining-rng-simulator-3d.onrender.com';}
+})();
 const hasSave=loadGame();
 applyI18N();
 genWorld();
