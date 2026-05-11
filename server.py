@@ -97,8 +97,6 @@ async def handler(ws):
         pass
     finally:
         if p["username"]:
-            # Free the username *before* sending notifications,
-            # so a reconnecting player with the same name isn't rejected.
             p["username"] = None
             leave = json.dumps({"type": "player_leave", "id": pid})
             phantom_rm = json.dumps({"type": "phantom_remove", "id": pid})
@@ -113,15 +111,107 @@ async def handler(ws):
         players.pop(pid, None)
 
 
-async def process_request(path, req):
-    if path in ("/", "/health"):
-        return 200, [("Content-Type", "text/plain")], b"OK"
+async def proxy_bridge(reader, writer, ws_reader, ws_writer):
+    """Bidirectional proxy between two connections until one closes."""
+    async def forward(src, dst):
+        try:
+            while True:
+                data = await src.read(65536)
+                if not data:
+                    break
+                dst.write(data)
+                await dst.drain()
+        except:
+            pass
+        finally:
+            try:
+                dst.close()
+            except:
+                pass
+
+    await asyncio.gather(
+        forward(reader, ws_writer),
+        forward(ws_reader, writer),
+    )
+
 
 async def main():
     port = int(os.environ.get("PORT", 3000))
+
+    # Start the WebSocket server on a random local port
+    ws_server = await websockets.serve(handler, "127.0.0.1", 0, ping_interval=30)
+    ws_port = ws_server.sockets[0].getsockname()[1]
+
+    # Public TCP server: handles health checks + proxies WebSocket to the internal server
+    async def public_handler(reader, writer):
+        try:
+            request_line = await asyncio.wait_for(reader.readline(), 5)
+        except asyncio.TimeoutError:
+            writer.close()
+            return
+        if not request_line:
+            writer.close()
+            return
+
+        line = request_line.decode(errors="replace").strip()
+        parts = line.split()
+        method = parts[0] if parts else ""
+        path = parts[1] if len(parts) > 1 else "/"
+
+        # HEAD health check
+        if method == "HEAD":
+            writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+            await writer.drain()
+            writer.close()
+            return
+
+        # Read the rest of the request headers
+        remaining = b""
+        try:
+            while True:
+                chunk = await asyncio.wait_for(reader.read(4096), 2)
+                if not chunk:
+                    break
+                remaining += chunk
+                if b"\r\n\r\n" in remaining or len(remaining) > 8192:
+                    break
+        except asyncio.TimeoutError:
+            pass
+
+        full_request = request_line + remaining
+        full_str = full_request.decode(errors="replace").lower()
+
+        # GET health check (no upgrade header = not a WebSocket request)
+        if method == "GET" and path in ("/", "/health") and "upgrade" not in full_str:
+            writer.write(b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK")
+            await writer.drain()
+            writer.close()
+            return
+
+        # Any other non-WebSocket request
+        if method != "GET" or "upgrade" not in full_str:
+            writer.write(b"HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n")
+            await writer.drain()
+            writer.close()
+            return
+
+        # WebSocket upgrade — proxy to the internal WS server
+        try:
+            ws_reader, ws_writer = await asyncio.open_connection("127.0.0.1", ws_port)
+        except:
+            writer.close()
+            return
+
+        ws_writer.write(full_request)
+        await ws_writer.drain()
+
+        await proxy_bridge(reader, writer, ws_reader, ws_writer)
+
+    server = await asyncio.start_server(public_handler, "0.0.0.0", port)
     print("Mining RNG Simulator 3D - Multiplayer Server")
     print(f"Listening on ws://0.0.0.0:{port}")
-    async with websockets.serve(handler, "0.0.0.0", port, process_request=process_request, ping_interval=30):
+
+    async with server:
         await asyncio.Future()
 
 
