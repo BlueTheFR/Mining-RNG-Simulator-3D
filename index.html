@@ -812,11 +812,12 @@ const MAX_ORE_EXACT=5000000000;
 const lang=(navigator.language||navigator.userLanguage||'fr').toLowerCase().startsWith('fr')?'fr':'en';
 const _playerColors={};
 const _savedColor=localStorage.getItem('player_color');
-function _getPlayerColor(username){
+function _getPlayerColor(username,id){
   if(username===_wsUsername){
     const el=document.getElementById('color-picker');
     return el?el.value:'#ff4444';
   }
+  if(id&&_syncedColors.has(id))return _syncedColors.get(id);
   return _usernameColor(username);
 }
 (function(){
@@ -825,6 +826,7 @@ function _getPlayerColor(username){
     if(_savedColor)cp.value=_savedColor;
     cp.addEventListener('input',function(){
       try{localStorage.setItem('player_color',this.value);}catch(e){}
+      if(_wsConnected)_wsSendSafe(JSON.stringify({type:'color_update',color:this.value}));
     });
   }
 })();
@@ -8946,6 +8948,7 @@ let _chatOpen=false;
 let _playerCountTimer=null;
 const _phantoms=new Map();
 const _otherPhantomBlocks=new Map(); // id -> {mesh, world}
+const _syncedColors=new Map(); // id -> hex color string
 let _lastPosSend=0;
 const POS_SEND_INTERVAL=0.1;
 
@@ -8955,8 +8958,7 @@ function _usernameColor(name){
   return 'hsl('+((h%360)+360)%360+',70%,55%)';
 }
 
-function _createPhantomGroup(username){
-  const col=_usernameColor(username);
+function _createPhantomGroup(username,col){
   const g=new THREE.Group();
   const c=new THREE.Color(col);
   const cd=c.clone().multiplyScalar(0.7);
@@ -9007,12 +9009,40 @@ function _createPhantomGroup(username){
   return g;
 }
 
-function _addPhantomPlayer(id,username){
+function _addPhantomPlayer(id,username,color){
   if(_phantoms.has(id))return;
-  const g=_createPhantomGroup(username);
+  const syncedCol=color||_usernameColor(username);
+  if(color)_syncedColors.set(id,color);
+  const g=_createPhantomGroup(username,syncedCol);
   g.visible=false;
   scene.add(g);
-  _phantoms.set(id,{group:g,targetX:0,targetY:0,targetZ:0,targetRy:0,world:'main',username,color:_usernameColor(username)});
+  _phantoms.set(id,{group:g,targetX:0,targetY:0,targetZ:0,targetRy:0,world:'main',username,color:syncedCol});
+}
+
+function _updatePhantomColor(id,color){
+  const ph=_phantoms.get(id);
+  if(!ph)return;
+  ph.color=color;
+  const g=ph.group;
+  const c=new THREE.Color(color);
+  const cd=c.clone().multiplyScalar(0.7);
+  // Update body mesh materials: head(0), body(5)
+  [0,5].forEach(i=>{if(g.children[i]&&g.children[i].material)g.children[i].material.color.copy(c);});
+  // Arms(6,7) and legs(8,9) use darker shade
+  [6,7,8,9].forEach(i=>{if(g.children[i]&&g.children[i].material)g.children[i].material.color.copy(cd);});
+  // Rebuild nametag sprite
+  const cv=document.createElement('canvas');
+  cv.width=256;cv.height=64;
+  const ctx=cv.getContext('2d');
+  ctx.font='Bold 20px "Press Start 2P", monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=10;
+  ctx.fillStyle=color;
+  ctx.fillText(ph.username,128,34);
+  const tex=new THREE.CanvasTexture(cv);
+  tex.needsUpdate=true;
+  const sp=g.children.find(c=>c.type==='Sprite'&&Math.abs(c.position.y-1.05)<0.01);
+  if(sp)sp.material.map=tex;
 }
 
 function _removePhantomPlayer(id){
@@ -9113,7 +9143,12 @@ function connectToServer(){
   const host=_wsServerHost||'localhost:3000';
   const proto=_wsWss?'wss://':'ws://';
   try{_ws=new WebSocket(proto+host);}catch(e){_scheduleReconnect();return;}
-  _ws.onopen=()=>{_clearReconnect();_wsRetryCount=0;_ws.send(JSON.stringify({type:'join',username:_wsUsername}));};
+  _ws.onopen=()=>{
+    _clearReconnect();_wsRetryCount=0;
+    const colEl=document.getElementById('color-picker');
+    const col=colEl?colEl.value:'#ff4444';
+    _ws.send(JSON.stringify({type:'join',username:_wsUsername,color:col}));
+  };
   _ws.onmessage=e=>{try{_handleServerMsg(JSON.parse(e.data));}catch(ex){}};
   _ws.onerror=e=>{console.error('WS error:',e);};
   _ws.onclose=()=>{
@@ -9172,6 +9207,7 @@ function _removeOtherPhantomBlock(id){
 function _clearAllMultiplayerState(){
   for(const[,p]of _phantoms){scene.remove(p.group);}
   _phantoms.clear();
+  _syncedColors.clear();
   for(const[,pb]of _otherPhantomBlocks){scene.remove(pb.mesh);}
   _otherPhantomBlocks.clear();
   if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
@@ -9183,8 +9219,9 @@ function _handleServerMsg(msg){
     case'joined':
       _wsConnected=true;_wsPlayerId=msg.id;
       _clearAllMultiplayerState();
+      if(msg.color)_syncedColors.set(msg.id,msg.color);
       for(const p of(msg.players||[])){
-        _addPhantomPlayer(p.id,p.username);
+        _addPhantomPlayer(p.id,p.username,p.color);
         const ph=_phantoms.get(p.id);
         if(ph){
           const localX=p.px-_chunkOriginCX*CHUNK_SIZE;
@@ -9205,7 +9242,7 @@ function _handleServerMsg(msg){
       if(hl)hl.style.display='inline';
       break;
     case'player_join':
-      _addPhantomPlayer(msg.id,msg.username);
+      _addPhantomPlayer(msg.id,msg.username,msg.color);
       _updatePlayerCountDisplay(_phantoms.size+1);
       break;
     case'player_leave':
@@ -9215,6 +9252,10 @@ function _handleServerMsg(msg){
       break;
     case'player_count':
       _updatePlayerCountDisplay(msg.count);
+      break;
+    case'color_update':
+      _syncedColors.set(msg.id,msg.color);
+      _updatePhantomColor(msg.id,msg.color);
       break;
     case'position':{
       const ph=_phantoms.get(msg.id);
@@ -9227,7 +9268,7 @@ function _handleServerMsg(msg){
       break;
     }
     case'chat':
-      _addChatMessage(msg.username,msg.message);
+      _addChatMessage(msg.username,msg.message,msg.id);
       _showChatBubble(msg.id,msg.message);
       break;
     case'phantom_place':
@@ -9279,7 +9320,7 @@ function _broadcastPhantomRemove(){
   _wsSendSafe(JSON.stringify({type:'phantom_remove'}));
 }
 
-function _addChatMessage(username,message){
+function _addChatMessage(username,message,id){
   const list=document.getElementById('chat-msg-list');
   if(!list)return;
   const box=document.getElementById('chat-box');
@@ -9288,7 +9329,7 @@ function _addChatMessage(username,message){
   row.className='chat-msg';
   const d=new Date();
   const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-  const col=_getPlayerColor(username);
+  const col=_getPlayerColor(username,id);
   row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-name" style="color:'+col+'">'+_escHtml(username)+'</span> <span class="chat-text">'+_escHtml(message)+'</span>';
   list.appendChild(row);
   list.scrollTop=list.scrollHeight;

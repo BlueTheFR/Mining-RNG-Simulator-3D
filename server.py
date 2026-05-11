@@ -52,7 +52,7 @@ async def handle_ws(request):
     await ws.prepare(request)
 
     pid = str(uuid.uuid4())
-    p = {"id": pid, "ws": ws, "username": None, "px": 0, "py": 0, "pz": 0, "ry": 0, "world": "main", "last_seen": time.time()}
+    p = {"id": pid, "ws": ws, "username": None, "color": "#ff4444", "px": 0, "py": 0, "pz": 0, "ry": 0, "world": "main", "last_seen": time.time()}
     players[pid] = p
 
     try:
@@ -81,13 +81,14 @@ async def handle_ws(request):
                     continue
 
                 p["username"] = username
+                p["color"] = data.get("color", "#ff4444")
                 existing = [
-                    {"id": pid2, "username": p2["username"], "px": p2["px"], "py": p2["py"], "pz": p2["pz"], "ry": p2["ry"], "world": p2["world"]}
+                    {"id": pid2, "username": p2["username"], "color": p2["color"], "px": p2["px"], "py": p2["py"], "pz": p2["pz"], "ry": p2["ry"], "world": p2["world"]}
                     for pid2, p2 in players.items() if p2["username"] and pid2 != pid
                 ]
-                await ws.send_str(json.dumps({"type": "joined", "id": pid, "players": existing}))
+                await ws.send_str(json.dumps({"type": "joined", "id": pid, "color": p["color"], "players": existing}))
 
-                broadcast = json.dumps({"type": "player_join", "id": pid, "username": username})
+                broadcast = json.dumps({"type": "player_join", "id": pid, "username": username, "color": p["color"]})
                 await asyncio.gather(*[
                     p2["ws"].send_str(broadcast) for pid2, p2 in players.items()
                     if pid2 != pid and p2["username"]
@@ -128,6 +129,17 @@ async def handle_ws(request):
                     "oreIdx": data.get("oreIdx"), "name": data.get("name"),
                     "world": data.get("world", "main")
                 })
+                await asyncio.gather(*[
+                    p2["ws"].send_str(relay) for pid2, p2 in players.items()
+                    if pid2 != pid and p2["username"]
+                ], return_exceptions=True)
+
+            elif t == "color_update":
+                if not p["username"]:
+                    continue
+                new_color = data.get("color", "#ff4444")
+                p["color"] = new_color
+                relay = json.dumps({"type": "color_update", "id": pid, "color": new_color})
                 await asyncio.gather(*[
                     p2["ws"].send_str(relay) for pid2, p2 in players.items()
                     if pid2 != pid and p2["username"]
