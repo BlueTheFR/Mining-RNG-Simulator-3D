@@ -247,6 +247,40 @@ canvas.free{cursor:default}
 #free-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7px;color:rgba(255,255,255,0.5);pointer-events:none;display:none;text-align:center;line-height:2}
 #placing-ind{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:5px;color:var(--hud-accent);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:4px 10px;display:none;pointer-events:none}
 
+/* ── Multiplayer Chat ── */
+#chat-box{position:absolute;bottom:190px;right:10px;width:min(350px,40vw);max-height:200px;pointer-events:all;z-index:40;font-family:'Press Start 2P',monospace;display:flex;flex-direction:column;gap:4px}
+#chat-msg-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;flex-shrink:0;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+#chat-msg-list:empty::after{content:'No messages';color:rgba(255,255,255,0.15);font-size:7px}
+.chat-msg{font-size:7px;color:rgba(220,220,220,0.8);margin-bottom:4px;line-height:1.6;word-break:break-word;font-family:sans-serif}
+.chat-name{font-weight:bold;font-size:8px;font-family:'Press Start 2P',monospace}
+.chat-text{color:rgba(220,220,220,0.7);font-family:sans-serif}
+#chat-input-area{display:none;pointer-events:all}
+#chat-input{width:100%;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.2);border-radius:3px;color:rgba(220,220,220,0.85);font-family:'Press Start 2P',monospace;font-size:8px;padding:6px 8px;outline:none;box-sizing:border-box}
+#chat-input::placeholder{color:rgba(255,255,255,0.2);font-size:6px}
+
+/* ── Username Prompt ── */
+#mp-join-ov{position:absolute;inset:0;background:rgba(2,2,6,0.96);display:flex;z-index:100;align-items:center;justify-content:center;pointer-events:all}
+#mp-join-box{background:#06060d;border:1px solid rgba(255,255,255,0.14);border-radius:8px;width:min(420px,90vw);padding:28px 24px;font-family:'Press Start 2P',monospace;text-align:center}
+#mp-join-box h2{font-size:9px;color:var(--hud-accent);margin-bottom:4px;letter-spacing:2px}
+#mp-join-sub{font-size:7px;color:rgba(200,200,200,0.25);margin-bottom:18px;font-family:sans-serif}
+#mp-join-input{width:100%;background:#03030a;border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:rgba(220,220,220,0.85);font-family:'Press Start 2P',monospace;font-size:10px;padding:10px 12px;outline:none;box-sizing:border-box;text-align:center;margin-bottom:8px}
+#mp-join-input:focus{border-color:rgba(255,255,255,0.35)}
+#mp-host-input{width:100%;background:#03030a;border:1px solid rgba(255,255,255,0.1);border-radius:3px;color:rgba(160,160,160,0.6);font-family:monospace;font-size:8px;padding:7px 10px;outline:none;box-sizing:border-box;text-align:center;margin-bottom:12px}
+#mp-host-input:focus{border-color:rgba(255,255,255,0.2)}
+#mp-join-btn{font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 24px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:var(--hud-accent);cursor:pointer;transition:all .12s;width:100%}
+#mp-join-btn:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.35)}
+#mp-join-err{font-size:7px;color:#ff6644;margin-top:8px;display:none;font-family:sans-serif}
+#mp-join-skip{font-size:7px;color:rgba(200,200,200,0.2);background:transparent;border:none;cursor:pointer;margin-top:10px;font-family:'Press Start 2P',monospace;transition:color .12s}
+#mp-join-skip:hover{color:rgba(200,200,200,0.5)}
+
+/* ── MP Status Bar ── */
+#mp-status-bar{position:absolute;top:32px;right:330px;display:none;align-items:center;gap:8px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:6px 10px;pointer-events:none;z-index:11;font-family:'Press Start 2P',monospace}
+#mp-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+#mp-status-dot.on{background:#44dd44;box-shadow:0 0 6px #44dd44}
+#mp-status-dot.off{background:#ff4444;box-shadow:0 0 6px #ff4444}
+#mp-status-label{font-size:6px;color:rgba(255,255,255,0.5)}
+#mp-status{font-size:6px;color:rgba(255,255,255,0.35)}
+#mp-players{font-size:6px;color:rgba(100,200,255,0.6)}
 /* ── Shop ── */
 #shop-ov{position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:50;align-items:center;justify-content:center;pointer-events:all}
 #shop-ov.open{display:flex}
@@ -515,6 +549,7 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
     <span id="hint-mine">Clic G maintenu : miner</span>
     <span id="hint-ctrl">Ctrl : liberer souris</span>
     <span id="hint-shop">E : boutique</span>
+    <span id="hint-chat">T : chat</span>
   </div>
   <div id="rare-screen-fx"><div class="fx-overlay"></div><img class="fx-img" src="" alt=""></div>
   <div id="pick-bar"></div>
@@ -538,6 +573,36 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div class="ach-toast-title">🏆 SUCCÈS DÉBLOQUÉ</div>
   <div class="ach-toast-name" id="ach-toast-name"></div>
   <div class="ach-toast-reward" id="ach-toast-reward"></div>
+</div>
+
+<!-- Chat UI -->
+<div id="chat-box">
+  <div id="chat-msg-list"></div>
+  <div id="chat-input-area">
+    <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200" autocomplete="off">
+  </div>
+</div>
+
+<!-- Username / Connect Prompt -->
+<div id="mp-join-ov">
+  <div id="mp-join-box">
+    <h2>MINING RNG SIMULATOR</h2>
+    <div id="mp-join-sub">Connect to multiplayer — each player has their own world</div>
+    <input id="mp-join-input" type="text" placeholder="Your username" maxlength="20" autocomplete="off">
+    <input id="mp-host-input" type="text" value="localhost:3000" placeholder="Server address (host:port)">
+    <div id="mp-join-err"></div>
+    <button id="mp-join-btn">CONNECT</button>
+    <div style="font-size:6px;color:rgba(200,200,200,0.15);margin-top:10px;font-family:sans-serif">Start the server first: python server.py</div>
+    <button id="mp-join-skip" onclick="document.getElementById('mp-join-ov').style.display='none';document.getElementById('mp-status-bar').style.display='flex';document.getElementById('mp-status').textContent='OFFLINE';document.getElementById('mp-status-dot').className='off'">Skip — Play Offline</button>
+  </div>
+</div>
+
+<!-- MP Status Bar -->
+<div id="mp-status-bar">
+  <div id="mp-status-dot" class="off"></div>
+  <span id="mp-status-label">MP</span>
+  <span id="mp-status">OFFLINE</span>
+  <span id="mp-players" style="display:none"></span>
 </div>
 
 <!-- Mobile Controls Overlay -->
@@ -822,6 +887,7 @@ function applyI18N(){
   const _hm=document.getElementById('hint-mine');if(_hm)_hm.textContent=lang==='fr'?'Clic G maintenu : miner':'Hold LMB : mine';
   const _hc=document.getElementById('hint-ctrl');if(_hc)_hc.textContent=lang==='fr'?'Ctrl : libérer souris':'Ctrl : free mouse';
   const _hs=document.getElementById('hint-shop');if(_hs)_hs.textContent=lang==='fr'?'E : boutique':'E : shop';
+  const _hchat=document.getElementById('hint-chat');if(_hchat)_hchat.textContent=lang==='fr'?'T : chat':'T : chat';
   // Save modal
   const _sm=document.getElementById('savemod-title');if(_sm)_sm.textContent=lang==='fr'?'SAUVEGARDE':'SAVE';
   const _ss=document.getElementById('savemod-sub');if(_ss)_ss.textContent=lang==='fr'?'Exportez ou importez votre progression':'Export or import your progress';
@@ -2940,7 +3006,7 @@ function travelToMono(){
   _showTransition('◈',lang==='fr'?'MONDE MONOCHROME...':'MONOCHROME WORLD...','#cccccc');
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;const coords=[];
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedMono,coords,()=>{
     _rebuildWindowFromChunks();
@@ -2977,7 +3043,7 @@ function travelToShadow(){
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;
   const coords=[];
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedShadow,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3014,7 +3080,7 @@ function travelToOcean(){
   _showTransition('🌊',lang==='fr'?'MONDE OCÉANIQUE...':'OCEAN WORLD...','#44aaff');
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;const coords=[];
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedOcean,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3044,7 +3110,7 @@ function travelToBiome(){
   _showTransition('🌿',lang==='fr'?'MONDE DES BIOMES...':'BIOME WORLD...','#aaff44');
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;const coords=[];
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedBiome,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3081,7 +3147,7 @@ function travelToMain(){
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;
   const coords=[];
-  _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGenerated,coords,()=>{
     _rebuildWindowFromChunks();
@@ -5165,7 +5231,7 @@ function resetMine(){
 
   if(currentWorld==='shadow'){
     const side2=RENDER_DIST*2+1;const coords2=[];
-    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedShadow,coords2,()=>{
       _rebuildWindowFromChunks();
@@ -5177,7 +5243,7 @@ function resetMine(){
     });
   }else if(currentWorld==='mono'){
     const side2=RENDER_DIST*2+1;const coords2=[];
-    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedMono,coords2,()=>{
       _rebuildWindowFromChunks();
@@ -5189,7 +5255,7 @@ function resetMine(){
     });
   }else if(currentWorld==='ocean'){
     const side2=RENDER_DIST*2+1;const coords2=[];
-    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedOcean,coords2,()=>{
       _rebuildWindowFromChunks();
@@ -5202,7 +5268,7 @@ function resetMine(){
   }else if(currentWorld==='biome'){
     _biomeSeed=Math.floor(Math.random()*2147483647);
     const side2=RENDER_DIST*2+1;const coords2=[];
-    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedBiome,coords2,()=>{
     _rebuildWindowFromChunks();
@@ -5213,7 +5279,7 @@ function resetMine(){
       showSpawn(lang==='fr'?'⛏ Mine régénérée ! Téléporté au spawn !':'⛏ Mine reset! Teleported to spawn!','#60b060',false);
     });
   }else{
-    genWorld();
+    removePrevPhantom();genWorld();
     _buildWorldMeshReal();spawnPlayer();
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;_meshDirty=false;
     updateMineTopBar();_hideTransition();
@@ -5831,6 +5897,13 @@ function init3D(){
   document.addEventListener('mouseup',e=>{if(e.button===0){miningHeld=false;}});
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('keydown',e=>{
+    // ── Chat input handling ──
+    if(typeof _chatOpen!=='undefined'&&_chatOpen){
+      if(e.key==='Enter'){e.preventDefault();sendChat();return;}
+      if(e.key==='Escape'){e.preventDefault();closeChat();return;}
+      return; // let other keys reach the input field
+    }
+    if(typeof _wsConnected!=='undefined'&&_wsConnected&&(e.key==='t'||e.key==='T')&&!shopOpen&&!altarOpen&&!shadowAltarOpen&&!monoAltarOpen&&!oceanAltarOpen){openChat();e.preventDefault();return;}
     keys[e.code]=true;
     if(e.code==='Space')e.preventDefault();
     if(altarOpen){
@@ -6091,6 +6164,7 @@ function doMine(){
     _syncBlockWrite(x,y,z); // sync removal to chunk
     if(phantomMesh){scene.remove(phantomMesh);phantomMesh.geometry.dispose();phantomMesh.material.dispose();phantomMesh=null;}
     const pName=phantomBlock.name;
+    if(typeof _broadcastPhantomRemove==='function')_broadcastPhantomRemove();
     phantomBlock=null;
     if(ore.epinephrine)stopEpineAudio();
     selectedInv=pName;
@@ -6325,6 +6399,7 @@ function spawnCave(cx,cy,cz){
 // Only 1 phantom at a time. Placing another removes the old one.
 function removePrevPhantom(){
   if(!phantomBlock)return;
+  if(typeof _broadcastPhantomRemove==='function')_broadcastPhantomRemove();
   // If the phantom is still in the world, remove it silently
   const{x,y,z,oi}=phantomBlock;
   if(blocks[idx(x,y,z)]&&oreIdx[idx(x,y,z)]===oi){
@@ -6376,6 +6451,7 @@ function doPlace(){
   phantomBlock={x,y,z,oi:oI,name:selectedInv};
   _scanOre=null;_scanPos=null;
   if(ORES[oI].epinephrine)startEpineAudio(x,y,z);
+  if(typeof _broadcastPhantomPlace==='function')_broadcastPhantomPlace();
   markMeshDirty();updateHudStatsOnly();
   showSpawn(lang==='fr'?'Phantom pose: '+selectedInv:'Phantom placed: '+selectedInv,'#c8a030',false,null);
 }
@@ -8271,6 +8347,9 @@ function loop(t=0){
   if(_travelInProgress)return;
   if(!shopOpen&&!altarOpen&&!shadowAltarOpen&&!monoAltarOpen&&!oceanAltarOpen&&!isFreeMouse)movePlayer(dt);
   tickMine(dt);
+  // ── Multiplayer updates ──
+  _updatePhantoms(dt);
+  if(_wsConnected&&t-_lastPosSend>POS_SEND_INTERVAL*1000){_lastPosSend=t;sendPosition();}
   if(_updateChunkWindow()){
     _meshDirty=true;
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
@@ -8728,6 +8807,318 @@ function getAchLuckBonus(){return _achLuckBonus;}
     document.getElementById('c').addEventListener('touchstart',e=>{e.preventDefault();},{passive:false});
   }
 })();
+// ═══════════ MULTIPLAYER ═══════════
+let _ws=null;
+let _wsConnected=false;
+let _wsPlayerId=null;
+let _wsUsername=null;
+let _wsServerHost='localhost:3000';
+let _wsWss=false;
+let _chatOpen=false;
+const _phantoms=new Map();
+const _otherPhantomBlocks=new Map(); // id -> {mesh, world}
+let _lastPosSend=0;
+const POS_SEND_INTERVAL=0.1;
+
+function _usernameColor(name){
+  let h=0;
+  for(let i=0;i<name.length;i++)h=name.charCodeAt(i)+((h<<5)-h);
+  return 'hsl('+((h%360)+360)%360+',70%,55%)';
+}
+
+function _createPhantomGroup(username){
+  const col=_usernameColor(username);
+  const g=new THREE.Group();
+  const c=new THREE.Color(col);
+  const cd=c.clone().multiplyScalar(0.7);
+  const mat=new THREE.MeshBasicMaterial({color:c.getHex()});
+  const matD=new THREE.MeshBasicMaterial({color:cd.getHex()});
+  function addP(w,h,d,x,y,z,m){
+    const m2=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+    m2.position.set(x,y,z);
+    g.add(m2);
+  }
+  // ~1 block tall figure (matches CAM_H ~0.92)
+  addP(0.45,0.35,0.45,0,0.73,0,mat);  // head (top ~0.905)
+  // Eyes
+  const eyeMat=new THREE.MeshBasicMaterial({color:0xffffff});
+  addP(0.07,0.07,0.025,-0.1,0.75,0.227,eyeMat); // left
+  addP(0.07,0.07,0.025,0.1,0.75,0.227,eyeMat);  // right
+  const pupilMat=new THREE.MeshBasicMaterial({color:0x000000});
+  addP(0.04,0.04,0.03,-0.1,0.75,0.229,pupilMat);
+  addP(0.04,0.04,0.03,0.1,0.75,0.229,pupilMat);
+  addP(0.45,0.2,0.22,0,0.45,0,mat);   // body
+  addP(0.12,0.22,0.12,-0.28,0.45,0,matD); // arm L
+  addP(0.12,0.22,0.12,0.28,0.45,0,matD);  // arm R
+  addP(0.16,0.18,0.16,-0.08,0.17,0,matD); // leg L
+  addP(0.16,0.18,0.16,0.08,0.17,0,matD);  // leg R
+  // Nametag sprite
+  const cv=document.createElement('canvas');
+  cv.width=256;cv.height=64;
+  const ctx=cv.getContext('2d');
+  ctx.font='Bold 20px "Press Start 2P", monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=10;
+  ctx.fillStyle=col;
+  ctx.fillText(username,128,34);
+  const tex=new THREE.CanvasTexture(cv);
+  tex.needsUpdate=true;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false}));
+  sp.scale.set(1.6,0.4,1);sp.position.y=1.05;
+  g.add(sp);
+  // Chat bubble sprite (hidden by default)
+  const bc=document.createElement('canvas');
+  bc.width=512;bc.height=96;
+  const bctx=bc.getContext('2d');
+  const btex=new THREE.CanvasTexture(bc);
+  btex.needsUpdate=true;
+  const bubble=new THREE.Sprite(new THREE.SpriteMaterial({map:btex,transparent:true,depthTest:false,depthWrite:false,opacity:1}));
+  bubble.scale.set(3,0.6,1);bubble.position.y=1.35;bubble.visible=false;
+  g.add(bubble);
+  return g;
+}
+
+function _addPhantomPlayer(id,username){
+  if(_phantoms.has(id))return;
+  const g=_createPhantomGroup(username);
+  g.visible=false;
+  scene.add(g);
+  _phantoms.set(id,{group:g,targetX:0,targetY:0,targetZ:0,targetRy:0,world:'main',username,color:_usernameColor(username)});
+}
+
+function _removePhantomPlayer(id){
+  const p=_phantoms.get(id);
+  if(p){scene.remove(p.group);_phantoms.delete(id);}
+}
+
+function _updatePhantoms(dt){
+  const myWorld=currentWorld||'main';
+  for(const[,p]of _phantoms){
+    if(p.world!==myWorld){p.group.visible=false;continue;}
+    p.group.visible=true;
+    const spd=Math.min(1,dt*10);
+    p.group.position.x+=(p.targetX-p.group.position.x)*spd;
+    p.group.position.y+=(p.targetY-p.group.position.y)*spd;
+    p.group.position.z+=(p.targetZ-p.group.position.z)*spd;
+    let dr=p.targetRy-p.group.rotation.y;
+    if(dr>Math.PI)dr-=Math.PI*2;
+    if(dr<-Math.PI)dr+=Math.PI*2;
+    p.group.rotation.y+=dr*spd;
+    // Update chat bubble timer
+    if(p._bubbleTimer>0){
+      p._bubbleTimer-=dt;
+      const bubble=p.group.children.find(c=>c.type==='Sprite'&&c.position.y>1.2);
+      if(bubble){
+        if(p._bubbleTimer<=3)bubble.material.opacity=Math.max(0,p._bubbleTimer-2);
+        if(p._bubbleTimer<=0){bubble.visible=false;bubble.material.opacity=1;}
+      }
+    }
+  }
+  // Show/hide other players' phantom block overlays
+  for(const[,pb]of _otherPhantomBlocks){
+    pb.mesh.visible=pb.world===myWorld;
+  }
+}
+
+function _showChatBubble(id,message){
+  const p=_phantoms.get(id);
+  if(!p)return;
+  const g=p.group;
+  let bubble=null;
+  for(const c of g.children){
+    if(c.type==='Sprite'&&c.position.y>1.2){bubble=c;break;}
+  }
+  if(!bubble)return;
+  const bc=document.createElement('canvas');
+  bc.width=512;bc.height=96;
+  const bctx=bc.getContext('2d');
+  bctx.clearRect(0,0,512,96);
+  // Bubble background
+  const txt=message.length>38?message.slice(0,38)+'...':message;
+  bctx.font='18px "Press Start 2P", monospace';
+  const mw=bctx.measureText(txt).width;
+  const bw=Math.min(480,Math.max(60,mw+30));
+  const bx=(512-bw)/2;
+  bctx.fillStyle='rgba(0,0,0,0.75)';
+  bctx.beginPath();
+  const r=10;
+  bctx.moveTo(bx+r,10);bctx.lineTo(bx+bw-r,10);
+  bctx.quadraticCurveTo(bx+bw,10,bx+bw,10+r);
+  bctx.lineTo(bx+bw,86-r);bctx.quadraticCurveTo(bx+bw,86,bx+bw-r,86);
+  bctx.lineTo(bx+r,86);bctx.quadraticCurveTo(bx,86,bx,86-r);
+  bctx.lineTo(bx,10+r);bctx.quadraticCurveTo(bx,10,bx+r,10);
+  bctx.fill();
+  bctx.fillStyle='rgba(255,255,255,0.9)';
+  bctx.textAlign='center';bctx.textBaseline='middle';
+  bctx.fillText(txt,256,50);
+  bubble.material.map=new THREE.CanvasTexture(bc);
+  bubble.material.map.needsUpdate=true;
+  bubble.material.opacity=1;
+  bubble.visible=true;
+  p._bubbleTimer=5;
+}
+
+function connectToServer(){
+  const host=_wsServerHost||'localhost:3000';
+  const proto=_wsWss?'wss://':'ws://';
+  try{_ws=new WebSocket(proto+host);}catch(e){return;}
+  _ws.onopen=()=>{_ws.send(JSON.stringify({type:'join',username:_wsUsername}));};
+  _ws.onmessage=e=>{try{_handleServerMsg(JSON.parse(e.data));}catch(ex){}};
+  _ws.onclose=()=>{
+    _wsConnected=false;
+    document.getElementById('mp-status').textContent='OFFLINE';
+    document.getElementById('mp-status-dot').className='off';
+  };
+}
+
+function _addOtherPhantomBlock(id,x,y,z,oreIdx,name,world){
+  _removeOtherPhantomBlock(id);
+  const col=ORES[oreIdx]?ORES[oreIdx].color||'#888':'#888';
+  const mat=new THREE.MeshBasicMaterial({color:new THREE.Color(col),transparent:true,opacity:0.35,depthWrite:false});
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat);
+  mesh.position.set(x+0.5,y+0.5,z+0.5);
+  // Wireframe outline
+  const wire=new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.01,1.01,1.01)),
+    new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.4})
+  );
+  mesh.add(wire);
+  mesh.visible=false;
+  scene.add(mesh);
+  _otherPhantomBlocks.set(id,{mesh,world:world||'main'});
+}
+
+function _removeOtherPhantomBlock(id){
+  const pb=_otherPhantomBlocks.get(id);
+  if(pb){scene.remove(pb.mesh);_otherPhantomBlocks.delete(id);}
+}
+
+function _handleServerMsg(msg){
+  switch(msg.type){
+    case'joined':
+      _wsConnected=true;_wsPlayerId=msg.id;
+      for(const p of(msg.players||[])){
+        _addPhantomPlayer(p.id,p.username);
+        const ph=_phantoms.get(p.id);
+        if(ph){
+          ph.targetX=p.px;ph.targetY=p.py;ph.targetZ=p.pz;ph.targetRy=p.ry;ph.world=p.world||'main';
+          ph.group.position.set(p.px,p.py,p.pz);ph.group.rotation.y=p.ry;
+        }
+      }
+      document.getElementById('mp-status').textContent='ONLINE';
+      document.getElementById('mp-status-dot').className='on';
+      const pc=document.getElementById('mp-players');
+      if(pc){pc.textContent='| '+(msg.players.length+1)+' online';pc.style.display='inline';}
+      break;
+    case'player_join':
+      _addPhantomPlayer(msg.id,msg.username);
+      break;
+    case'player_leave':
+      _removePhantomPlayer(msg.id);
+      _removeOtherPhantomBlock(msg.id);
+      break;
+    case'position':{
+      const ph=_phantoms.get(msg.id);
+      if(ph){
+        ph.targetX=msg.px;ph.targetY=msg.py;ph.targetZ=msg.pz;
+        ph.targetRy=msg.ry;ph.world=msg.world||'main';
+      }
+      break;
+    }
+    case'chat':
+      _addChatMessage(msg.username,msg.message);
+      _showChatBubble(msg.id,msg.message);
+      break;
+    case'phantom_place':
+      _addOtherPhantomBlock(msg.id,msg.x,msg.y,msg.z,msg.oreIdx,msg.name,msg.world);
+      break;
+    case'phantom_remove':
+      _removeOtherPhantomBlock(msg.id);
+      break;
+    case'error':
+      const errEl=document.getElementById('mp-join-err');
+      if(errEl){errEl.textContent=msg.message;errEl.style.display='block';}
+      if(_ws){_ws.close();_ws=null;}
+      const ov=document.getElementById('mp-join-ov');
+      if(ov){ov.style.display='flex';}
+      break;
+  }
+}
+
+function sendPosition(){
+  if(!_ws||!_wsConnected||!_wsPlayerId)return;
+  const p=camera.position;
+  const feetY=p.y-CAM_H;
+  _ws.send(JSON.stringify({type:'position',px:p.x,py:feetY,pz:p.z,ry:euler.y,world:currentWorld||'main'}));
+}
+
+function _broadcastPhantomPlace(){
+  if(!_ws||!_wsConnected||!phantomBlock)return;
+  _ws.send(JSON.stringify({type:'phantom_place',x:phantomBlock.x,y:phantomBlock.y,z:phantomBlock.z,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
+}
+
+function _broadcastPhantomRemove(){
+  if(!_ws||!_wsConnected)return;
+  _ws.send(JSON.stringify({type:'phantom_remove'}));
+}
+
+function _addChatMessage(username,message){
+  const list=document.getElementById('chat-msg-list');
+  if(!list)return;
+  const row=document.createElement('div');
+  row.className='chat-msg';
+  const col=_usernameColor(username);
+  row.innerHTML='<span class="chat-name" style="color:'+col+'">'+_escHtml(username)+'</span> <span class="chat-text">'+_escHtml(message)+'</span>';
+  list.appendChild(row);
+  list.scrollTop=list.scrollHeight;
+  while(list.children.length>100)list.removeChild(list.firstChild);
+}
+
+function _escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openChat(){
+  if(_chatOpen||!_wsConnected)return;
+  _chatOpen=true;
+  document.getElementById('chat-input-area').style.display='block';
+  const inp=document.getElementById('chat-input');
+  inp.value='';inp.focus();
+}
+
+function closeChat(){
+  _chatOpen=false;
+  document.getElementById('chat-input-area').style.display='none';
+  document.getElementById('chat-input').blur();
+  const cv=document.getElementById('c');
+  if(!document.pointerLockElement&&cv&&!isFreeMouse)cv.requestPointerLock();
+}
+
+function sendChat(){
+  const inp=document.getElementById('chat-input');
+  const msg=inp.value.trim();
+  if(msg&&_ws&&_wsConnected)_ws.send(JSON.stringify({type:'chat',message:msg}));
+  closeChat();
+}
+
+function tryJoin(){
+  const username=document.getElementById('mp-join-input').value.trim();
+  if(!username||username.length>20)return;
+  let host=document.getElementById('mp-host-input').value.trim()||'localhost:3000';
+  // Auto-detect protocol: wss:// for remote, ws:// for localhost
+  const useWss=host.startsWith('wss://')||(!host.startsWith('ws://')&&!/^localhost(:\d+)?$/i.test(host)&&!/^127\./.test(host));
+  host=host.replace(/^ws:\/\//i,'').replace(/^wss:\/\//i,'');
+  _wsWss=useWss;
+  _wsUsername=username;
+  _wsServerHost=host;
+  document.getElementById('mp-status-bar').style.display='flex';
+  document.getElementById('mp-status').textContent='CONNECTING...';
+  document.getElementById('mp-status-dot').className='off';
+  connectToServer();
+}
+document.getElementById('mp-join-btn').addEventListener('click',tryJoin);
+document.getElementById('mp-join-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryJoin();});
+
 // ═══════════════════════════════════════
 const hasSave=loadGame();
 applyI18N();
@@ -8737,7 +9128,7 @@ updateHUD();buildPickBar();updatePlacingInd();checkMineCapacity();
 startEventSystem();
 if(hasSave){
   if(currentWorld==='biome'){
-    _chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     const side=RENDER_DIST*2+1;
     for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
       _ensureChunkGeneratedBiome(_chunkOriginCX+ci,_chunkOriginCZ+ck);
