@@ -251,7 +251,7 @@ canvas.free{cursor:default}
 #chat-box{position:absolute;bottom:190px;right:10px;width:min(350px,40vw);max-height:200px;pointer-events:all;z-index:40;font-family:'Press Start 2P',monospace;display:flex;flex-direction:column;gap:4px}
 #chat-msg-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;flex-shrink:0;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
 #chat-msg-list:empty::after{content:'No messages';color:rgba(255,255,255,0.15);font-size:7px}
-.chat-msg{font-size:7px;color:rgba(220,220,220,0.8);margin-bottom:4px;line-height:1.6;word-break:break-word;font-family:sans-serif}
+.chat-msg{font-size:7px;color:rgba(220,220,220,0.8);margin-bottom:4px;line-height:1.6;word-break:break-word;overflow-wrap:break-word;font-family:sans-serif}
 .chat-name{font-weight:bold;font-size:8px;font-family:'Press Start 2P',monospace}
 .chat-text{color:rgba(220,220,220,0.7);font-family:sans-serif}
 #chat-input-area{display:none;pointer-events:all}
@@ -6791,6 +6791,66 @@ function updateScanner(h){
     }
   }
 
+  // ── Other player's phantom block hover ──
+  if(_otherPhantomBlocks.size>0){
+    const phTargets=[];
+    for(const[,pb]of _otherPhantomBlocks){
+      if(pb.mesh&&pb.mesh.visible)phTargets.push(pb.mesh);
+    }
+    if(phTargets.length>0){
+      raycaster.far=5.5;
+      raycaster.setFromCamera({x:0,y:0},camera);
+      const phHits=raycaster.intersectObjects(phTargets,false);
+      if(phHits.length>0){
+        let hitPb=null;
+        for(const phHit of phHits){
+          let obj=phHit.object;
+          while(obj&&!(obj.userData&&'oreIdx' in obj.userData))obj=obj.parent;
+          if(obj){
+            for(const[,pb2]of _otherPhantomBlocks){
+              if(pb2.mesh===obj){hitPb=pb2;break;}
+            }
+            if(hitPb)break;
+          }
+        }
+        if(hitPb){
+          const oI=hitPb.oreIdx||0;
+          const ore=ORES[oI]||ORES[0];
+          const prc=RC[ore.rarity]||ore.color||'#fff';
+          const pCenter=new THREE.Vector3(hitPb.mesh.position.x,hitPb.mesh.position.y,hitPb.mesh.position.z);
+          const pv=pCenter.clone().project(camera);
+          const pdist=camera.position.distanceTo(pCenter);
+          const psx=(pv.x+1)/2*window.innerWidth;
+          const psy=(1-pv.y)/2*window.innerHeight;
+          const pSize=Math.round(Math.min(100,Math.max(44,pdist*6)));
+          const pClampX=Math.max(pSize/2+4,Math.min(window.innerWidth-pSize/2-4,psx));
+          const pClampY=Math.max(pSize/2+4,Math.min(window.innerHeight-pSize/2-60,psy));
+          ov.style.display='block';
+          ov.style.left=pClampX+'px';
+          ov.style.top=pClampY+'px';
+          ov.style.color=prc;
+          const blockDiv=document.getElementById('scn-block');
+          if(_scanOre!==ore||_scanPos!=='other_phantom'){
+            _scanOre=ore;_scanPos='other_phantom';
+            blockDiv.innerHTML='<div style="width:'+pSize+'px;height:'+pSize+'px;border-radius:6px;background:'+ore.color+'44;border:2px solid '+prc+';box-shadow:0 0 14px '+prc+'88;margin:auto"></div>';
+            const nameEl=document.getElementById('scn-name');
+            nameEl.textContent=ore.name;
+            nameEl.style.color=prc;
+            const badgeEl=document.getElementById('scn-rarity-badge');
+            badgeEl.textContent=getRarityDisplay(ore.rarity);
+            badgeEl.style.color=prc;
+            badgeEl.style.background=prc+'22';
+            badgeEl.style.border='1px solid '+prc+'55';
+            const exactEl=document.getElementById('scn-exact');
+            exactEl.textContent=T.rare1+fmtExact(ore.exact);
+          }
+          _hideAllScnDivs();
+          return;
+        }
+      }
+    }
+  }
+
   ov.style.display='none';_scanOre=null;_scanPos=null;
 
   // ── Regular scanner (pick T4+) — shows ALL qualifying ores simultaneously ──
@@ -8815,6 +8875,7 @@ let _wsUsername=null;
 let _wsServerHost='localhost:3000';
 let _wsWss=false;
 let _chatOpen=false;
+let _playerCountTimer=null;
 const _phantoms=new Map();
 const _otherPhantomBlocks=new Map(); // id -> {mesh, world}
 let _lastPosSend=0;
@@ -8889,6 +8950,24 @@ function _addPhantomPlayer(id,username){
 function _removePhantomPlayer(id){
   const p=_phantoms.get(id);
   if(p){scene.remove(p.group);_phantoms.delete(id);}
+}
+
+function _updatePlayerCountDisplay(count){
+  const pc=document.getElementById('mp-players');
+  if(!pc)return;
+  if(count>0){
+    pc.textContent='| '+count+' online';
+    pc.style.display='inline';
+  }else{
+    pc.style.display='none';
+  }
+}
+
+function _startPlayerCountTimer(){
+  if(_playerCountTimer)clearInterval(_playerCountTimer);
+  _playerCountTimer=setInterval(()=>{
+    if(_wsConnected)_wsSendSafe(JSON.stringify({type:'player_count'}));
+  },60000);
 }
 
 function _updatePhantoms(dt){
@@ -8967,6 +9046,7 @@ function connectToServer(){
   _ws.onerror=e=>{console.error('WS error:',e);};
   _ws.onclose=()=>{
     _wsConnected=false;
+    if(_playerCountTimer){clearInterval(_playerCountTimer);_playerCountTimer=null;}
     document.getElementById('mp-status').textContent='OFFLINE';
     document.getElementById('mp-status-dot').className='off';
     // If still in the join flow, re-show the overlay
@@ -8975,21 +9055,23 @@ function connectToServer(){
   };
 }
 
+const _PHANTOM_Y_OFS = -0.08; // phantom group origin → feet bottom
+
 function _addOtherPhantomBlock(id,x,y,z,oreIdx,name,world){
   _removeOtherPhantomBlock(id);
   const col=ORES[oreIdx]?ORES[oreIdx].color||'#888':'#888';
-  const mat=new THREE.MeshBasicMaterial({color:new THREE.Color(col),transparent:true,opacity:0.35,depthWrite:false});
+  const mat=new THREE.MeshLambertMaterial({color:new THREE.Color(col),transparent:true,opacity:0.4,depthWrite:false,emissive:new THREE.Color(col),emissiveIntensity:0.2});
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat);
   mesh.position.set(x+0.5,y+0.5,z+0.5);
-  // Wireframe outline
+  mesh.userData.oreIdx=oreIdx;
   const wire=new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(1.01,1.01,1.01)),
-    new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.4})
+    new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.5})
   );
   mesh.add(wire);
   mesh.visible=false;
   scene.add(mesh);
-  _otherPhantomBlocks.set(id,{mesh,world:world||'main'});
+  _otherPhantomBlocks.set(id,{mesh,world:world||'main',oreIdx,oreName:name});
 }
 
 function _removeOtherPhantomBlock(id){
@@ -9005,26 +9087,31 @@ function _handleServerMsg(msg){
         _addPhantomPlayer(p.id,p.username);
         const ph=_phantoms.get(p.id);
         if(ph){
-          ph.targetX=p.px;ph.targetY=p.py;ph.targetZ=p.pz;ph.targetRy=p.ry;ph.world=p.world||'main';
-          ph.group.position.set(p.px,p.py,p.pz);ph.group.rotation.y=p.ry;
+          ph.targetX=p.px;ph.targetY=p.py+_PHANTOM_Y_OFS;ph.targetZ=p.pz;ph.targetRy=p.ry;ph.world=p.world||'main';
+          ph.group.position.set(p.px,p.py+_PHANTOM_Y_OFS,p.pz);ph.group.rotation.y=p.ry;
         }
       }
       document.getElementById('mp-status').textContent='ONLINE';
       document.getElementById('mp-status-dot').className='on';
-      const pc=document.getElementById('mp-players');
-      if(pc){pc.textContent='| '+(msg.players.length+1)+' online';pc.style.display='inline';}
+      _updatePlayerCountDisplay(msg.players.length+1);
+      _startPlayerCountTimer();
       break;
     case'player_join':
       _addPhantomPlayer(msg.id,msg.username);
+      _updatePlayerCountDisplay(_phantoms.size+1);
       break;
     case'player_leave':
       _removePhantomPlayer(msg.id);
       _removeOtherPhantomBlock(msg.id);
+      _updatePlayerCountDisplay(_phantoms.size+1);
+      break;
+    case'player_count':
+      _updatePlayerCountDisplay(msg.count);
       break;
     case'position':{
       const ph=_phantoms.get(msg.id);
       if(ph){
-        ph.targetX=msg.px;ph.targetY=msg.py;ph.targetZ=msg.pz;
+        ph.targetX=msg.px;ph.targetY=msg.py+_PHANTOM_Y_OFS;ph.targetZ=msg.pz;
         ph.targetRy=msg.ry;ph.world=msg.world||'main';
       }
       break;
@@ -9059,16 +9146,6 @@ function sendPosition(){
   const p=camera.position;
   const feetY=p.y-CAM_H;
   _wsSendSafe(JSON.stringify({type:'position',px:p.x,py:feetY,pz:p.z,ry:euler.y,world:currentWorld||'main'}));
-}
-
-function _broadcastPhantomPlace(){
-  if(!_ws||!_wsConnected||!phantomBlock)return;
-  _wsSendSafe(JSON.stringify({type:'phantom_place',x:phantomBlock.x,y:phantomBlock.y,z:phantomBlock.z,oreIdx:phantomBlock.oi,name:phantomBlock.name,world:currentWorld||'main'}));
-}
-
-function _broadcastPhantomRemove(){
-  if(!_ws||!_wsConnected)return;
-  _wsSendSafe(JSON.stringify({type:'phantom_remove'}));
 }
 
 function sendChat(){

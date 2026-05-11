@@ -102,6 +102,12 @@ async def handle_ws(request):
                     if pid2 != pid and p2["username"]
                 ], return_exceptions=True)
 
+            elif t == "player_count":
+                if not p["username"]:
+                    continue
+                count = sum(1 for p2 in players.values() if p2["username"])
+                await ws.send_str(json.dumps({"type": "player_count", "count": count}))
+
             elif t == "phantom_remove":
                 if not p["username"]:
                     continue
