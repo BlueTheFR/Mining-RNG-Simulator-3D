@@ -408,7 +408,7 @@ canvas.free{cursor:default}
 /* ── Mobile action row — SHOP + SETTINGS ── */
 #mob-shop-btn{
   position:absolute;
-  bottom:calc(322px + env(safe-area-inset-bottom));
+  bottom:calc(265px + env(safe-area-inset-bottom));
   left:4px;
   font-family:'Press Start 2P',monospace;font-size:7px;
   background:rgba(4,4,8,0.9);
@@ -469,7 +469,7 @@ body.mob-active #mp-join-btn{font-size:7px;padding:8px 18px}
 body.mob-active #mp-join-skip{font-size:6px;margin-top:6px;padding:5px}
 body.mob-active #recent-panel{
   top:auto;
-  bottom:calc(195px + env(safe-area-inset-bottom));
+  bottom:calc(110px + env(safe-area-inset-bottom));
   right:2px;left:auto;
   transform:none;
   max-height:50px;max-width:110px;min-width:auto;
@@ -501,7 +501,7 @@ body.mob-active #mob-surface-btn{
 /* MP status — below joystick, smaller */
 body.mob-active #mp-status-bar{
   top:auto;
-  bottom:calc(168px + env(safe-area-inset-bottom));
+  bottom:calc(280px + env(safe-area-inset-bottom));
   left:24px;
   padding:2px 5px;gap:2px;
   font-size:4px;
@@ -701,13 +701,13 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <!-- Mobile shop top-right (moved to bottom area) -->
   <div id="mob-shop-btn">🏪 SHOP</div>
   <!-- Mobile chat toggle -->
-   <div id="mob-chat-btn" style="position:absolute;bottom:calc(220px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬 CHAT</div>
+   <div id="mob-chat-btn" style="position:absolute;bottom:calc(150px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬 CHAT</div>
   <!-- Mobile phantom place -->
-  <div id="mob-place-btn" style="position:absolute;bottom:calc(254px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
+  <div id="mob-place-btn" style="position:absolute;bottom:calc(175px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
   <!-- Mobile settings -->
-   <div id="mob-settings-btn" style="position:absolute;bottom:calc(288px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">⚙ SETTINGS</div>
+   <div id="mob-settings-btn" style="position:absolute;bottom:calc(230px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">⚙ SETTINGS</div>
   <!-- Mobile achievements -->
-  <div id="mob-achievements-btn" style="position:absolute;bottom:calc(250px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">🏆 SUCCÈS</div>
+  <div id="mob-achievements-btn" style="position:absolute;bottom:calc(200px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">🏆 SUCCÈS</div>
   <!-- Surface button bottom-center -->
   <div id="mob-surface-btn" onclick="goToSurface()" style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.88);border:1px solid rgba(100,200,100,0.35);border-radius:4px;color:rgba(150,220,150,0.9);padding:7px 12px;pointer-events:all;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:41;display:none;white-space:nowrap;">⬆ SURFACE</div>
 </div>
