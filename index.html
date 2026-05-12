@@ -254,13 +254,13 @@ canvas.free{cursor:default}
 #placing-ind{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:5px;color:var(--hud-accent);background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:3px;padding:4px 10px;display:none;pointer-events:none}
 
 /* ── Multiplayer Chat ── */
-#chat-box{position:absolute;bottom:190px;right:10px;width:min(350px,40vw);max-height:200px;pointer-events:all;z-index:40;font-family:'Press Start 2P',monospace;display:none;flex-direction:column;gap:4px}
+#chat-box{position:absolute;bottom:190px;right:10px;width:min(420px,50vw);max-height:300px;pointer-events:all;z-index:40;font-family:'Press Start 2P',monospace;display:none;flex-direction:column;gap:4px}
 #chat-box.online{display:flex}
 #chat-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:4px 8px}
 #chat-header-title{font-size:6px;color:rgba(255,255,255,0.35);flex:1;letter-spacing:1px}
 #chat-close-btn{font-family:'Press Start 2P',monospace;font-size:9px;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;transition:color .12s}
 #chat-close-btn:hover{color:rgba(255,255,255,0.8)}
-#chat-msg-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;flex-shrink:0;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+#chat-msg-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:6px 8px;overflow-y:auto;max-height:240px;min-height:30px;flex-shrink:0;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
 #chat-msg-list:empty::after{content:attr(data-empty);color:rgba(255,255,255,0.15);font-size:7px}
 .chat-msg{font-size:7px;color:rgba(220,220,220,0.8);margin-bottom:4px;line-height:1.6;word-break:break-word;overflow-wrap:break-word;font-family:sans-serif}
 .chat-ts{font-size:6px;color:rgba(255,255,255,0.2);margin-right:4px;font-family:sans-serif}
@@ -428,19 +428,7 @@ canvas.free{cursor:default}
 }
 #mobile-controls.mob-active #mob-shop-btn{display:block}
 
-#mob-settings-btn{
-  position:absolute;
-  bottom:calc(175px + env(safe-area-inset-bottom));
-  left:24px;
-  font-family:'Press Start 2P',monospace;font-size:6px;
-  background:rgba(4,4,8,0.88);border:1px solid rgba(255,255,255,0.18);
-  border-radius:4px;color:rgba(255,255,255,0.72);
-  padding:8px 11px;pointer-events:all;touch-action:manipulation;
-  cursor:pointer;-webkit-tap-highlight-color:transparent;
-  z-index:41;display:none;
-  box-shadow:0 2px 8px rgba(0,0,0,0.4);
-}
-#mobile-controls.mob-active #mob-settings-btn{display:block}
+
 
 /* ── When mobile is active: rearrange HUD ── */
 body.mob-active #hint{display:none!important}
@@ -454,8 +442,8 @@ body.mob-active #left-col{
   max-height:42vh;
   overflow:hidden;
 }
-body.mob-active #inv-panel{max-height:22vh;overflow-y:auto}
-body.mob-active #idx-panel{max-height:18vh;overflow-y:auto}
+body.mob-active #inv-panel{max-height:22vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.mob-active #idx-panel{max-height:18vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 body.mob-active #stats-panel{
   display:block;
   right:4px;
@@ -468,9 +456,9 @@ body.mob-active #stats-panel h3{font-size:6px;margin-bottom:5px}
 body.mob-active #shop-btn{display:none}
 body.mob-active #surface-btn{display:none}
 body.mob-active #achievements-btn{display:none}
+body.mob-active #recent-close-btn{display:inline!important}
+body.mob-active #recent-panel{max-height:140px}
 #mobile-controls.mob-active #mob-surface-btn{display:block!important}
-#mobile-controls.mob-active #mob-mute-btn{display:block!important}
-#mobile-controls.mob-active #mob-vol-btn{display:block!important}
 #mobile-controls.mob-active #mob-chat-btn{display:block!important}
 /* Mine top bar on mobile */
 body.mob-active #mine-top{
@@ -529,7 +517,9 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
     </div>
   </div>
   <div id="stats-panel" style="position:absolute;top:90px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;pointer-events:none;min-width:160px;max-width:200px;overflow:hidden">
-    <h3 id="lbl-stats" style="font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55">STATS</h3>
+    <h3 id="lbl-stats" style="font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55">STATS
+      <span id="recent-toggle-btn" style="font-size:7px;color:rgba(255,255,255,0.25);cursor:pointer;pointer-events:all;display:none;margin-left:6px;letter-spacing:0" title="Toggle recent events">📋</span>
+    </h3>
     <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined" style="cursor:pointer;user-select:none" title="Cliquer pour compacter / Click to compact">0</span></div>
     <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
     <div class="stat-row"><span id="lbl-luck">Luck</span><span class="stat-v" id="s-luck" style="color:#ffdd44;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">x1.00</span></div>
@@ -552,6 +542,7 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="recent-panel">
     <div id="recent-header" onclick="_toggleRecentFilter()">
       <span id="lbl-recent" title="Click to toggle filter">RECENT EVENTS</span>
+      <span id="recent-close-btn" style="margin-left:auto;font-size:8px;color:rgba(255,255,255,0.3);cursor:pointer;display:none">✕</span>
     </div>
     <div id="recent-list" data-empty="No events yet"></div>
   </div>
@@ -655,14 +646,10 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="jump-btn">↑<br>JUMP</div>
   <!-- Mobile shop top-right -->
   <div id="mob-shop-btn">🏪 SHOP</div>
-  <!-- Mobile mute -->
-  <div id="mob-mute-btn" onclick="_toggleMute()" style="position:absolute;top:calc(70px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:14px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;line-height:1">🔊</div>
-  <!-- Mobile volume -->
-  <div id="mob-vol-btn" onclick="_cycleVolume()" style="position:absolute;top:calc(110px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.6);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">100%</div>
   <!-- Mobile chat toggle -->
-  <div id="mob-chat-btn" onclick="if(typeof _wsConnected!=='undefined'&&_wsConnected){const b=document.getElementById('chat-box');if(b&&b.style.display!=='flex'&&_wsConnected){b.className='online';b.style.display='flex'}else if(b)closeChat();}" style="position:absolute;top:calc(155px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:8px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬</div>
-  <!-- Settings bottom-left above joystick -->
-  <div id="mob-settings-btn" onclick="document.getElementById('settings-panel')&&(document.getElementById('settings-panel').style.display=document.getElementById('settings-panel').style.display==='none'?'block':'none')">⚙</div>
+  <div id="mob-chat-btn" onclick="if(typeof _wsConnected!=='undefined'&&_wsConnected){const b=document.getElementById('chat-box');if(b&&b.style.display!=='flex'&&_wsConnected){b.className='online';b.style.display='flex'}else if(b)closeChat();}" style="position:absolute;top:calc(70px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:8px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬</div>
+  <!-- Mobile phantom place -->
+  <div id="mob-place-btn" onclick="doPlace()" style="position:absolute;top:calc(110px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
   <!-- Surface button bottom-center -->
   <div id="mob-surface-btn" onclick="goToSurface()" style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.88);border:1px solid rgba(100,200,100,0.35);border-radius:4px;color:rgba(150,220,150,0.9);padding:7px 12px;pointer-events:all;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:41;display:none;white-space:nowrap;">⬆ SURFACE</div>
 </div>
@@ -4995,14 +4982,14 @@ function _applyGameVolume(){
 function _toggleMute(){
   _gameMuted=!_gameMuted;
   _applyGameVolume();
-  document.querySelectorAll('#settings-mute-btn,#mob-mute-btn').forEach(el=>{el.textContent=_gameMuted?'🔇':'🔊';});
+  document.querySelectorAll('#settings-mute-btn').forEach(el=>{el.textContent=_gameMuted?'🔇':'🔊';});
 }
 function _cycleVolume(){
   _volIdx=(_volIdx+1)%_VOL_LEVELS.length;
   _gameVolume=_VOL_LEVELS[_volIdx];
   try{localStorage.setItem('game_volume',_gameVolume);}catch(e){}
   _applyGameVolume();
-  document.querySelectorAll('#settings-vol-btn,#mob-vol-btn').forEach(el=>{el.textContent=Math.round(_gameVolume*100)+'%';});
+  document.querySelectorAll('#settings-vol-btn').forEach(el=>{el.textContent=Math.round(_gameVolume*100)+'%';});
 }
 function _startWorldMusic(world){
   _stopWorldMusic();
@@ -7620,6 +7607,7 @@ function rebuildInvPanel(){
 
 function updatePlacingInd(){
   const el=document.getElementById('placing-ind');
+  const mobBtn=document.getElementById('mob-place-btn');
   if(selectedInv){
     const hasPhantom=!!phantomBlock;
     const mode=hasPhantom
@@ -7627,7 +7615,11 @@ function updatePlacingInd(){
       :(lang==='fr'?'Clic D pour poser phantom: ':'RMB to place phantom: ');
     el.textContent=mode+selectedInv;
     el.style.display='block';
-  }else el.style.display='none';
+    if(mobBtn){mobBtn.textContent='📦 '+(lang==='fr'?'POSER':'PLACE');mobBtn.style.display='block';}
+  }else{
+    el.style.display='none';
+    if(mobBtn)mobBtn.style.display='none';
+  }
 }
 
 // ═══════════ PICKAXE ABILITY FX ═══════════
@@ -8945,19 +8937,23 @@ function getAchLuckBonus(){return _achLuckBonus;}
     jZone.addEventListener('touchcancel',joyEnd,{passive:false});
 
     // ── Look zone ──
+    const _scrollableSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box';
     zone.addEventListener('touchstart',e=>{
-      e.preventDefault();
       for(let i=0;i<e.changedTouches.length;i++){
         const t=e.changedTouches[i];
-        if(look.id!==-1)continue;
         const el=document.elementFromPoint(t.clientX,t.clientY);
-        if(el&&(el.closest('#joystick-zone')||el.closest('#mine-btn')||el.closest('#jump-btn')||el.closest('#mob-shop-btn')))continue;
+        if(el){
+          if(el.closest('#recent-close-btn')){e.stopPropagation();document.getElementById('recent-panel').style.display='none';var tb2=document.getElementById('recent-toggle-btn');if(tb2)tb2.style.display='inline';return;}
+          if(el.closest('#recent-toggle-btn')){e.stopPropagation();var rp2=document.getElementById('recent-panel');rp2.style.display=rp2.style.display==='none'?'flex':'none';el.style.display=rp2.style.display==='none'?'inline':'none';return;}
+          if(el.closest(_scrollableSelectors)){e.stopPropagation();return;}
+        }
+        if(look.id!==-1)continue;
         look.id=t.identifier;look.lastX=t.clientX;look.lastY=t.clientY;
       }
+      e.preventDefault();
     },{passive:false});
 
     zone.addEventListener('touchmove',e=>{
-      e.preventDefault();
       for(let i=0;i<e.touches.length;i++){
         const t=e.touches[i];
         if(t.identifier!==look.id)continue;
@@ -8968,6 +8964,7 @@ function getAchLuckBonus(){return _achLuckBonus;}
         camera.quaternion.setFromEuler(euler);
         look.lastX=t.clientX;look.lastY=t.clientY;
       }
+      if(look.id!==-1)e.preventDefault();
     },{passive:false});
 
     function lookEnd(e){
@@ -9321,7 +9318,7 @@ let _recentFilter='all'; // 'all' or 'mine'
 function _addRecentEvent(username,oreName,color,exact,isLocal){
   const now=Date.now();
   _recentEvents.unshift({username,oreName,color,exact,ts:now,isLocal});
-  if(_recentEvents.length>50)_recentEvents.length=50;
+  if(_recentEvents.length>25)_recentEvents.length=25;
   _renderRecentEvents();
 }
 function _renderRecentEvents(){
@@ -9399,7 +9396,7 @@ function _handleServerMsg(msg){
           const d=new Date();const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
           row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-text" style="color:#44dd44">'+_escHtml(jMsg)+'</span>';
           list.appendChild(row);list.scrollTop=list.scrollHeight;
-          while(list.children.length>100)list.removeChild(list.firstChild);
+          while(list.children.length>25)list.removeChild(list.firstChild);
         }
       }
       break;
@@ -9416,7 +9413,7 @@ function _handleServerMsg(msg){
           const d=new Date();const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
           row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-text" style="color:#ff6644">'+_escHtml(lMsg)+'</span>';
           list.appendChild(row);list.scrollTop=list.scrollHeight;
-          while(list.children.length>100)list.removeChild(list.firstChild);
+          while(list.children.length>25)list.removeChild(list.firstChild);
         }
       }
       break;
@@ -9507,7 +9504,7 @@ function _addChatMessage(username,message,id){
   row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-name" style="color:'+col+'">'+_escHtml(username)+'</span> <span class="chat-text">'+_escHtml(message)+'</span>';
   list.appendChild(row);
   list.scrollTop=list.scrollHeight;
-  while(list.children.length>100)list.removeChild(list.firstChild);
+  while(list.children.length>25)list.removeChild(list.firstChild);
 }
 
 function _escHtml(s){
@@ -9586,8 +9583,8 @@ document.getElementById('mp-join-skip').addEventListener('click',function(){
 const hasSave=loadGame();
 applyI18N();
 _applyGameVolume();
-document.querySelectorAll('#settings-mute-btn,#mob-mute-btn').forEach(el=>{el.textContent=_gameMuted?'🔇':'🔊';});
-document.querySelectorAll('#settings-vol-btn,#mob-vol-btn').forEach(el=>{el.textContent=Math.round(_gameVolume*100)+'%';});
+document.querySelectorAll('#settings-mute-btn').forEach(el=>{el.textContent=_gameMuted?'🔇':'🔊';});
+document.querySelectorAll('#settings-vol-btn').forEach(el=>{el.textContent=Math.round(_gameVolume*100)+'%';});
 genWorld();
 init3D();
 updateHUD();buildPickBar();updatePlacingInd();checkMineCapacity();
