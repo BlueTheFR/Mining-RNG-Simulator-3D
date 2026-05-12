@@ -231,11 +231,11 @@ canvas.free{cursor:default}
 #mine-top-cd{font-size:7px;color:#ff4444;display:none;white-space:nowrap}
 /* Mobile safe-area shifts: push some HUD below browser chrome */
 @supports(padding-top:env(safe-area-inset-top)){
-  #recent-panel{position:absolute;top:262px;right:10px;min-width:200px;max-width:260px;max-height:180px;display:flex;flex-direction:column;gap:4px;pointer-events:all;z-index:15;font-family:'Press Start 2P',monospace}
-  #recent-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:4px 8px;cursor:pointer;user-select:none}
-  #lbl-recent{font-size:10px;color:#ffffff;letter-spacing:1px}
-  #recent-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
-  #recent-list:empty::after{content:attr(data-empty);color:rgba(255,255,255,0.15);font-size:7px;display:block;text-align:center}
+  #recent-panel{position:absolute;top:262px;right:10px;min-width:280px;max-width:360px;max-height:320px;display:flex;flex-direction:column;gap:4px;pointer-events:all;z-index:15;font-family:'Press Start 2P',monospace}
+  #recent-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:6px 10px;cursor:pointer;user-select:none}
+  #lbl-recent{font-size:13px;color:#ffffff;letter-spacing:1px}
+  #recent-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:8px 10px;overflow-y:auto;max-height:260px;min-height:30px;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+  #recent-list:empty::after{content:attr(data-empty);color:rgba(255,255,255,0.15);font-size:9px;display:block;text-align:center}
 }
 
 /* ── Top-right buttons ── */
@@ -9499,7 +9499,7 @@ function _renderRecentEvents(){
     const d=new Date(e.ts);
     const t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
     const row=document.createElement('div');
-    row.style.cssText='font-size:3px;margin-bottom:2px;line-height:1.6;word-break:break-word';
+    row.style.cssText='font-size:7px;margin-bottom:3px;line-height:1.8;word-break:break-word';
     const tag=e.isLocal?'<span style="color:#ffffff">[YOU]</span> ':'<span style="color:#ffffff">[SERVER]</span> ';
     row.innerHTML='<span style="color:rgba(255,255,255,0.2)">'+t+'</span> '+tag+'<span style="color:'+e.color+'">'+_escHtml(e.username)+' <span style="opacity:0.65">'+_escHtml(_fmtFound())+'</span> '+_escHtml(e.oreName)+' <span style="opacity:0.45">1/'+fmtExact(e.exact)+'</span></span>';
     list.appendChild(row);
