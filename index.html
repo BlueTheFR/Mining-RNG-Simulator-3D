@@ -4148,7 +4148,7 @@ function rotateEvent(){
   if(currentWorld==='biome')return;
   let newEv;
   do{newEv=EVENT_TYPES[Math.floor(Math.random()*EVENT_TYPES.length)];}while(newEv===currentEvent);
-  currentEvent=newEv;
+  currentEvent=newEv;_achFlags.firstEvent=true;
   _normalRollCache=null; // invalidate cached roll table
   if(currentWorld!=='shadow')_applyEventBox(EVENT_DISPLAY[currentEvent]);
 }
@@ -4156,7 +4156,7 @@ function rotateEvent(){
 function rotateShadowEvent(){
   let newEv;
   do{newEv=SHADOW_EVENT_TYPES[Math.floor(Math.random()*SHADOW_EVENT_TYPES.length)];}while(newEv===currentShadowEvent);
-  currentShadowEvent=newEv;
+  currentShadowEvent=newEv;_achFlags.firstEvent=true;
   _shadowRollCache=null;_shadowDeepRollCache=null; // invalidate cached roll tables
   if(currentWorld==='shadow')_applyEventBox(SHADOW_EVENT_DISPLAY[currentShadowEvent]);
 }
@@ -4187,7 +4187,7 @@ function _stopShadowEventSystem(){
 function rotateMonoEvent(){
   let newEv;
   do{newEv=MONO_EVENT_TYPES[Math.floor(Math.random()*MONO_EVENT_TYPES.length)];}while(newEv===currentMonoEvent);
-  currentMonoEvent=newEv;
+  currentMonoEvent=newEv;_achFlags.firstEvent=true;
   _monoRollCache=null;
   if(currentWorld==='mono')_applyEventBox(MONO_EVENT_DISPLAY[currentMonoEvent]);
 }
@@ -4206,7 +4206,7 @@ function _stopMonoEventSystem(){
 function rotateOceanEvent(){
   let newEv;
   do{newEv=OCEAN_EVENT_TYPES[Math.floor(Math.random()*OCEAN_EVENT_TYPES.length)];}while(newEv===currentOceanEvent);
-  currentOceanEvent=newEv;
+  currentOceanEvent=newEv;_achFlags.firstEvent=true;
   _oceanRollCache=null;_oceanDeepRollCache=null;
   if(currentWorld==='ocean')_applyEventBox(OCEAN_EVENT_DISPLAY[currentOceanEvent]);
 }
@@ -4704,7 +4704,7 @@ const PICKAXES=[
    descEn:"Summons thunderbolts that bounce and destroy blocks in chain. x21 Luck.",
    fxFr:'Tonnerre Bondissant (1/10). Tempête (1/50). Frappe du Tonnerre (1/150). x21 Luck.',
    fxEn:'Bouncing Bolts (1/10). Storm Strike (1/50). Thunder Strike (1/150). x21 Luck.',
-   recipe:{NuclearWaste:1500,AbyssSand:1500,ShadowMatter:1500,Energy:1500,LavaRock:1500},
+   recipe:{NuclearWaste:600,AbyssSand:300,ShadowMatter:200,Energy:500,LavaRock:400, ICE:250},
    abilities:[
      {nameFr:'Tonnerre Bondissant',nameEn:'Bouncing Bolts',
       descFr:'5 éclairs bondissent aléatoirement, détruisant 10 blocs chacun. En stoppant, chaque éclair explose en détruisant 10 blocs autour.',
@@ -6417,15 +6417,15 @@ function doMine(){
     }
   }
   // Track event ore finds
-  if(ore.event&&!_achFlags.firstEvent){
-    _achFlags.firstEvent=true;
-  }
   if(ore.event&&!_achFlags.eventRare){
     const r=ore.rarity||'';
     if(r.includes('Exotic')||r.includes('Transcendent')||r.includes('Enigmatic')||r.includes('Unfathomable')||r.includes('Otherworldly')||r.includes('Zenith')||r.includes('Eternal')){
       _achFlags.eventRare=true;
     }
   }
+  // Track per-event ore finds
+  if(ore.event&&!_achFlags['event_'+ore.event])_achFlags['event_'+ore.event]=true;
+  if(ore.monoEvent&&!_achFlags['event_'+ore.monoEvent])_achFlags['event_'+ore.monoEvent]=true;
   // Track cave ore finds
   if(ore.caveType&&!_achFlags.firstCave){
     _achFlags.firstCave=true;
@@ -6436,6 +6436,8 @@ function doMine(){
       _achFlags.caveRare=true;
     }
   }
+  // Track per-cave ore finds
+  if(ore.caveType&&!_achFlags['cave_'+ore.caveType])_achFlags['cave_'+ore.caveType]=true;
   // Apply gear mine effects (duplication, upgrade, etc.)
   const _gearExtras=applyGearMineEffect(ore);
   Object.entries(_gearExtras).forEach(([n,q])=>{inventory[n]=(inventory[n]||0)+q;});
@@ -7709,6 +7711,18 @@ function abilityMine(wx,wy,wz){
       ?rollOreBiome(Math.random(),depthFrac,combinedLuck,wx,wz)
       :rollOreNormal(Math.random(),depthFrac,combinedLuck);
     oreRevealed[i]=1;
+    // Play sound + show message when a rare ore is revealed by an ability
+    const ro=ORES[oreIdx[i]||0];
+    if(ro&&ro.spawnMsg){
+      if(CAVE_RARITY_SOUNDS[ro.rarity])playCaveSound(ro.rarity,ro);
+      else{const snd=getAudioId(ro);if(snd)playSound(ro);}
+      const col=RC[ro.rarity]||ro.color||'#ffffff';
+      const _st=getOreTag(ro);const _sl=_st?' ['+_st.label+']':'';
+      showSpawn(getOreSpawnMsg(ro)+'\n'+ro.name+_sl+' — '+T.rare1+fmtExact(ro.exact),col,true,ro.rarity);
+      if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:ro.name,oreRarity:ro.rarity,oreColor:col,oreExact:ro.exact,message:getOreSpawnMsg(ro)}));
+      _addRecentEvent((_wsUsername||'You'),ro.name,col,ro.exact,true);
+      if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
+    }
   }
   const ore=ORES[oreIdx[i]||0];
   blocks[i]=0;mined++;
@@ -7723,17 +7737,21 @@ function abilityMine(wx,wy,wz){
     if(r.includes('zenith')&&!_achFlags.findZenith)_achFlags.findZenith=true;
   }
   // Track event ore finds
-  if(ore.event&&!_achFlags.firstEvent)_achFlags.firstEvent=true;
   if(ore.event&&!_achFlags.eventRare){
     const r=ore.rarity||'';
     if(r.includes('Exotic')||r.includes('Transcendent')||r.includes('Enigmatic')||r.includes('Unfathomable')||r.includes('Otherworldly')||r.includes('Zenith')||r.includes('Eternal'))_achFlags.eventRare=true;
   }
+  // Track per-event ore finds
+  if(ore.event&&!_achFlags['event_'+ore.event])_achFlags['event_'+ore.event]=true;
+  if(ore.monoEvent&&!_achFlags['event_'+ore.monoEvent])_achFlags['event_'+ore.monoEvent]=true;
   // Track cave ore finds
   if(ore.caveType&&!_achFlags.firstCave)_achFlags.firstCave=true;
   if(ore.caveType&&!_achFlags.caveRare){
     const r=ore.rarity||'';
     if(r.includes('Exotic')||r.includes('Transcendent')||r.includes('Enigmatic')||r.includes('Unfathomable')||r.includes('Otherworldly')||r.includes('Zenith')||r.includes('Eternal')||r.includes('CaveExclusive'))_achFlags.caveRare=true;
   }
+  // Track per-cave ore finds
+  if(ore.caveType&&!_achFlags['cave_'+ore.caveType])_achFlags['cave_'+ore.caveType]=true;
   _syncBlockWrite(wx,wy,wz); // persist removal to chunk
   markInvDirty();
   revealAdjacentSolid(wx,wy,wz,mined);
@@ -8758,6 +8776,11 @@ const ACHIEVEMENTS=[
   {id:'mine_10k',name:'Mineur Expérimenté',desc:'Mine 10 000 blocs',category:'mining',icon:'⛏',reward:'+0.3 Luck',check:()=>mined>=10000,target:10000,getProg:()=>Math.min(mined,10000)},
   {id:'mine_100k',name:'Mineur Vétéran',desc:'Mine 100 000 blocs',category:'mining',icon:'⛏',reward:'+0.5 Luck',check:()=>mined>=100000,target:100000,getProg:()=>Math.min(mined,100000)},
   {id:'mine_1m',name:'Maître Mineur',desc:'Mine 1 000 000 blocs',category:'mining',icon:'⛏',reward:'+1.0 Luck',check:()=>mined>=1000000,target:1000000,getProg:()=>Math.min(mined,1000000)},
+  {id:'mine_5m',name:'Mineur Légendaire',desc:'Mine 5 000 000 blocs',category:'mining',icon:'⛏',reward:'+2.0 Luck',check:()=>mined>=5000000,target:5000000,getProg:()=>Math.min(mined,5000000)},
+  {id:'mine_10m',name:'Mineur Titanesque',desc:'Mine 10 000 000 blocs',category:'mining',icon:'⛏',reward:'+3.0 Luck',check:()=>mined>=10000000,target:10000000,getProg:()=>Math.min(mined,10000000)},
+  {id:'mine_100m',name:'Mineur Cosmique',desc:'Mine 100 000 000 blocs',category:'mining',icon:'⛏',reward:'+5.0 Luck',check:()=>mined>=100000000,target:100000000,getProg:()=>Math.min(mined,100000000)},
+  {id:'mine_250m',name:'Mineur Céleste',desc:'Mine 250 000 000 blocs',category:'mining',icon:'⛏',reward:'+8.0 Luck',check:()=>mined>=250000000,target:250000000,getProg:()=>Math.min(mined,250000000)},
+  {id:'mine_1b',name:'Mineur Divin',desc:'Mine 1 000 000 000 blocs',category:'mining',icon:'⛏',reward:'+15.0 Luck',check:()=>mined>=1000000000,target:1000000000,getProg:()=>Math.min(mined,1000000000)},
 
   // ── Luck Milestones ──
   {id:'luck_2x',name:'Chanceux',desc:'Atteignez 2x Luck total',category:'luck',icon:'🍀',reward:'+0.2 Luck',check:()=>getTotalLuck()>=2,target:2,getProg:()=>Math.min(getTotalLuck(),2)},
@@ -8794,11 +8817,54 @@ const ACHIEVEMENTS=[
   {id:'first_event',name:'Événement Surprise',desc:'Vivez votre premier événement',category:'events',icon:'⚡',reward:'+0.2 Luck',check:()=>_achFlags.firstEvent,target:1,getProg:()=>_achFlags.firstEvent?1:0},
   {id:'event_rare',name:'Événement Rare',desc:'Trouvez un minerai d\'événement rare',category:'events',icon:'🎆',reward:'+0.3 Luck',check:()=>_achFlags.eventRare,target:1,getProg:()=>_achFlags.eventRare?1:0},
 
+  // ── Event Types ──
+  {id:'event_space',name:'Événement Spatial',desc:'Trouvez un minerai lors d\'un événement spatial',category:'events',icon:'🌌',reward:'+0.1 Luck',check:()=>_achFlags.event_space,target:1,getProg:()=>_achFlags.event_space?1:0},
+  {id:'event_ocean',name:'Événement Océanique',desc:'Trouvez un minerai lors d\'un événement océanique',category:'events',icon:'🌊',reward:'+0.1 Luck',check:()=>_achFlags.event_ocean,target:1,getProg:()=>_achFlags.event_ocean?1:0},
+  {id:'event_nuclear',name:'Événement Nucléaire',desc:'Trouvez un minerai lors d\'un événement nucléaire',category:'events',icon:'☢',reward:'+0.1 Luck',check:()=>_achFlags.event_nuclear,target:1,getProg:()=>_achFlags.event_nuclear?1:0},
+  {id:'event_fire',name:'Événement de Feu',desc:'Trouvez un minerai lors d\'un événement de feu',category:'events',icon:'🔥',reward:'+0.1 Luck',check:()=>_achFlags.event_fire,target:1,getProg:()=>_achFlags.event_fire?1:0},
+  {id:'event_evolie',name:'Événement Évolutif',desc:'Trouvez un minerai lors d\'un événement évolutif',category:'events',icon:'🧬',reward:'+0.1 Luck',check:()=>_achFlags.event_evolie,target:1,getProg:()=>_achFlags.event_evolie?1:0},
+  {id:'event_computer',name:'Événement Informatique',desc:'Trouvez un minerai lors d\'un événement informatique',category:'events',icon:'💻',reward:'+0.1 Luck',check:()=>_achFlags.event_computer,target:1,getProg:()=>_achFlags.event_computer?1:0},
+  {id:'event_mlp',name:'Événement Magique',desc:'Trouvez un minerai lors d\'un événement magique',category:'events',icon:'🦄',reward:'+0.1 Luck',check:()=>_achFlags.event_mlp,target:1,getProg:()=>_achFlags.event_mlp?1:0},
+  {id:'event_terraria',name:'Événement Terraria',desc:'Trouvez un minerai lors d\'un événement Terraria',category:'events',icon:'🌟',reward:'+0.1 Luck',check:()=>_achFlags.event_terraria,target:1,getProg:()=>_achFlags.event_terraria?1:0},
+  {id:'event_void_rift',name:'Faille du Vide',desc:'Trouvez un minerai lors d\'une faille du vide',category:'events',icon:'🕳',reward:'+0.1 Luck',check:()=>_achFlags.event_void_rift,target:1,getProg:()=>_achFlags.event_void_rift?1:0},
+  {id:'event_blood_moon',name:'Lune de Sang',desc:'Trouvez un minerai lors d\'une lune de sang',category:'events',icon:'🔴',reward:'+0.1 Luck',check:()=>_achFlags.event_blood_moon,target:1,getProg:()=>_achFlags.event_blood_moon?1:0},
+  {id:'event_phantom_storm',name:'Tempête Fantôme',desc:'Trouvez un minerai lors d\'une tempête fantôme',category:'events',icon:'🌪',reward:'+0.1 Luck',check:()=>_achFlags.event_phantom_storm,target:1,getProg:()=>_achFlags.event_phantom_storm?1:0},
+  {id:'event_corruption_wave',name:'Vague de Corruption',desc:'Trouvez un minerai lors d\'une vague de corruption',category:'events',icon:'☠',reward:'+0.1 Luck',check:()=>_achFlags.event_corruption_wave,target:1,getProg:()=>_achFlags.event_corruption_wave?1:0},
+  {id:'event_mono_storm',name:'Tempête Grise',desc:'Trouvez un minerai lors d\'une tempête grise',category:'events',icon:'🌫',reward:'+0.1 Luck',check:()=>_achFlags.event_mono_storm,target:1,getProg:()=>_achFlags.event_mono_storm?1:0},
+  {id:'event_mono_eclipse',name:'Éclipse Grise',desc:'Trouvez un minerai lors d\'une éclipse grise',category:'events',icon:'🌑',reward:'+0.1 Luck',check:()=>_achFlags.event_mono_eclipse,target:1,getProg:()=>_achFlags.event_mono_eclipse?1:0},
+  {id:'event_tidal_surge',name:'Raz-de-marée',desc:'Trouvez un minerai lors d\'un raz-de-marée',category:'events',icon:'🌊',reward:'+0.1 Luck',check:()=>_achFlags.event_tidal_surge,target:1,getProg:()=>_achFlags.event_tidal_surge?1:0},
+  {id:'event_coral_bloom',name:'Floraison de Corail',desc:'Trouvez un minerai lors d\'une floraison de corail',category:'events',icon:'🪸',reward:'+0.1 Luck',check:()=>_achFlags.event_coral_bloom,target:1,getProg:()=>_achFlags.event_coral_bloom?1:0},
+
   // ── Cave ──
   {id:'first_cave',name:'Explorateur de Cavernes',desc:'Entrez dans votre première caverne',category:'cave',icon:'🕳',reward:'+0.2 Luck',check:()=>_achFlags.firstCave,target:1,getProg:()=>_achFlags.firstCave?1:0},
   {id:'cave_rare',name:'Trésor Souterrain',desc:'Trouvez un minerai exclusif de caverne rare',category:'cave',icon:'💠',reward:'+0.3 Luck',check:()=>_achFlags.caveRare,target:1,getProg:()=>_achFlags.caveRare?1:0},
-];
 
+  // ── Cave Types ──
+  {id:'cave_NormalCave',name:'Caverne Normale',desc:'Trouvez un minerai dans une caverne normale',category:'cave',icon:'🪨',reward:'+0.1 Luck',check:()=>_achFlags.cave_NormalCave,target:1,getProg:()=>_achFlags.cave_NormalCave?1:0},
+  {id:'cave_IceCave',name:'Caverne de Glace',desc:'Trouvez un minerai dans une caverne de glace',category:'cave',icon:'🧊',reward:'+0.1 Luck',check:()=>_achFlags.cave_IceCave,target:1,getProg:()=>_achFlags.cave_IceCave?1:0},
+  {id:'cave_EnergyCave',name:'Caverne d\'Énergie',desc:'Trouvez un minerai dans une caverne d\'énergie',category:'cave',icon:'⚡',reward:'+0.1 Luck',check:()=>_achFlags.cave_EnergyCave,target:1,getProg:()=>_achFlags.cave_EnergyCave?1:0},
+  {id:'cave_NuclearCave',name:'Caverne Nucléaire',desc:'Trouvez un minerai dans une caverne nucléaire',category:'cave',icon:'☢',reward:'+0.1 Luck',check:()=>_achFlags.cave_NuclearCave,target:1,getProg:()=>_achFlags.cave_NuclearCave?1:0},
+  {id:'cave_ShadowCave',name:'Caverne d\'Ombre',desc:'Trouvez un minerai dans une caverne d\'ombre',category:'cave',icon:'🌑',reward:'+0.1 Luck',check:()=>_achFlags.cave_ShadowCave,target:1,getProg:()=>_achFlags.cave_ShadowCave?1:0},
+  {id:'cave_AbyssCave',name:'Caverne Abyssale',desc:'Trouvez un minerai dans une caverne abyssale',category:'cave',icon:'🌊',reward:'+0.1 Luck',check:()=>_achFlags.cave_AbyssCave,target:1,getProg:()=>_achFlags.cave_AbyssCave?1:0},
+  {id:'cave_LavaCave',name:'Caverne de Lave',desc:'Trouvez un minerai dans une caverne de lave',category:'cave',icon:'🔥',reward:'+0.1 Luck',check:()=>_achFlags.cave_LavaCave,target:1,getProg:()=>_achFlags.cave_LavaCave?1:0},
+  {id:'cave_ShadowVoidCave',name:'Caverne du Vide',desc:'Trouvez un minerai dans une caverne du vide',category:'cave',icon:'🕳',reward:'+0.1 Luck',check:()=>_achFlags.cave_ShadowVoidCave,target:1,getProg:()=>_achFlags.cave_ShadowVoidCave?1:0},
+  {id:'cave_ShadowFlameCave',name:'Caverne de Flamme',desc:'Trouvez un minerai dans une caverne de flamme',category:'cave',icon:'🔥',reward:'+0.1 Luck',check:()=>_achFlags.cave_ShadowFlameCave,target:1,getProg:()=>_achFlags.cave_ShadowFlameCave?1:0},
+  {id:'cave_ShadowCrystalCave',name:'Caverne de Cristal',desc:'Trouvez un minerai dans une caverne de cristal',category:'cave',icon:'💎',reward:'+0.1 Luck',check:()=>_achFlags.cave_ShadowCrystalCave,target:1,getProg:()=>_achFlags.cave_ShadowCrystalCave?1:0},
+  {id:'cave_ShadowCorruptionCave',name:'Caverne de Corruption',desc:'Trouvez un minerai dans une caverne de corruption',category:'cave',icon:'☠',reward:'+0.1 Luck',check:()=>_achFlags.cave_ShadowCorruptionCave,target:1,getProg:()=>_achFlags.cave_ShadowCorruptionCave?1:0},
+  {id:'cave_MonoVoidCave',name:'Caverne du Vide Gris',desc:'Trouvez un minerai dans une caverne du vide gris',category:'cave',icon:'◈',reward:'+0.1 Luck',check:()=>_achFlags.cave_MonoVoidCave,target:1,getProg:()=>_achFlags.cave_MonoVoidCave?1:0},
+  {id:'cave_MonoAshCave',name:'Caverne de Cendres',desc:'Trouvez un minerai dans une caverne de cendres',category:'cave',icon:'🌫',reward:'+0.1 Luck',check:()=>_achFlags.cave_MonoAshCave,target:1,getProg:()=>_achFlags.cave_MonoAshCave?1:0},
+  {id:'cave_MonoCrystalCave',name:'Caverne de Cristal Gris',desc:'Trouvez un minerai dans une caverne de cristal gris',category:'cave',icon:'💠',reward:'+0.1 Luck',check:()=>_achFlags.cave_MonoCrystalCave,target:1,getProg:()=>_achFlags.cave_MonoCrystalCave?1:0},
+  {id:'cave_MonoCorruptCave',name:'Caverne Corrompue Grise',desc:'Trouvez un minerai dans une caverne corrompue grise',category:'cave',icon:'☠',reward:'+0.1 Luck',check:()=>_achFlags.cave_MonoCorruptCave,target:1,getProg:()=>_achFlags.cave_MonoCorruptCave?1:0},
+  {id:'cave_OceanTrenchCave',name:'Caverne de la Fosse',desc:'Trouvez un minerai dans une caverne de la fosse océanique',category:'cave',icon:'🌊',reward:'+0.1 Luck',check:()=>_achFlags.cave_OceanTrenchCave,target:1,getProg:()=>_achFlags.cave_OceanTrenchCave?1:0},
+  {id:'cave_OceanCoralCave',name:'Caverne de Corail',desc:'Trouvez un minerai dans une caverne de corail',category:'cave',icon:'🪸',reward:'+0.1 Luck',check:()=>_achFlags.cave_OceanCoralCave,target:1,getProg:()=>_achFlags.cave_OceanCoralCave?1:0},
+
+  // ── World Cave Completion ──
+  {id:'caves_main',name:'Cavernes du Monde Principal',desc:'Visitez les 7 cavernes du monde principal',category:'exploration',icon:'⛏',reward:'+0.5 Luck',check:()=>_achFlags.cave_NormalCave&&_achFlags.cave_IceCave&&_achFlags.cave_EnergyCave&&_achFlags.cave_NuclearCave&&_achFlags.cave_ShadowCave&&_achFlags.cave_AbyssCave&&_achFlags.cave_LavaCave,target:7,getProg:()=>(_achFlags.cave_NormalCave?1:0)+(_achFlags.cave_IceCave?1:0)+(_achFlags.cave_EnergyCave?1:0)+(_achFlags.cave_NuclearCave?1:0)+(_achFlags.cave_ShadowCave?1:0)+(_achFlags.cave_AbyssCave?1:0)+(_achFlags.cave_LavaCave?1:0)},
+  {id:'caves_shadow',name:'Cavernes du Monde des Ombres',desc:'Visitez les 4 cavernes du monde des ombres',category:'exploration',icon:'🌑',reward:'+0.3 Luck',check:()=>_achFlags.cave_ShadowVoidCave&&_achFlags.cave_ShadowFlameCave&&_achFlags.cave_ShadowCrystalCave&&_achFlags.cave_ShadowCorruptionCave,target:4,getProg:()=>(_achFlags.cave_ShadowVoidCave?1:0)+(_achFlags.cave_ShadowFlameCave?1:0)+(_achFlags.cave_ShadowCrystalCave?1:0)+(_achFlags.cave_ShadowCorruptionCave?1:0)},
+  {id:'caves_mono',name:'Cavernes du Monde Monochrome',desc:'Visitez les 4 cavernes du monde monochrome',category:'exploration',icon:'◈',reward:'+0.3 Luck',check:()=>_achFlags.cave_MonoVoidCave&&_achFlags.cave_MonoAshCave&&_achFlags.cave_MonoCrystalCave&&_achFlags.cave_MonoCorruptCave,target:4,getProg:()=>(_achFlags.cave_MonoVoidCave?1:0)+(_achFlags.cave_MonoAshCave?1:0)+(_achFlags.cave_MonoCrystalCave?1:0)+(_achFlags.cave_MonoCorruptCave?1:0)},
+  {id:'caves_ocean',name:'Cavernes du Monde Océanique',desc:'Visitez les 2 cavernes du monde océanique',category:'exploration',icon:'🌊',reward:'+0.2 Luck',check:()=>_achFlags.cave_OceanTrenchCave&&_achFlags.cave_OceanCoralCave,target:2,getProg:()=>(_achFlags.cave_OceanTrenchCave?1:0)+(_achFlags.cave_OceanCoralCave?1:0)},
+  {id:'caves_all',name:'Maître des Cavernes',desc:'Visitez les 17 cavernes de tous les mondes',category:'exploration',icon:'🏆',reward:'+2.0 Luck',check:()=>_achFlags.cave_NormalCave&&_achFlags.cave_IceCave&&_achFlags.cave_EnergyCave&&_achFlags.cave_NuclearCave&&_achFlags.cave_ShadowCave&&_achFlags.cave_AbyssCave&&_achFlags.cave_LavaCave&&_achFlags.cave_ShadowVoidCave&&_achFlags.cave_ShadowFlameCave&&_achFlags.cave_ShadowCrystalCave&&_achFlags.cave_ShadowCorruptionCave&&_achFlags.cave_MonoVoidCave&&_achFlags.cave_MonoAshCave&&_achFlags.cave_MonoCrystalCave&&_achFlags.cave_MonoCorruptCave&&_achFlags.cave_OceanTrenchCave&&_achFlags.cave_OceanCoralCave,target:17,getProg:()=>(_achFlags.cave_NormalCave?1:0)+(_achFlags.cave_IceCave?1:0)+(_achFlags.cave_EnergyCave?1:0)+(_achFlags.cave_NuclearCave?1:0)+(_achFlags.cave_ShadowCave?1:0)+(_achFlags.cave_AbyssCave?1:0)+(_achFlags.cave_LavaCave?1:0)+(_achFlags.cave_ShadowVoidCave?1:0)+(_achFlags.cave_ShadowFlameCave?1:0)+(_achFlags.cave_ShadowCrystalCave?1:0)+(_achFlags.cave_ShadowCorruptionCave?1:0)+(_achFlags.cave_MonoVoidCave?1:0)+(_achFlags.cave_MonoAshCave?1:0)+(_achFlags.cave_MonoCrystalCave?1:0)+(_achFlags.cave_MonoCorruptCave?1:0)+(_achFlags.cave_OceanTrenchCave?1:0)+(_achFlags.cave_OceanCoralCave?1:0)},
+];
 const ACH_CATEGORY_LABELS={
   mining:'⛏ MINAGE',
   luck:'🍀 CHANCE',
@@ -8812,6 +8878,7 @@ const ACH_CATEGORY_LABELS={
 
 const ACH_REWARDS={
   mine_100:0.1,mine_1k:0.2,mine_10k:0.3,mine_100k:0.5,mine_1m:1.0,
+  mine_5m:2.0,mine_10m:3.0,mine_100m:5.0,mine_250m:8.0,mine_1b:15.0,
   luck_2x:0.2,luck_5x:0.3,luck_10x:0.5,luck_25x:1.0,
   visit_shadow:0.2,visit_mono:0.2,visit_ocean:0.2,all_worlds:0.5,
   collect_10:0.2,collect_25:0.3,collect_50:0.5,collect_100:1.0,
@@ -8819,6 +8886,15 @@ const ACH_REWARDS={
   find_epic:0.2,find_legendary:0.3,find_mythic:0.5,find_exotic:0.5,find_zenith:1.0,
   first_event:0.2,event_rare:0.3,
   first_cave:0.2,cave_rare:0.3,
+  event_space:0.1,event_ocean:0.1,event_nuclear:0.1,event_fire:0.1,event_evolie:0.1,event_computer:0.1,event_mlp:0.1,event_terraria:0.1,
+  event_void_rift:0.1,event_blood_moon:0.1,event_phantom_storm:0.1,event_corruption_wave:0.1,
+  event_mono_storm:0.1,event_mono_eclipse:0.1,event_tidal_surge:0.1,event_coral_bloom:0.1,
+  cave_NormalCave:0.1,cave_IceCave:0.1,cave_EnergyCave:0.1,cave_NuclearCave:0.1,
+  cave_ShadowCave:0.1,cave_AbyssCave:0.1,cave_LavaCave:0.1,
+  cave_ShadowVoidCave:0.1,cave_ShadowFlameCave:0.1,cave_ShadowCrystalCave:0.1,cave_ShadowCorruptionCave:0.1,
+  cave_MonoVoidCave:0.1,cave_MonoAshCave:0.1,cave_MonoCrystalCave:0.1,cave_MonoCorruptCave:0.1,
+  cave_OceanTrenchCave:0.1,cave_OceanCoralCave:0.1,
+  caves_main:0.5,caves_shadow:0.3,caves_mono:0.3,caves_ocean:0.2,caves_all:2.0,
 };
 
 let _achFlags={};
