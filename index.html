@@ -436,7 +436,10 @@ body.mob-active #left-col{
   overflow:hidden;
 }
 body.mob-active #inv-panel{max-height:14vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-body.mob-active #idx-panel{max-height:12vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.mob-active #idx-panel{max-height:14vh;min-width:auto;max-width:180px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.mob-active #idx-panel .idx-row{font-size:6px;gap:3px}
+body.mob-active #idx-panel .idx-dot{width:5px;height:5px}
+body.mob-active #idx-panel .idx-exact{font-size:4px}
 body.mob-active #stats-panel{
   display:block;
   right:4px;
@@ -450,7 +453,11 @@ body.mob-active #shop-btn{display:none}
 body.mob-active #settings-btn{display:none}
 body.mob-active #surface-btn{display:none}
 body.mob-active #achievements-btn{display:none}
-body.mob-active #recent-close-btn{display:inline!important;padding:4px 6px;font-size:12px!important}
+body.mob-active #recent-close-btn{display:none!important}
+body.mob-active #recent-toggle-btn{display:none!important}
+body.offline #mobile-controls.mob-active #mob-chat-btn,
+body.offline #chat-box,
+body.offline #mp-status-bar{display:none!important}
 body.mob-active #mp-join-ov{background:rgba(2,2,6,0.85);align-items:flex-start;padding-top:15vh}
 body.mob-active #mp-join-box{width:85vw;padding:14px 12px}
 body.mob-active #mp-join-box h2{font-size:7px}
@@ -520,6 +527,7 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 #mobile-controls.mob-active #mob-surface-btn{display:block!important}
 #mobile-controls.mob-active #mob-chat-btn{display:block!important}
 #mobile-controls.mob-active #mob-settings-btn{display:block!important}
+#mobile-controls.mob-active #mob-achievements-btn{display:block!important}
 /* gif pool */
 #gif-anim-pool{position:fixed;left:-1000px;top:0;width:800px;display:flex;flex-wrap:wrap;pointer-events:none;overflow:visible;}
 </style>
@@ -698,6 +706,8 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="mob-place-btn" style="position:absolute;bottom:calc(254px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
   <!-- Mobile settings -->
    <div id="mob-settings-btn" style="position:absolute;bottom:calc(288px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">⚙ SETTINGS</div>
+  <!-- Mobile achievements -->
+  <div id="mob-achievements-btn" style="position:absolute;bottom:calc(250px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">🏆 SUCCÈS</div>
   <!-- Surface button bottom-center -->
   <div id="mob-surface-btn" onclick="goToSurface()" style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.88);border:1px solid rgba(100,200,100,0.35);border-radius:4px;color:rgba(150,220,150,0.9);padding:7px 12px;pointer-events:all;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:41;display:none;white-space:nowrap;">⬆ SURFACE</div>
 </div>
@@ -8937,6 +8947,7 @@ function getAchLuckBonus(){return _achLuckBonus;}
     const mobChat=document.getElementById('mob-chat-btn');
     const mobPlace=document.getElementById('mob-place-btn');
     const mobSet=document.getElementById('mob-settings-btn');
+    const mobAch=document.getElementById('mob-achievements-btn');
 
     // ── Mobile shop button ──
     mobShop.addEventListener('touchstart',e=>{
@@ -8965,6 +8976,14 @@ function getAchLuckBonus(){return _achLuckBonus;}
       mobSet.addEventListener('touchstart',e=>{
         e.preventDefault();e.stopPropagation();
         toggleSettingsPanel();
+      },{passive:false});
+    }
+
+    // ── Mobile achievements button ──
+    if(mobAch){
+      mobAch.addEventListener('touchstart',e=>{
+        e.preventDefault();e.stopPropagation();
+        openAchievements();
       },{passive:false});
     }
 
@@ -9011,7 +9030,7 @@ function getAchLuckBonus(){return _achLuckBonus;}
     jZone.addEventListener('touchcancel',joyEnd,{passive:false});
 
     // ── Look control (window level — look-zone has pointer-events:none) ──
-    const _ignoreLookSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box,#recent-close-btn,#recent-toggle-btn,#mp-status-bar';
+    const _ignoreLookSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-achievements-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box,#recent-close-btn,#recent-toggle-btn,#mp-status-bar';
     window.addEventListener('touchstart',e=>{
       for(let i=0;i<e.changedTouches.length;i++){
         const t=e.changedTouches[i];
@@ -9335,6 +9354,7 @@ function connectToServer(){
   _ws.onerror=e=>{console.error('WS error:',e);};
   _ws.onclose=()=>{
     _wsConnected=false;
+    document.body.classList.add('offline');
     if(_playerCountTimer){clearInterval(_playerCountTimer);_playerCountTimer=null;}
     const cb=document.getElementById('chat-box');
     if(cb){cb.className='';cb.style.display='none';}
@@ -9431,6 +9451,7 @@ function _clearAllMultiplayerState(){
 function _handleServerMsg(msg){
   switch(msg.type){
     case'joined':
+      document.body.classList.remove('offline');
       _wsConnected=true;_wsPlayerId=msg.id;
       _clearAllMultiplayerState();
       if(msg.color)_syncedColors.set(msg.id,msg.color);
@@ -9625,6 +9646,7 @@ function tryJoin(){
   const hd=document.getElementById('mp-host-display');
   if(hd)hd.textContent=host;
   document.getElementById('mp-join-ov').style.display='none';
+  document.body.classList.remove('offline');
   document.getElementById('mp-status-bar').style.display='flex';
   document.getElementById('mp-status').textContent=T.statusConnecting;
   document.getElementById('mp-status-dot').className='off';
@@ -9634,9 +9656,7 @@ document.getElementById('mp-join-btn').addEventListener('click',tryJoin);
 document.getElementById('mp-join-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryJoin();});
 document.getElementById('mp-join-skip').addEventListener('click',function(){
   document.getElementById('mp-join-ov').style.display='none';
-  document.getElementById('mp-status-bar').style.display='flex';
-  document.getElementById('mp-status').textContent=T.statusOffline;
-  document.getElementById('mp-status-dot').className='off';
+  document.body.classList.add('offline');
   const cb=document.getElementById('chat-box');
   if(cb){cb.className='';cb.style.display='none';}
   const hl=document.getElementById('hint-chat');
