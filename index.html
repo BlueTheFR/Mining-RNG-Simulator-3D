@@ -229,20 +229,13 @@ canvas.free{cursor:default}
 #mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
 #mine-top-txt{font-size:7px;color:rgba(255,255,255,0.35);white-space:nowrap}
 #mine-top-cd{font-size:7px;color:#ff4444;display:none;white-space:nowrap}
-/* Mobile safe-area shifts: push all HUD below browser chrome */
+/* Mobile safe-area shifts: push some HUD below browser chrome */
 @supports(padding-top:env(safe-area-inset-top)){
-  body.mob-active #mine-top{padding-top:env(safe-area-inset-top)}
-  body.mob-active #mine-top{height:calc(22px + env(safe-area-inset-top))}
-  body.mob-active #left-col{top:calc(64px + env(safe-area-inset-top))}
-  body.mob-active #stats-panel{top:calc(64px + env(safe-area-inset-top))}
-  body.mob-active #recent-panel{top:calc(64px + env(safe-area-inset-top));right:10px;max-height:180px;max-width:260px}
   #recent-panel{position:absolute;top:262px;right:10px;min-width:200px;max-width:260px;max-height:180px;display:flex;flex-direction:column;gap:4px;pointer-events:all;z-index:15;font-family:'Press Start 2P',monospace}
   #recent-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:4px 8px;cursor:pointer;user-select:none}
   #lbl-recent{font-size:10px;color:#ffffff;letter-spacing:1px}
   #recent-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
   #recent-list:empty::after{content:attr(data-empty);color:rgba(255,255,255,0.15);font-size:7px;display:block;text-align:center}
-  body.mob-active #surface-btn{top:calc(64px + env(safe-area-inset-top))}
-  body.mob-active #mob-shop-btn{top:calc(64px + env(safe-area-inset-top))}
 }
 
 /* ── Top-right buttons ── */
@@ -335,10 +328,10 @@ canvas.free{cursor:default}
 }
 #mobile-controls.mob-active{display:block}
 
-/* ── Look zone (full screen, behind everything) ── */
+/* ── Look zone (pointer-events:none — touch look is handled at window level) ── */
 #look-zone{
   position:absolute;inset:0;
-  pointer-events:all;touch-action:none;
+  pointer-events:none;touch-action:none;
 }
 
 /* ── Joystick — bottom-left ── */
@@ -415,8 +408,8 @@ canvas.free{cursor:default}
 /* ── Mobile action row — SHOP + SETTINGS ── */
 #mob-shop-btn{
   position:absolute;
-  top:calc(28px + env(safe-area-inset-top));
-  right:10px;
+  bottom:calc(322px + env(safe-area-inset-bottom));
+  left:4px;
   font-family:'Press Start 2P',monospace;font-size:7px;
   background:rgba(4,4,8,0.9);
   border:1px solid rgba(255,255,255,0.22);
@@ -438,7 +431,7 @@ body.mob-active #ability-panel{display:none!important}
 body.mob-active .panel{backdrop-filter:none;-webkit-backdrop-filter:none}
 body.mob-active .ore-row{transition:none}
 body.mob-active #left-col{
-  top:calc(58px + env(safe-area-inset-top));
+  top:calc(28px + env(safe-area-inset-top));
   max-height:28vh;
   overflow:hidden;
 }
@@ -447,28 +440,73 @@ body.mob-active #idx-panel{max-height:12vh;overflow-y:auto;-webkit-overflow-scro
 body.mob-active #stats-panel{
   display:block;
   right:4px;
-  top:calc(58px + env(safe-area-inset-top));
-  min-width:118px;max-width:145px;
-  padding:7px 9px;
+   top:calc(46px + env(safe-area-inset-top));
+  min-width:100px;max-width:130px;
+  padding:5px 7px;
 }
-body.mob-active #stats-panel .stat-row{font-size:6px;gap:4px}
-body.mob-active #stats-panel h3{font-size:6px;margin-bottom:5px}
+body.mob-active #stats-panel .stat-row{font-size:5px;gap:3px}
+body.mob-active #stats-panel h3{font-size:5px;margin-bottom:3px}
 body.mob-active #shop-btn{display:none}
 body.mob-active #settings-btn{display:none}
 body.mob-active #surface-btn{display:none}
 body.mob-active #achievements-btn{display:none}
-body.mob-active #recent-close-btn{display:inline!important}
-body.mob-active #recent-panel{max-height:100px}
-body.mob-active #chat-box{width:min(280px,45vw);max-height:220px;right:2px}
-body.mob-active #chat-msg-list{max-height:160px}
-#mobile-controls.mob-active #mob-surface-btn{display:block!important}
-#mobile-controls.mob-active #mob-chat-btn{display:block!important}
-#mobile-controls.mob-active #mob-settings-btn{display:block!important}
-/* Mine top bar on mobile */
-body.mob-active #mine-top{
-  padding-top:env(safe-area-inset-top);
-  height:calc(22px + env(safe-area-inset-top));
+body.mob-active #recent-close-btn{display:inline!important;padding:4px 6px;font-size:12px!important}
+body.mob-active #mp-join-ov{background:rgba(2,2,6,0.85);align-items:flex-start;padding-top:15vh}
+body.mob-active #mp-join-box{width:85vw;padding:14px 12px}
+body.mob-active #mp-join-box h2{font-size:7px}
+body.mob-active #mp-join-sub{font-size:6px;margin-bottom:10px}
+body.mob-active #mp-join-input{font-size:8px;padding:7px 10px}
+body.mob-active #mp-host-input{font-size:6px;padding:5px 8px}
+body.mob-active #mp-host-display{font-size:4px}
+body.mob-active #mp-join-btn{font-size:7px;padding:8px 18px}
+body.mob-active #mp-join-skip{font-size:6px;margin-top:6px;padding:5px}
+body.mob-active #recent-panel{
+  top:auto;
+  bottom:calc(195px + env(safe-area-inset-bottom));
+  right:2px;left:auto;
+  transform:none;
+  max-height:50px;max-width:110px;min-width:auto;
 }
+body.mob-active #recent-panel #recent-list{max-height:28px;font-size:4px;padding:2px 4px}
+body.mob-active #recent-panel #lbl-recent{font-size:5px}
+body.mob-active #recent-panel #recent-header{padding:1px 4px;gap:3px}
+body.mob-active #chat-box{width:min(260px,45vw);max-height:180px;right:2px}
+body.mob-active #chat-msg-list{max-height:120px}
+body.mob-active #spawn-msg .smsg{font-size:6px;padding:4px 10px}
+body.mob-active #event-box{font-size:5px!important;padding:2px 8px!important;left:55%!important}
+/* Mine top bar on mobile — moved to bottom */
+body.mob-active #mine-top{
+  top:auto;
+  bottom:0;
+  height:calc(20px + env(safe-area-inset-bottom));
+  padding-top:0;
+  padding-bottom:env(safe-area-inset-bottom);
+  z-index:44;
+}
+/* Surface button at top of screen, same line as inventory */
+body.mob-active #mob-surface-btn{
+  top:calc(28px + env(safe-area-inset-top))!important;
+  bottom:auto!important;
+  left:auto!important;right:10px!important;
+  transform:none!important;
+  font-size:5px!important;padding:4px 8px!important;
+}
+/* MP status — below joystick, smaller */
+body.mob-active #mp-status-bar{
+  top:auto;
+  bottom:calc(168px + env(safe-area-inset-bottom));
+  left:24px;
+  padding:2px 5px;gap:2px;
+  font-size:4px;
+  border-radius:2px;
+  min-width:auto;
+  pointer-events:none;
+  opacity:0.6;
+}
+body.mob-active #mp-status-dot{width:4px;height:4px}
+body.mob-active #mp-status-label{font-size:4px}
+body.mob-active #mp-status{font-size:4px}
+body.mob-active #mp-players{font-size:4px}
 /* Mobile shop overlay */
 body.mob-active #shop-box{padding:12px;width:min(780px,96vw);max-height:85vh}
 body.mob-active #shop-box .shop-close{position:sticky;bottom:0;display:block;width:100%;background:var(--shop-bg);border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.8);font-size:8px;padding:12px;z-index:2}
@@ -478,6 +516,10 @@ body.mob-active #altar-ov,
 body.mob-active #shadow-altar-ov{padding:0}
 body.mob-active #altar-box,
 body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;margin:0}
+/* Mobile right-side buttons — left column */
+#mobile-controls.mob-active #mob-surface-btn{display:block!important}
+#mobile-controls.mob-active #mob-chat-btn{display:block!important}
+#mobile-controls.mob-active #mob-settings-btn{display:block!important}
 /* gif pool */
 #gif-anim-pool{position:fixed;left:-1000px;top:0;width:800px;display:flex;flex-wrap:wrap;pointer-events:none;overflow:visible;}
 </style>
@@ -522,7 +564,7 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   </div>
   <div id="stats-panel" style="position:absolute;top:90px;right:10px;background:var(--hud-bg);border:1px solid var(--hud-border);border-radius:4px;padding:9px 12px;pointer-events:none;min-width:160px;max-width:200px;overflow:hidden">
     <h3 id="lbl-stats" style="font-size:8px;color:var(--hud-accent);margin-bottom:8px;letter-spacing:2px;opacity:.55">STATS
-      <span id="recent-toggle-btn" style="font-size:7px;color:rgba(255,255,255,0.25);cursor:pointer;pointer-events:all;display:none;margin-left:6px;letter-spacing:0" title="Toggle recent events">📋</span>
+      <span id="recent-toggle-btn" onclick="document.getElementById('recent-panel').style.display='flex';this.style.display='none'" style="font-size:7px;color:rgba(255,255,255,0.25);cursor:pointer;pointer-events:all;display:none;margin-left:6px;letter-spacing:0" title="Toggle recent events">📋</span>
     </h3>
     <div class="stat-row"><span id="lbl-mined">Blocs mines</span><span class="stat-v" id="s-mined" style="cursor:pointer;user-select:none" title="Cliquer pour compacter / Click to compact">0</span></div>
     <div class="stat-row"><span id="lbl-pick">Pioche</span><span class="stat-v" id="s-pick">T0</span></div>
@@ -546,7 +588,7 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="recent-panel">
     <div id="recent-header" onclick="_toggleRecentFilter()">
       <span id="lbl-recent" title="Click to toggle filter">RECENT EVENTS</span>
-      <span id="recent-close-btn" style="margin-left:auto;font-size:8px;color:rgba(255,255,255,0.3);cursor:pointer;display:none">✕</span>
+      <span id="recent-close-btn" onclick="document.getElementById('recent-panel').style.display='none';document.getElementById('recent-toggle-btn').style.display='inline'" style="margin-left:auto;font-size:8px;color:rgba(255,255,255,0.3);cursor:pointer;display:none;pointer-events:all">✕</span>
     </div>
     <div id="recent-list" data-empty="No events yet"></div>
   </div>
@@ -648,14 +690,14 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <svg id="mine-btn-ring" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45"/></svg>
   <!-- Jump button above mine -->
   <div id="jump-btn">↑<br>JUMP</div>
-  <!-- Mobile shop top-right -->
+  <!-- Mobile shop top-right (moved to bottom area) -->
   <div id="mob-shop-btn">🏪 SHOP</div>
   <!-- Mobile chat toggle -->
-  <div id="mob-chat-btn" onclick="if(typeof _wsConnected!=='undefined'&&_wsConnected){const b=document.getElementById('chat-box');if(b&&b.style.display!=='flex'&&_wsConnected){b.className='online';b.style.display='flex'}else if(b)closeChat();}" style="position:absolute;top:calc(94px + env(safe-area-inset-top));left:4px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬 CHAT</div>
+   <div id="mob-chat-btn" style="position:absolute;bottom:calc(220px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬 CHAT</div>
   <!-- Mobile phantom place -->
-  <div id="mob-place-btn" onclick="doPlace()" style="position:absolute;top:calc(130px + env(safe-area-inset-top));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
+  <div id="mob-place-btn" style="position:absolute;bottom:calc(254px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
   <!-- Mobile settings -->
-  <div id="mob-settings-btn" onclick="toggleSettingsPanel()" style="position:absolute;top:calc(166px + env(safe-area-inset-top));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">⚙ SETTINGS</div>
+   <div id="mob-settings-btn" style="position:absolute;bottom:calc(288px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">⚙ SETTINGS</div>
   <!-- Surface button bottom-center -->
   <div id="mob-surface-btn" onclick="goToSurface()" style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.88);border:1px solid rgba(100,200,100,0.35);border-radius:4px;color:rgba(150,220,150,0.9);padding:7px 12px;pointer-events:all;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:41;display:none;white-space:nowrap;">⬆ SURFACE</div>
 </div>
@@ -8887,18 +8929,44 @@ function getAchLuckBonus(){return _achLuckBonus;}
     const JRAD=65;
     const LOOK_SENS=0.005;
 
-    const zone=document.getElementById('look-zone');
     const jZone=document.getElementById('joystick-zone');
     const knob=document.getElementById('joystick-knob');
     const mineBtn=document.getElementById('mine-btn');
     const jumpBtn=document.getElementById('jump-btn');
     const mobShop=document.getElementById('mob-shop-btn');
+    const mobChat=document.getElementById('mob-chat-btn');
+    const mobPlace=document.getElementById('mob-place-btn');
+    const mobSet=document.getElementById('mob-settings-btn');
 
     // ── Mobile shop button ──
     mobShop.addEventListener('touchstart',e=>{
       e.preventDefault();e.stopPropagation();
       shopOpen?closeShop():openShop();
     },{passive:false});
+
+    // ── Mobile chat button ──
+    if(mobChat){
+      mobChat.addEventListener('touchstart',e=>{
+        e.preventDefault();e.stopPropagation();
+        if(_chatOpen)closeChat();else openChat();
+      },{passive:false});
+    }
+
+    // ── Mobile place button ──
+    if(mobPlace){
+      mobPlace.addEventListener('touchstart',e=>{
+        e.preventDefault();e.stopPropagation();
+        doPlace();
+      },{passive:false});
+    }
+
+    // ── Mobile settings button ──
+    if(mobSet){
+      mobSet.addEventListener('touchstart',e=>{
+        e.preventDefault();e.stopPropagation();
+        toggleSettingsPanel();
+      },{passive:false});
+    }
 
     // ── Joystick ──
     jZone.addEventListener('touchstart',e=>{
@@ -8942,24 +9010,23 @@ function getAchLuckBonus(){return _achLuckBonus;}
     jZone.addEventListener('touchend',joyEnd,{passive:false});
     jZone.addEventListener('touchcancel',joyEnd,{passive:false});
 
-    // ── Look zone ──
-    const _scrollableSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box';
-    zone.addEventListener('touchstart',e=>{
+    // ── Look control (window level — look-zone has pointer-events:none) ──
+    const _ignoreLookSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box,#recent-close-btn,#recent-toggle-btn,#mp-status-bar';
+    window.addEventListener('touchstart',e=>{
       for(let i=0;i<e.changedTouches.length;i++){
         const t=e.changedTouches[i];
         const el=document.elementFromPoint(t.clientX,t.clientY);
         if(el){
           if(el.closest('#recent-close-btn')){e.stopPropagation();document.getElementById('recent-panel').style.display='none';var tb2=document.getElementById('recent-toggle-btn');if(tb2)tb2.style.display='inline';return;}
           if(el.closest('#recent-toggle-btn')){e.stopPropagation();var rp2=document.getElementById('recent-panel');rp2.style.display=rp2.style.display==='none'?'flex':'none';el.style.display=rp2.style.display==='none'?'inline':'none';return;}
-          if(el.closest(_scrollableSelectors)){e.stopPropagation();return;}
+          if(el.closest(_ignoreLookSelectors))return;
         }
         if(look.id!==-1)continue;
         look.id=t.identifier;look.lastX=t.clientX;look.lastY=t.clientY;
       }
-      e.preventDefault();
     },{passive:false});
 
-    zone.addEventListener('touchmove',e=>{
+    window.addEventListener('touchmove',e=>{
       for(let i=0;i<e.touches.length;i++){
         const t=e.touches[i];
         if(t.identifier!==look.id)continue;
@@ -8970,7 +9037,6 @@ function getAchLuckBonus(){return _achLuckBonus;}
         camera.quaternion.setFromEuler(euler);
         look.lastX=t.clientX;look.lastY=t.clientY;
       }
-      if(look.id!==-1)e.preventDefault();
     },{passive:false});
 
     function lookEnd(e){
@@ -8978,8 +9044,8 @@ function getAchLuckBonus(){return _achLuckBonus;}
         if(e.changedTouches[i].identifier===look.id){look.id=-1;break;}
       }
     }
-    zone.addEventListener('touchend',lookEnd,{passive:false});
-    zone.addEventListener('touchcancel',lookEnd,{passive:false});
+    window.addEventListener('touchend',lookEnd,{passive:false});
+    window.addEventListener('touchcancel',lookEnd,{passive:false});
 
     // ── Mine button ──
     mineBtn.addEventListener('touchstart',e=>{
@@ -9481,8 +9547,14 @@ function sendPosition(){
 function sendChat(){
   const inp=document.getElementById('chat-input');
   const msg=inp.value.trim();
-  if(msg&&_ws&&_wsConnected)_wsSendSafe(JSON.stringify({type:'chat',message:msg}));
-  closeChat();
+  if(!msg)return;
+  if(_ws&&_wsConnected){
+    _wsSendSafe(JSON.stringify({type:'chat',message:msg}));
+    inp.value='';
+    closeChat();
+  } else {
+    inp.value='';
+  }
 }
 
 function _broadcastPhantomPlace(){
@@ -9518,7 +9590,7 @@ function _escHtml(s){
 }
 
 function openChat(){
-  if(_chatOpen||!_wsConnected)return;
+  if(_chatOpen)return;
   _chatOpen=true;
   const box=document.getElementById('chat-box');
   box.className='online';
