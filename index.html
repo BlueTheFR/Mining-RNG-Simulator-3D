@@ -439,11 +439,11 @@ body.mob-active .panel{backdrop-filter:none;-webkit-backdrop-filter:none}
 body.mob-active .ore-row{transition:none}
 body.mob-active #left-col{
   top:calc(58px + env(safe-area-inset-top));
-  max-height:42vh;
+  max-height:28vh;
   overflow:hidden;
 }
-body.mob-active #inv-panel{max-height:22vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-body.mob-active #idx-panel{max-height:18vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.mob-active #inv-panel{max-height:14vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.mob-active #idx-panel{max-height:12vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 body.mob-active #stats-panel{
   display:block;
   right:4px;
@@ -454,12 +454,16 @@ body.mob-active #stats-panel{
 body.mob-active #stats-panel .stat-row{font-size:6px;gap:4px}
 body.mob-active #stats-panel h3{font-size:6px;margin-bottom:5px}
 body.mob-active #shop-btn{display:none}
+body.mob-active #settings-btn{display:none}
 body.mob-active #surface-btn{display:none}
 body.mob-active #achievements-btn{display:none}
 body.mob-active #recent-close-btn{display:inline!important}
-body.mob-active #recent-panel{max-height:140px}
+body.mob-active #recent-panel{max-height:100px}
+body.mob-active #chat-box{width:min(280px,45vw);max-height:220px;right:2px}
+body.mob-active #chat-msg-list{max-height:160px}
 #mobile-controls.mob-active #mob-surface-btn{display:block!important}
 #mobile-controls.mob-active #mob-chat-btn{display:block!important}
+#mobile-controls.mob-active #mob-settings-btn{display:block!important}
 /* Mine top bar on mobile */
 body.mob-active #mine-top{
   padding-top:env(safe-area-inset-top);
@@ -647,14 +651,16 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <!-- Mobile shop top-right -->
   <div id="mob-shop-btn">🏪 SHOP</div>
   <!-- Mobile chat toggle -->
-  <div id="mob-chat-btn" onclick="if(typeof _wsConnected!=='undefined'&&_wsConnected){const b=document.getElementById('chat-box');if(b&&b.style.display!=='flex'&&_wsConnected){b.className='online';b.style.display='flex'}else if(b)closeChat();}" style="position:absolute;top:calc(70px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:8px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬</div>
+  <div id="mob-chat-btn" onclick="if(typeof _wsConnected!=='undefined'&&_wsConnected){const b=document.getElementById('chat-box');if(b&&b.style.display!=='flex'&&_wsConnected){b.className='online';b.style.display='flex'}else if(b)closeChat();}" style="position:absolute;top:calc(94px + env(safe-area-inset-top));left:4px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬 CHAT</div>
   <!-- Mobile phantom place -->
-  <div id="mob-place-btn" onclick="doPlace()" style="position:absolute;top:calc(110px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
+  <div id="mob-place-btn" onclick="doPlace()" style="position:absolute;top:calc(130px + env(safe-area-inset-top));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,200,50,0.35);border-radius:4px;color:rgba(255,200,50,0.9);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">📦 PLACE</div>
+  <!-- Mobile settings -->
+  <div id="mob-settings-btn" onclick="toggleSettingsPanel()" style="position:absolute;top:calc(166px + env(safe-area-inset-top));left:4px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;white-space:nowrap">⚙ SETTINGS</div>
   <!-- Surface button bottom-center -->
   <div id="mob-surface-btn" onclick="goToSurface()" style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.88);border:1px solid rgba(100,200,100,0.35);border-radius:4px;color:rgba(150,220,150,0.9);padding:7px 12px;pointer-events:all;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:41;display:none;white-space:nowrap;">⬆ SURFACE</div>
 </div>
 <button id="surface-btn" onclick="goToSurface()" title="Teleport to surface spawn">⬆ SURFACE</button>
-<button onclick="toggleSettingsPanel()" style="position:absolute;bottom:14px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:#ddccaa;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;">⚙ SETTINGS</button>
+<button id="settings-btn" onclick="toggleSettingsPanel()" style="position:absolute;bottom:14px;right:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(4,4,8,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:#ddccaa;opacity:.8;padding:8px 11px;cursor:pointer;pointer-events:all;z-index:11;">⚙ SETTINGS</button>
 <!-- Settings panel -->
 <div id="settings-panel" style="display:none;position:absolute;bottom:55px;right:10px;background:rgba(10,10,18,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:14px 18px;z-index:50;font-family:'Press Start 2P',monospace;color:#ccc;min-width:210px;pointer-events:all;">
   <div style="font-size:8px;color:#ffdd44;margin-bottom:10px;">⚙ PARAMÈTRES</div>
@@ -8937,7 +8943,7 @@ function getAchLuckBonus(){return _achLuckBonus;}
     jZone.addEventListener('touchcancel',joyEnd,{passive:false});
 
     // ── Look zone ──
-    const _scrollableSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box';
+    const _scrollableSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box';
     zone.addEventListener('touchstart',e=>{
       for(let i=0;i<e.changedTouches.length;i++){
         const t=e.changedTouches[i];
