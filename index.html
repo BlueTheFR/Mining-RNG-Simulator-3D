@@ -235,7 +235,12 @@ canvas.free{cursor:default}
   body.mob-active #mine-top{height:calc(22px + env(safe-area-inset-top))}
   body.mob-active #left-col{top:calc(64px + env(safe-area-inset-top))}
   body.mob-active #stats-panel{top:calc(64px + env(safe-area-inset-top))}
-  body.mob-active #recent-panel{top:calc(280px + env(safe-area-inset-top))}
+  body.mob-active #recent-panel{top:calc(64px + env(safe-area-inset-top));right:10px;max-height:180px;max-width:260px}
+  #recent-panel{position:absolute;top:262px;right:10px;min-width:200px;max-width:260px;max-height:180px;display:flex;flex-direction:column;gap:4px;pointer-events:all;z-index:15;font-family:'Press Start 2P',monospace}
+  #recent-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:4px 8px;cursor:pointer;user-select:none}
+  #lbl-recent{font-size:10px;color:#ffffff;letter-spacing:1px}
+  #recent-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:6px 8px;overflow-y:auto;max-height:150px;min-height:30px;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+  #recent-list:empty::after{content:attr(data-empty);color:rgba(255,255,255,0.15);font-size:7px;display:block;text-align:center}
   body.mob-active #surface-btn{top:calc(64px + env(safe-area-inset-top))}
   body.mob-active #mob-shop-btn{top:calc(64px + env(safe-area-inset-top))}
 }
@@ -544,9 +549,11 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
       <span class="stat-v" id="s-gear" style="color:rgba(100,220,100,0.9);font-size:7px">—</span>
     </div>
   </div>
-  <div id="recent-panel" style="display:none;position:absolute;top:315px;right:10px;background:rgba(4,4,8,0.88);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:7px 10px;pointer-events:none;min-width:180px;max-width:240px;max-height:200px;overflow-y:auto;z-index:11;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent">
-    <div onclick="_toggleRecentFilter()" style="font-size:6px;color:rgba(255,255,255,0.35);margin-bottom:4px;letter-spacing:1px;cursor:pointer;pointer-events:all;user-select:none" id="lbl-recent" title="Click to toggle filter">RECENT EVENTS</div>
-    <div id="recent-list"></div>
+  <div id="recent-panel">
+    <div id="recent-header" onclick="_toggleRecentFilter()">
+      <span id="lbl-recent" title="Click to toggle filter">RECENT EVENTS</span>
+    </div>
+    <div id="recent-list" data-empty="No events yet"></div>
   </div>
   <div id="scanner" style="display:none"></div>
   <div id="scn-overlay">
@@ -883,7 +890,7 @@ const T={
       joinSub:'Connectez-vous au multijoueur — chaque joueur a son propre monde',
       playerColor:'COULEUR DU JOUEUR',usernamePlaceholder:'Votre pseudo',
       statusOnline:'EN LIGNE',statusOffline:'HORS LIGNE',statusConnecting:'CONNEXION...',
-      recentAll:'ÉVÉNEMENTS RÉCENTS',recentMine:'MES TROUVAILLES'},
+      recentAll:'TROUVAILLES DU SERVEUR',recentMine:'MES TROUVAILLES'},
   en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
       atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
       all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
@@ -9321,15 +9328,14 @@ function _renderRecentEvents(){
   const panel=document.getElementById('recent-panel');
   const list=document.getElementById('recent-list');
   if(!panel||!list)return;
-  panel.style.display='block';
   list.innerHTML='';
   const filtered=_recentFilter==='mine'?_recentEvents.filter(e=>e.isLocal):_recentEvents;
   for(const e of filtered){
     const d=new Date(e.ts);
     const t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
     const row=document.createElement('div');
-    row.style.cssText='font-size:6px;margin-bottom:3px;line-height:1.5;word-break:break-word';
-    const tag=e.isLocal?'<span style="color:rgba(255,255,200,0.45)">[YOU]</span> ':'<span style="color:rgba(200,200,255,0.35)">[SERVER]</span> ';
+    row.style.cssText='font-size:3px;margin-bottom:2px;line-height:1.6;word-break:break-word';
+    const tag=e.isLocal?'<span style="color:#ffffff">[YOU]</span> ':'<span style="color:#ffffff">[SERVER]</span> ';
     row.innerHTML='<span style="color:rgba(255,255,255,0.2)">'+t+'</span> '+tag+'<span style="color:'+e.color+'">'+_escHtml(e.username)+' <span style="opacity:0.65">'+_escHtml(_fmtFound())+'</span> '+_escHtml(e.oreName)+' <span style="opacity:0.45">1/'+fmtExact(e.exact)+'</span></span>';
     list.appendChild(row);
   }
