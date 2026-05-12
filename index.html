@@ -235,6 +235,7 @@ canvas.free{cursor:default}
   body.mob-active #mine-top{height:calc(22px + env(safe-area-inset-top))}
   body.mob-active #left-col{top:calc(64px + env(safe-area-inset-top))}
   body.mob-active #stats-panel{top:calc(64px + env(safe-area-inset-top))}
+  body.mob-active #recent-panel{top:calc(280px + env(safe-area-inset-top))}
   body.mob-active #surface-btn{top:calc(64px + env(safe-area-inset-top))}
   body.mob-active #mob-shop-btn{top:calc(64px + env(safe-area-inset-top))}
 }
@@ -463,6 +464,9 @@ body.mob-active #shop-btn{display:none}
 body.mob-active #surface-btn{display:none}
 body.mob-active #achievements-btn{display:none}
 #mobile-controls.mob-active #mob-surface-btn{display:block!important}
+#mobile-controls.mob-active #mob-mute-btn{display:block!important}
+#mobile-controls.mob-active #mob-vol-btn{display:block!important}
+#mobile-controls.mob-active #mob-chat-btn{display:block!important}
 /* Mine top bar on mobile */
 body.mob-active #mine-top{
   padding-top:env(safe-area-inset-top);
@@ -494,7 +498,12 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 <audio id="Imaginary" src="Imaginary.mp3" preload="auto"></audio>
 <audio id="Zenith" src="Zenith.mp3" preload="auto"></audio>
 <audio id="Eternal" src="Eternal.mp3" preload="auto"></audio>
-  <audio id="EpineAudio" src="EpineAudio.mp3" preload="auto" loop></audio>
+<audio id="EpineAudio" src="EpineAudio.mp3" preload="auto" loop></audio>
+<audio id="bg-overworld" src="Overworld.mp3" preload="auto" loop></audio>
+<audio id="bg-corruption" src="Corruption.mp3" preload="auto" loop></audio>
+<audio id="bg-battlefield" src="Battlefield.mp3" preload="auto" loop></audio>
+<audio id="bg-relic" src="Relic.mp3" preload="auto" loop></audio>
+<audio id="bg-moog" src="Moog City.mp3" preload="auto" loop></audio>
 
 <div id="hud">
   <div id="mine-top">
@@ -534,6 +543,10 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
       <span style="color:rgba(100,200,100,0.7);font-size:7px" id="lbl-gear">GEAR</span>
       <span class="stat-v" id="s-gear" style="color:rgba(100,220,100,0.9);font-size:7px">—</span>
     </div>
+  </div>
+  <div id="recent-panel" style="display:none;position:absolute;top:315px;right:10px;background:rgba(4,4,8,0.88);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:7px 10px;pointer-events:none;min-width:180px;max-width:240px;max-height:200px;overflow-y:auto;z-index:11;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent">
+    <div onclick="_toggleRecentFilter()" style="font-size:6px;color:rgba(255,255,255,0.35);margin-bottom:4px;letter-spacing:1px;cursor:pointer;pointer-events:all;user-select:none" id="lbl-recent" title="Click to toggle filter">RECENT EVENTS</div>
+    <div id="recent-list"></div>
   </div>
   <div id="scanner" style="display:none"></div>
   <div id="scn-overlay">
@@ -635,6 +648,12 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="jump-btn">↑<br>JUMP</div>
   <!-- Mobile shop top-right -->
   <div id="mob-shop-btn">🏪 SHOP</div>
+  <!-- Mobile mute -->
+  <div id="mob-mute-btn" onclick="_toggleMute()" style="position:absolute;top:calc(70px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:14px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.6);padding:6px 8px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none;line-height:1">🔊</div>
+  <!-- Mobile volume -->
+  <div id="mob-vol-btn" onclick="_cycleVolume()" style="position:absolute;top:calc(110px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.6);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">100%</div>
+  <!-- Mobile chat toggle -->
+  <div id="mob-chat-btn" onclick="if(typeof _wsConnected!=='undefined'&&_wsConnected){const b=document.getElementById('chat-box');if(b&&b.style.display!=='flex'&&_wsConnected){b.className='online';b.style.display='flex'}else if(b)closeChat();}" style="position:absolute;top:calc(155px + env(safe-area-inset-top));right:10px;font-family:'Press Start 2P',monospace;font-size:8px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬</div>
   <!-- Settings bottom-left above joystick -->
   <div id="mob-settings-btn" onclick="document.getElementById('settings-panel')&&(document.getElementById('settings-panel').style.display=document.getElementById('settings-panel').style.display==='none'?'block':'none')">⚙</div>
   <!-- Surface button bottom-center -->
@@ -654,6 +673,11 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="settings-color-row" style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
     <label id="lbl-player-color" for="color-picker" style="font-size:6px;color:#aaa;cursor:pointer;flex:1">COULEUR DU JOUEUR</label>
     <input id="color-picker" type="color" value="#ff4444" style="width:32px;height:32px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;cursor:pointer;background:transparent;padding:2px">
+  </div>
+  <div id="settings-audio-row" style="display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+    <span style="font-size:6px;color:#aaa;flex:1" id="lbl-audio">AUDIO</span>
+    <button id="settings-mute-btn" onclick="_toggleMute()" style="font-family:'Press Start 2P',monospace;font-size:10px;background:rgba(30,30,50,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:#aaa;padding:5px 8px;cursor:pointer;line-height:1">🔊</button>
+    <button id="settings-vol-btn" onclick="_cycleVolume()" style="font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(30,30,50,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:#aaa;padding:5px 7px;cursor:pointer">100%</button>
   </div>
   <div style="margin-top:8px;font-size:5px;color:#555;">Mobile: LOW · PC: MEDIUM par défaut</div>
   <button onclick="toggleSettingsPanel()" style="margin-top:10px;font-family:'Press Start 2P',monospace;font-size:6px;background:rgba(60,20,20,0.8);border:1px solid rgba(200,60,60,0.4);border-radius:3px;color:#cc6666;padding:5px 12px;cursor:pointer;width:100%;">✕ FERMER</button>
@@ -858,7 +882,8 @@ const T={
       connectBtn:'CONNEXION',skipBtn:'Passer — Jouer hors ligne',
       joinSub:'Connectez-vous au multijoueur — chaque joueur a son propre monde',
       playerColor:'COULEUR DU JOUEUR',usernamePlaceholder:'Votre pseudo',
-      statusOnline:'EN LIGNE',statusOffline:'HORS LIGNE',statusConnecting:'CONNEXION...'},
+      statusOnline:'EN LIGNE',statusOffline:'HORS LIGNE',statusConnecting:'CONNEXION...',
+      recentAll:'ÉVÉNEMENTS RÉCENTS',recentMine:'MES TROUVAILLES'},
   en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
       atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
       all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
@@ -886,7 +911,8 @@ const T={
       connectBtn:'CONNECT',skipBtn:'Skip — Play Offline',
       joinSub:'Connect to multiplayer — each player has their own world',
       playerColor:'PLAYER COLOR',usernamePlaceholder:'Your username',
-      statusOnline:'ONLINE',statusOffline:'OFFLINE',statusConnecting:'CONNECTING...'}
+      statusOnline:'ONLINE',statusOffline:'OFFLINE',statusConnecting:'CONNECTING...',
+      recentAll:'RECENT EVENTS',recentMine:'MY FINDS'}
 }[lang];
 
 let _useQwerty=lang!=='fr';
@@ -944,6 +970,8 @@ function applyI18N(){
   const _jbn=document.getElementById('mp-join-btn');if(_jbn)_jbn.textContent=T.connectBtn;
   const _jsk=document.getElementById('mp-join-skip');if(_jsk)_jsk.textContent=T.skipBtn;
   const _pcl=document.getElementById('lbl-player-color');if(_pcl)_pcl.textContent=T.playerColor;
+  const _al=document.getElementById('lbl-audio');if(_al)_al.textContent=lang==='fr'?'AUDIO':'AUDIO';
+  const _rl=document.getElementById('lbl-recent');if(_rl)_rl.textContent=T.recentAll;
   // Save modal
   const _sm=document.getElementById('savemod-title');if(_sm)_sm.textContent=lang==='fr'?'SAUVEGARDE':'SAVE';
   const _ss=document.getElementById('savemod-sub');if(_ss)_ss.textContent=lang==='fr'?'Exportez ou importez votre progression':'Export or import your progress';
@@ -3075,6 +3103,7 @@ function travelToMono(){
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;markInvDirty();updateHUD();
     _stopShadowEventSystem();_startMonoEventSystem();_hideTransition();_travelInProgress=false;
     showSpawn(lang==='fr'?'◈ Monde Monochrome — bienvenue dans le gris !':'◈ Monochrome World — welcome to the grey!','#cccccc',true,null);
+    _startWorldMusic(currentWorld);
   });
 }
 
@@ -3119,6 +3148,7 @@ function travelToShadow(){
     _travelInProgress=false;
     showSpawn(lang==='fr'?'🌑 Monde des Ombres — bienvenue dans les ténèbres':
       '🌑 Shadow World — welcome to the dark','#00ff44',true,null);
+    _startWorldMusic(currentWorld);
   });
 }
 
@@ -3149,6 +3179,7 @@ function travelToOcean(){
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;markInvDirty();updateHUD();
     _stopMonoEventSystem();_startOceanEventSystem();_hideTransition();_travelInProgress=false;
     showSpawn(lang==='fr'?'🌊 Monde Océanique — bienvenue dans les profondeurs !':'🌊 Ocean World — welcome to the depths!','#44aaff',true,null);
+    _startWorldMusic(currentWorld);
   });
 }
 
@@ -3190,6 +3221,7 @@ function travelToBiome(){
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;markInvDirty();updateHUD();
     _stopOceanEventSystem();_startBiomeEventSystem();_hideTransition();_travelInProgress=false;
     showSpawn(lang==='fr'?'🌿 Monde des Biomes — explorez les écosystèmes !':'🌿 Biome World — explore the ecosystems!','#aaff44',true,null);
+    _startWorldMusic(currentWorld);
   });
 }
 
@@ -3225,6 +3257,7 @@ function travelToMain(){
     _travelInProgress=false;
     showSpawn(lang==='fr'?'☀ Retour au monde principal !':
       '☀ Back to the main world!','#9900ff',true,null);
+    _startWorldMusic(currentWorld);
   });
 }
 
@@ -4334,7 +4367,8 @@ function playCaveSound(rarity,ore){
   const id=CAVE_RARITY_SOUNDS[rarity]||getAudioId(ore);
   if(!id)return;
   if(id==='EpineAudio')return;
-  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().catch(()=>{});}}catch(e){}
+  _pauseMusicForFind();
+  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().then(_resumeMusicAfterFind).catch(()=>{_resumeMusicAfterFind();});}}catch(e){_resumeMusicAfterFind();}
 }
 
 function fmtExact(n){
@@ -4513,7 +4547,8 @@ function getAudioId(ore){
 function playSound(ore){
   const id=getAudioId(ore);
   if(!id)return;
-  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().catch(()=>{});}}catch(e){}
+  _pauseMusicForFind();
+  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().then(_resumeMusicAfterFind).catch(()=>{_resumeMusicAfterFind();});}}catch(e){_resumeMusicAfterFind();}
 }
 
 // ═══════════ PICKAXES T0-T12 ═══════════
@@ -4934,6 +4969,72 @@ const RENDER_DIST_PRESETS={
   high:  {far:105, fogNear:70,  fogFar:105, yAbove:12, yBelow:50},
 };
 let _isMobile=false;
+let _gameVolume=1;
+let _gameMuted=false;
+const _VOL_LEVELS=[1,0.75,0.5,0.25,0.1,0.05];
+let _volIdx=0;
+let _bgMusicId=null;
+let _musicPausedByFind=false;
+let _musicResumeTimer=null;
+(function(){
+  const saved=localStorage.getItem('game_volume');
+  if(saved!==null){_gameVolume=parseFloat(saved);_volIdx=_VOL_LEVELS.indexOf(_gameVolume);if(_volIdx<0)_volIdx=0;_gameVolume=_VOL_LEVELS[_volIdx];}
+})();
+function _applyGameVolume(){
+  const musicVol=_gameMuted?0:_gameVolume;
+  document.querySelectorAll('audio[id^="bg-"]').forEach(a=>{a.volume=musicVol;});
+  document.querySelectorAll('audio:not([id^="bg-"])').forEach(a=>{a.volume=_gameVolume;});
+}
+function _toggleMute(){
+  _gameMuted=!_gameMuted;
+  _applyGameVolume();
+  document.querySelectorAll('#settings-mute-btn,#mob-mute-btn').forEach(el=>{el.textContent=_gameMuted?'🔇':'🔊';});
+}
+function _cycleVolume(){
+  _volIdx=(_volIdx+1)%_VOL_LEVELS.length;
+  _gameVolume=_VOL_LEVELS[_volIdx];
+  try{localStorage.setItem('game_volume',_gameVolume);}catch(e){}
+  _applyGameVolume();
+  document.querySelectorAll('#settings-vol-btn,#mob-vol-btn').forEach(el=>{el.textContent=Math.round(_gameVolume*100)+'%';});
+}
+function _startWorldMusic(world){
+  _stopWorldMusic();
+  const map={main:'bg-overworld',shadow:'bg-corruption',mono:'bg-battlefield',ocean:'bg-relic',biome:'bg-moog'};
+  const id=map[world];
+  if(!id)return;
+  _bgMusicId=id;
+  const el=document.getElementById(id);
+  if(el){_applyGameVolume();el.currentTime=0;el.play().catch(()=>{});}
+}
+function _stopWorldMusic(){
+  if(_musicResumeTimer){clearTimeout(_musicResumeTimer);_musicResumeTimer=null;}
+  _musicPausedByFind=false;
+  if(_bgMusicId){
+    const el=document.getElementById(_bgMusicId);
+    if(el){el.pause();el.currentTime=0;}
+    _bgMusicId=null;
+  }
+}
+function _pauseMusicForFind(){
+  if(!_bgMusicId||_gameMuted)return;
+  const el=document.getElementById(_bgMusicId);
+  if(el&&!el.paused){
+    el.pause();
+    _musicPausedByFind=true;
+  }
+}
+function _resumeMusicAfterFind(){
+  if(!_musicPausedByFind||!_bgMusicId)return;
+  if(_musicResumeTimer)clearTimeout(_musicResumeTimer);
+  _musicResumeTimer=setTimeout(()=>{
+    _musicResumeTimer=null;
+    if(_musicPausedByFind&&_bgMusicId&&!_gameMuted){
+      const el=document.getElementById(_bgMusicId);
+      if(el){_applyGameVolume();el.play().catch(()=>{});}
+    }
+    _musicPausedByFind=false;
+  },10000);
+}
 function applyRenderDist(preset){
   _renderDist=preset;
   const p=RENDER_DIST_PRESETS[preset]||RENDER_DIST_PRESETS.medium;
@@ -5243,6 +5344,8 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
       const col=RC[ore.rarity]||ore.color||'#ffffff';
       const _st=getOreTag(ore);const _sl=_st?' ['+_st.label+']':'';
       showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+_sl+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
+      if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:ore.name,oreRarity:ore.rarity,oreColor:col,oreExact:ore.exact,message:getOreSpawnMsg(ore)}));
+      _addRecentEvent((_wsUsername||'You'),ore.name,col,ore.exact,true);
       // Force scanner to update immediately when a qualifying ore appears
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
     }
@@ -6447,6 +6550,8 @@ function spawnCave(cx,cy,cz){
           const caveCol=RC[caveOre.rarity]||caveOre.color||'#ffffff';
           const _ct=getOreTag(caveOre);const _cl=_ct?' ['+_ct.label+']':'';
           showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+_cl+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
+          if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:caveOre.name,oreRarity:caveOre.rarity,oreColor:caveCol,oreExact:caveOre.exact,message:getOreSpawnMsg(caveOre)}));
+          _addRecentEvent((_wsUsername||'You'),caveOre.name,caveCol,caveOre.exact,true);
           if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
         }
         break;
@@ -8949,6 +9054,7 @@ let _playerCountTimer=null;
 const _phantoms=new Map();
 const _otherPhantomBlocks=new Map(); // id -> {mesh, world}
 const _syncedColors=new Map(); // id -> hex color string
+const _recentEvents=[]; // array of {username, oreName, color, exact, ts}
 let _lastPosSend=0;
 const POS_SEND_INTERVAL=0.1;
 
@@ -9204,6 +9310,39 @@ function _removeOtherPhantomBlock(id){
   if(pb){scene.remove(pb.mesh);_otherPhantomBlocks.delete(id);}
 }
 
+let _recentFilter='all'; // 'all' or 'mine'
+function _addRecentEvent(username,oreName,color,exact,isLocal){
+  const now=Date.now();
+  _recentEvents.unshift({username,oreName,color,exact,ts:now,isLocal});
+  if(_recentEvents.length>50)_recentEvents.length=50;
+  _renderRecentEvents();
+}
+function _renderRecentEvents(){
+  const panel=document.getElementById('recent-panel');
+  const list=document.getElementById('recent-list');
+  if(!panel||!list)return;
+  panel.style.display='block';
+  list.innerHTML='';
+  const filtered=_recentFilter==='mine'?_recentEvents.filter(e=>e.isLocal):_recentEvents;
+  for(const e of filtered){
+    const d=new Date(e.ts);
+    const t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    const row=document.createElement('div');
+    row.style.cssText='font-size:6px;margin-bottom:3px;line-height:1.5;word-break:break-word';
+    const tag=e.isLocal?'<span style="color:rgba(255,255,200,0.45)">[YOU]</span> ':'<span style="color:rgba(200,200,255,0.35)">[SERVER]</span> ';
+    row.innerHTML='<span style="color:rgba(255,255,255,0.2)">'+t+'</span> '+tag+'<span style="color:'+e.color+'">'+_escHtml(e.username)+' <span style="opacity:0.65">'+_escHtml(_fmtFound())+'</span> '+_escHtml(e.oreName)+' <span style="opacity:0.45">1/'+fmtExact(e.exact)+'</span></span>';
+    list.appendChild(row);
+  }
+}
+function _toggleRecentFilter(){
+  _recentFilter=_recentFilter==='all'?'mine':'all';
+  const lbl=document.getElementById('lbl-recent');
+  if(lbl)lbl.textContent=_recentFilter==='all'?T.recentAll:T.recentMine;
+  _renderRecentEvents();
+}
+function _fmtFound(){
+  return lang==='fr'?'a trouvé':'found';
+}
 function _clearAllMultiplayerState(){
   for(const[,p]of _phantoms){scene.remove(p.group);}
   _phantoms.clear();
@@ -9244,12 +9383,38 @@ function _handleServerMsg(msg){
     case'player_join':
       _addPhantomPlayer(msg.id,msg.username,msg.color);
       _updatePlayerCountDisplay(_phantoms.size+1);
+      if(msg.username&&msg.id!==_wsPlayerId){
+        const jMsg=lang==='fr'?msg.username+' a rejoint la partie':msg.username+' joined the game';
+        const list=document.getElementById('chat-msg-list');
+        if(list){
+          const box=document.getElementById('chat-box');
+          if(box&&_wsConnected){box.className='online';box.style.display='flex';}
+          const row=document.createElement('div');row.className='chat-msg';
+          const d=new Date();const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+          row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-text" style="color:#44dd44">'+_escHtml(jMsg)+'</span>';
+          list.appendChild(row);list.scrollTop=list.scrollHeight;
+          while(list.children.length>100)list.removeChild(list.firstChild);
+        }
+      }
       break;
-    case'player_leave':
+    case'player_leave':{
+      const _leftName=_phantoms.has(msg.id)?_phantoms.get(msg.id).username:null;
       _removePhantomPlayer(msg.id);
       _removeOtherPhantomBlock(msg.id);
       _updatePlayerCountDisplay(_phantoms.size+1);
+      if(_leftName){
+        const lMsg=lang==='fr'?_leftName+' a quitté la partie':_leftName+' left the game';
+        const list=document.getElementById('chat-msg-list');
+        if(list){
+          const row=document.createElement('div');row.className='chat-msg';
+          const d=new Date();const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+          row.innerHTML='<span class="chat-ts">['+ts+']</span><span class="chat-text" style="color:#ff6644">'+_escHtml(lMsg)+'</span>';
+          list.appendChild(row);list.scrollTop=list.scrollHeight;
+          while(list.children.length>100)list.removeChild(list.firstChild);
+        }
+      }
       break;
+    }
     case'player_count':
       _updatePlayerCountDisplay(msg.count);
       break;
@@ -9267,6 +9432,9 @@ function _handleServerMsg(msg){
       }
       break;
     }
+    case'rare_find':
+      if(msg.username)_addRecentEvent(msg.username,msg.oreName,msg.oreColor,msg.oreExact,false);
+      break;
     case'chat':
       _addChatMessage(msg.username,msg.message,msg.id);
       _showChatBubble(msg.id,msg.message);
@@ -9411,10 +9579,14 @@ document.getElementById('mp-join-skip').addEventListener('click',function(){
 })();
 const hasSave=loadGame();
 applyI18N();
+_applyGameVolume();
+document.querySelectorAll('#settings-mute-btn,#mob-mute-btn').forEach(el=>{el.textContent=_gameMuted?'🔇':'🔊';});
+document.querySelectorAll('#settings-vol-btn,#mob-vol-btn').forEach(el=>{el.textContent=Math.round(_gameVolume*100)+'%';});
 genWorld();
 init3D();
 updateHUD();buildPickBar();updatePlacingInd();checkMineCapacity();
 startEventSystem();
+if(currentWorld==='main')_startWorldMusic('main');
 if(hasSave){
   if(currentWorld==='biome'){
     removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
@@ -9428,6 +9600,7 @@ if(hasSave){
     if(scene){scene.background=new THREE.Color(0x2a5a1a);if(scene.fog){scene.fog.color.set(0x3a6a2a);scene.fog.near=15;scene.fog.far=40;}}
     _stopOceanEventSystem();_startBiomeEventSystem();
   }
+  if(currentWorld!=='main')_startWorldMusic(currentWorld);
   showSpawn(lang==='fr'?'Partie chargée':'Game loaded','#60b060',false);
 }
 </script>

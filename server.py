@@ -134,6 +134,24 @@ async def handle_ws(request):
                     if pid2 != pid and p2["username"]
                 ], return_exceptions=True)
 
+            elif t == "rare_find":
+                if not p["username"]:
+                    continue
+                relay = json.dumps({
+                    "type": "rare_find",
+                    "id": pid,
+                    "username": p["username"],
+                    "oreName": data.get("oreName", ""),
+                    "oreRarity": data.get("oreRarity", ""),
+                    "oreColor": data.get("oreColor", "#ffffff"),
+                    "oreExact": data.get("oreExact", 0),
+                    "message": data.get("message", "")
+                })
+                await asyncio.gather(*[
+                    p2["ws"].send_str(relay) for pid2, p2 in players.items()
+                    if pid2 != pid and p2["username"]
+                ], return_exceptions=True)
+
             elif t == "color_update":
                 if not p["username"]:
                     continue
