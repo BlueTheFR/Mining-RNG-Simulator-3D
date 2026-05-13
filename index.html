@@ -4751,8 +4751,7 @@ const H=115;
 const TOP_SOLID_Y=H-18; // highest solid block Y — leaves 17 blocks of air above for portals/altars
 const CHUNK_SIZE=16; // blocks per chunk edge (XZ only)
 const BIOME_REGION_SIZE=3; // chunks per biome region edge
-const RENDER_DIST=2; // chunks around player rendered (5×5=25 chunks, 80×80 window)
-const SCAN_RADIUS=1000; // max block distance for scanner (covers ~1000m from player)
+const RENDER_DIST=2; // chunks around player rendered (5×5 = 25 chunks)
 // W and D are kept as aliases = CHUNK_SIZE*RENDER_DIST*2+CHUNK_SIZE for legacy compatibility
 const W=CHUNK_SIZE*(RENDER_DIST*2+1);
 const D=W;
@@ -7091,32 +7090,21 @@ function updateScanner(h){
   // ── Regular scanner (pick T4+) — shows ALL qualifying ores simultaneously ──
   if(!pick||pick.scanMin===0){_hideAllScnDivs();return;}
 
-  if(_scanCachedTopOres===null){
+  _scanFrameCount++;
+  if(_scanFrameCount%300===0||_scanCachedTopOres===null){
     const found=[];
-    const px=camera.position.x, pz=camera.position.z;
-    const side=RENDER_DIST*2+1;
-    const playerAbsCX=_chunkOriginCX+Math.floor(px/CHUNK_SIZE);
-    const playerAbsCZ=_chunkOriginCZ+Math.floor(pz/CHUNK_SIZE);
-    const cRad=Math.ceil(SCAN_RADIUS/CHUNK_SIZE)+1;
-    const scanRad2=SCAN_RADIUS*SCAN_RADIUS;
-    for(let dcx=-cRad;dcx<=cRad;dcx++)for(let dcz=-cRad;dcz<=cRad;dcz++){
-      const cx=playerAbsCX+dcx, cz=playerAbsCZ+dcz;
-      const ch=_chunks.get(cx+'x'+cz);
-      if(!ch)continue;
-      const cxOff=cx-_chunkOriginCX, czOff=cz-_chunkOriginCZ;
-      const wx=cxOff*CHUNK_SIZE, wz=czOff*CHUNK_SIZE;
-      const ccx=wx+CHUNK_SIZE/2, ccz=wz+CHUNK_SIZE/2;
-      const ddx=ccx-px, ddz=ccz-pz;
-      if(ddx*ddx+ddz*ddz>scanRad2)continue;
-      for(let lx=0;lx<CHUNK_SIZE;lx++)for(let y=0;y<H;y++)for(let lz=0;lz<CHUNK_SIZE;lz++){
-        const li=_chunkIdx(lx,y,lz);
-        if(!ch.blocks[li]||!ch.oreRevealed[li])continue;
-        const ore=ORES[ch.oreIdx[li]||0];
-        if(!ore||ore.exact<pick.scanMin)continue;
-        if(ore.isBarrier||ore.isPortal||ore.isDecoration||ore.name==='ShadowRock')continue;
-        found.push({ore,x:wx+lx,y,z:wz+lz});
-      }
+    for(let x=0;x<W;x++)for(let y=0;y<H;y++)for(let z=0;z<D;z++){
+      const ci=idx(x,y,z);
+      if(!blocks[ci]||!oreRevealed[ci])continue;
+      const ore=ORES[oreIdx[ci]||0];
+      if(!ore||ore.exact<pick.scanMin)continue;
+      if(ore.isBarrier)continue; // bedrock and portal frames immune to scanner
+      if(ore.isPortal)continue; // skip portal fill blocks in scanner
+      if(ore.isDecoration)continue; // decorative blocks (trees, cacti, etc.)
+      if(ore.name==='ShadowRock')continue; // base filler — not worth scanning
+      found.push({ore,x,y,z});
     }
+    // Sort by rarity (rarest first)
     found.sort((a,b)=>b.ore.exact-a.ore.exact);
     _scanCachedTopOres=found;
     if(found.length>0){_scanCachedBestOre=found[0].ore;_scanCachedBestX=found[0].x;_scanCachedBestY=found[0].y;_scanCachedBestZ=found[0].z;}
