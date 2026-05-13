@@ -4751,7 +4751,8 @@ const H=115;
 const TOP_SOLID_Y=H-18; // highest solid block Y — leaves 17 blocks of air above for portals/altars
 const CHUNK_SIZE=16; // blocks per chunk edge (XZ only)
 const BIOME_REGION_SIZE=3; // chunks per biome region edge
-const RENDER_DIST=2; // chunks around player rendered (5×5 = 25 chunks)
+const _isLowEnd=typeof navigator!=='undefined'&&/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+const RENDER_DIST=_isLowEnd?2:6; // 2=mobile (5×5=25chunks,80×80world), 6=PC (13×13=169chunks,208×208world,~104m scan)
 // W and D are kept as aliases = CHUNK_SIZE*RENDER_DIST*2+CHUNK_SIZE for legacy compatibility
 const W=CHUNK_SIZE*(RENDER_DIST*2+1);
 const D=W;
@@ -6077,7 +6078,7 @@ function init3D(){
   camera=new THREE.PerspectiveCamera(75,1,0.05,60);
   _isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:!_isMobile});
-  _renderDist=_isMobile?'low':'medium';
+  _renderDist=_isMobile?'low':'high';
   renderer.setPixelRatio(_isMobile?Math.min(devicePixelRatio,1.5):Math.min(devicePixelRatio,2));
   scene.add(new THREE.AmbientLight(0xaabbcc,1.0));
   const sun=new THREE.DirectionalLight(0xffe8cc,1.1);sun.position.set(10,18,8);scene.add(sun);
