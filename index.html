@@ -4165,12 +4165,12 @@ function startEventSystem(){
 }
 
 function rotateEvent(){
-  if(currentWorld==='biome')return;
+  if(currentWorld!=='main')return;
   let newEv;
   do{newEv=EVENT_TYPES[Math.floor(Math.random()*EVENT_TYPES.length)];}while(newEv===currentEvent);
   currentEvent=newEv;_achFlags.firstEvent=true;
   _normalRollCache=null; // invalidate cached roll table
-  if(currentWorld!=='shadow')_applyEventBox(EVENT_DISPLAY[currentEvent]);
+  _applyEventBox(EVENT_DISPLAY[currentEvent]);
 }
 
 function rotateShadowEvent(){
@@ -8744,8 +8744,14 @@ function tryAbilityT2_Shadow(mx,my,mz){
   let hit=false;
   dirs.forEach(([dx,dy,dz])=>{
     for(let i=1;i<=4;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
-    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#5544AA');
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#4400AA');
   });
+  for(let i=0;i<6;i++){
+    FX_PARTICLES.push({type:'spark',color:'#6633CC',
+      px:mx+0.5+(Math.random()-0.5)*4,py:my+0.5+(Math.random()-0.5)*4,pz:mz+0.5+(Math.random()-0.5)*4,
+      vx:(Math.random()-0.5)*5,vy:Math.random()*3,vz:(Math.random()-0.5)*5,
+      life:0.4,maxLife:0.4,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -8757,7 +8763,9 @@ function tryAbilityT3_Shadow(mx,my,mz){
   for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
     if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
   }
-  spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,3,'#442299',false);
+  spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,4,'#442299');
+  spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,3,'#6633BB');
+  spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,2,'#8844DD');
   if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
 }
 
@@ -8769,7 +8777,13 @@ function tryAbilityT4_Shadow(mx,my,mz){
   for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){
     if(dx*dx+dz*dz<=9&&abilityMine(mx+dx,my,mz+dz))hit=true;
   }
-  spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,3,'#331188');
+  let delay=0;
+  for(let si=0;si<3;si++){
+    setTimeout(()=>{
+      spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,3,'#331188');
+    },delay);
+    delay+=80;
+  }
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -8781,11 +8795,20 @@ function tryAbilityT6_Shadow(mx,my,mz){
     let hit=false;
     for(let dx=-2;dx<=2;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
     spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,3,'#550066');
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,3,'#770088');
+    for(let i=0;i<8;i++){
+      FX_PARTICLES.push({type:'spark',color:'#9933CC',
+        px:mx+0.5+(Math.random()-0.5)*3,py:my+0.5+(Math.random()-0.5)*3,pz:mz+0.5+(Math.random()-0.5)*3,
+        vx:(Math.random()-0.5)*7,vy:(Math.random()-0.5)*7,vz:(Math.random()-0.5)*7,
+        life:0.5,maxLife:0.5,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t6sEcho2C%40===0){
-    setTimeout(()=>{if(abilityMine(mx,my,mz)){markMeshDirty();markInvDirty();}},200);
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,1,'#9933FF',false);
+    setTimeout(()=>{
+      spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,4,'#9933FF',false);
+      if(abilityMine(mx,my,mz)){markMeshDirty();markInvDirty();}
+    },250);
   }
 }
 
@@ -8802,6 +8825,7 @@ function tryAbilityT7_Shadow(mx,my,mz){
       const tx=mx+Math.round(Math.cos(a)*dist),tz=mz+Math.round(Math.sin(a)*dist);
       if(abilityMine(tx,my,tz))hit=true;
     }
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,4,'#7700AA');
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t7sNovaC%60===0){
@@ -8809,7 +8833,9 @@ function tryAbilityT7_Shadow(mx,my,mz){
     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)for(let dz=-3;dz<=3;dz++){
       if(dx*dx+dy*dy+dz*dz<=9&&abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,6,'#440066',true);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,3,'#440066',true);
+    setTimeout(()=>spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,5,'#550077',true),120);
+    setTimeout(()=>spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,7,'#660099',true),240);
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
 }
@@ -8821,8 +8847,8 @@ function tryAbilityT8_Shadow(mx,my,mz){
   if(t8sBladeC%25===0){
     let hit=false;
     [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dz])=>{
-      for(let i=1;i<=6;i++){if(abilityMine(mx+dx*i,my,mz+dz*i))hit=true;}
-      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,0,dz*2,'#330066');
+      spawnFX_ShadowSlash(mx+0.5+dx*2,my+0.5,mz+0.5+dz*2,3,'#440066');
+      for(let j=1;j<=5;j++){if(abilityMine(mx+dx*j+dx*2,my,mz+dz*j+dz*2))hit=true;}
     });
     if(hit){markMeshDirty();markInvDirty();}
   }
@@ -8831,12 +8857,14 @@ function tryAbilityT8_Shadow(mx,my,mz){
     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)for(let dz=-3;dz<=3;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,7,'#220033',true);
-    for(let i=0;i<10;i++){
-      FX_PARTICLES.push({type:'spark',color:'#440066',
-        px:mx+0.5,py:my+0.5,pz:mz+0.5,
-        vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,vz:(Math.random()-0.5)*8,
-        life:0.5,maxLife:0.5,trailPts:[]});
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,7,'#220033',true);
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,3,'#440066',false);
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,5,'#330055',false);
+    for(let i=0;i<12;i++){
+      FX_PARTICLES.push({type:'orb',color:'#6600AA',
+        px:mx+0.5+(Math.random()-0.5)*2,py:my+0.5+(Math.random()-0.5)*2,pz:mz+0.5+(Math.random()-0.5)*2,
+        vx:(Math.random()-0.5)*6,vy:Math.random()*5+2,vz:(Math.random()-0.5)*6,
+        life:0.8,maxLife:0.8,trailPts:[]});
     }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
   }
@@ -8848,17 +8876,18 @@ function tryAbilityT9_Shadow(mx,my,mz){
   t9sStormC++;t9sJudgeC++;
   if(t9sStormC%30===0){
     let hit=false;
+    spawnFX_Spiral(mx+0.5,my+0.5,mz+0.5,5,'#440066');
     for(let i=0;i<15;i++){
       const a=Math.random()*Math.PI*2;
       const dist=2+Math.random()*5;
       const tx=mx+Math.round(Math.cos(a)*dist),tz=mz+Math.round(Math.sin(a)*dist);
       if(abilityMine(tx,my,tz))hit=true;
-      FX_PARTICLES.push({type:'spark',color:'#9933FF',
+      FX_PARTICLES.push({type:'spark',color:'#AA44FF',
         px:tx+0.5,py:my+0.5,pz:tz+0.5,
-        vx:(Math.random()-0.5)*3,vy:Math.random()*4,vz:(Math.random()-0.5)*3,
-        life:0.5,maxLife:0.5,trailPts:[]});
+        vx:(Math.random()-0.5)*4,vy:Math.random()*5+1,vz:(Math.random()-0.5)*4,
+        life:0.6,maxLife:0.6,trailPts:[]});
+      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,Math.cos(a)*2,0,Math.sin(a)*2,'#6600AA');
     }
-    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,5,'#220044');
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
   if(t9sJudgeC%120===0){
@@ -8866,7 +8895,15 @@ function tryAbilityT9_Shadow(mx,my,mz){
     for(let dx=-4;dx<=4;dx++)for(let dy=-4;dy<=4;dy++)for(let dz=-4;dz<=4;dz++){
       if(dx*dx+dy*dy+dz*dz<=16&&abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,8,'#440066',true);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,8,'#440066',true);
+    setTimeout(()=>spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,6,'#660099',true),150);
+    for(let i=0;i<15;i++){
+      FX_PARTICLES.push({type:'crystal_shard',color:'#8822CC',
+        px:mx+0.5+(Math.random()-0.5)*6,py:my+5+Math.random()*3,pz:mz+0.5+(Math.random()-0.5)*6,
+        vx:(Math.random()-0.5)*2,vy:-6-Math.random()*4,vz:(Math.random()-0.5)*2,
+        life:0.8,maxLife:0.8,trailPts:[]});
+    }
+    showSpawn(lang==='fr'?'⚫ Jugement Abyssal — 60 blocs!':'⚫ Abyssal Judgment — 60 blocks!','#440066',false);
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
   }
 }
@@ -8879,8 +8916,14 @@ function tryAbilityT2_Mono(mx,my,mz){
   let hit=false;
   dirs.forEach(([dx,dy,dz])=>{
     for(let i=1;i<=4;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
-    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#999999');
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#AAAAAA');
   });
+  for(let i=0;i<4;i++){
+    FX_PARTICLES.push({type:'spark',color:'#888888',
+      px:mx+0.5+(Math.random()-0.5)*3,py:my+0.5+(Math.random()-0.5)*3,pz:mz+0.5+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*4,vy:Math.random()*2,vz:(Math.random()-0.5)*4,
+      life:0.3,maxLife:0.3,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -8892,7 +8935,17 @@ function tryAbilityT3_Mono(mx,my,mz){
   for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
     if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
   }
-  spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,3,'#777777',false);
+  for(let i=0;i<6;i++){
+    const angle=Math.random()*Math.PI*2;
+    const dist=1+Math.random()*2;
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,Math.cos(angle)*dist,Math.random()*2+1,Math.sin(angle)*dist,'#666666');
+  }
+  for(let i=0;i<8;i++){
+    FX_PARTICLES.push({type:'spark',color:'#555555',
+      px:mx+0.5+(Math.random()-0.5)*3,py:my+0.5,pz:mz+0.5+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*6,vy:Math.random()*5+1,vz:(Math.random()-0.5)*6,
+      life:0.5,maxLife:0.5,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
 }
 
@@ -8902,8 +8955,13 @@ function tryAbilityT4_Mono(mx,my,mz){
   t4nC++;if(t4nC%16!==0)return;
   let hit=false;
   for(let dx=-5;dx<=5;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
-  spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',5,'#BBBBBB');
-  spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#BBBBBB');
+  spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,5,'#FFFFFF');
+  for(let i=0;i<6;i++){
+    FX_PARTICLES.push({type:'spark',color:'#DDDDDD',
+      px:mx+0.5+(Math.random()-0.5)*6,py:my+0.5+(Math.random()-0.5)*2,pz:mz+0.5+(Math.random()-0.5)*6,
+      vx:(Math.random()-0.5)*3,vy:Math.random()*2,vz:(Math.random()-0.5)*3,
+      life:0.4,maxLife:0.4,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -8913,15 +8971,21 @@ function tryAbilityT6_Mono(mx,my,mz){
   t6nShardC++;t6nWaveC++;
   if(t6nShardC%20===0){
     let hit=false;
-    for(let dx=-2;dx<=2;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
-    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',5,'#9999AA');
-    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#9999AA');
+    for(let i=0;i<8;i++){
+      const tx=mx+Math.round((Math.random()-0.5)*6);
+      const tz=mz+Math.round((Math.random()-0.5)*6);
+      if(abilityMine(tx,my,tz))hit=true;
+      FX_PARTICLES.push({type:'crystal_shard',color:'#AAAAAA',
+        px:tx+0.5,py:my+4+Math.random()*2,pz:tz+0.5,
+        vx:0,vy:-5-Math.random()*3,vz:0,life:0.7,maxLife:0.7,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t6nWaveC%45===0){
     let hit=false;
     for(let i=1;i<=8;i++){if(abilityMine(mx+i,my,mz))hit=true;if(abilityMine(mx-i,my,mz))hit=true;}
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',8,'#CCCCCC');
+    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#999999');
     if(hit){markMeshDirty();markInvDirty();}
   }
 }
@@ -8935,7 +8999,13 @@ function tryAbilityT7_Mono(mx,my,mz){
     for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(let dz=-2;dz<=2;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,5,'#666688',true);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,5,'#888888',true);
+    for(let i=0;i<6;i++){
+      FX_PARTICLES.push({type:'orb',color:'#AAAAAA',
+        px:mx+0.5+(Math.random()-0.5)*4,py:my+0.5+(Math.random()-0.5)*4,pz:mz+0.5+(Math.random()-0.5)*4,
+        vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*3,vz:(Math.random()-0.5)*3,
+        life:0.6,maxLife:0.6,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
   if(t7nPulseC%55===0){
@@ -8943,7 +9013,8 @@ function tryAbilityT7_Mono(mx,my,mz){
     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)for(let dz=-3;dz<=3;dz++){
       if(dx*dx+dy*dy+dz*dz<=9&&abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,6,'#999999',true);
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,3,'#999999',false);
+    setTimeout(()=>spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,5,'#BBBBBB',false),150);
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
   }
 }
@@ -8957,8 +9028,10 @@ function tryAbilityT8_Mono(mx,my,mz){
     let hit=false;
     dirs.forEach(([dx,dy,dz])=>{
       for(let i=1;i<=10;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
-      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#555577');
+      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#666688');
     });
+    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',5,'#7777AA');
+    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#7777AA');
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t8nVoidC%70===0){
@@ -8966,7 +9039,13 @@ function tryAbilityT8_Mono(mx,my,mz){
     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)for(let dz=-3;dz<=3;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,6,'#999999',true);
+    spawnFX_Spiral(mx+0.5,my+0.5,mz+0.5,6,'#888888');
+    for(let i=0;i<8;i++){
+      FX_PARTICLES.push({type:'orb',color:'#666666',
+        px:mx+0.5+(Math.random()-0.5)*3,py:my+0.5+(Math.random()-0.5)*3,pz:mz+0.5+(Math.random()-0.5)*3,
+        vx:(Math.random()-0.5)*5,vy:(Math.random()-0.5)*5,vz:(Math.random()-0.5)*5,
+        life:0.7,maxLife:0.7,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
   }
 }
@@ -8978,8 +9057,8 @@ function tryAbilityT9_Mono(mx,my,mz){
   if(t9nBladeC%28===0){
     let hit=false;
     for(let dx=-8;dx<=8;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
-    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',8,'#444466');
-    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',8,'#444466');
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,8,'#888888');
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,6,'#AAAAAA');
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t9nErasC%90===0){
@@ -8987,13 +9066,15 @@ function tryAbilityT9_Mono(mx,my,mz){
     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)for(let dz=-3;dz<=3;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,7,'#CCCCCC',true);
-    for(let i=0;i<12;i++){
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,7,'#DDDDDD',true);
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,4,'#CCCCCC',false);
+    for(let i=0;i<20;i++){
       FX_PARTICLES.push({type:'spark',color:'#FFFFFF',
-        px:mx+0.5,py:my+0.5,pz:mz+0.5,
-        vx:(Math.random()-0.5)*10,vy:(Math.random()-0.5)*10,vz:(Math.random()-0.5)*10,
-        life:0.6,maxLife:0.6,trailPts:[]});
+        px:mx+0.5+(Math.random()-0.5)*6,py:my+0.5+(Math.random()-0.5)*6,pz:mz+0.5+(Math.random()-0.5)*6,
+        vx:(Math.random()-0.5)*12,vy:(Math.random()-0.5)*12,vz:(Math.random()-0.5)*12,
+        life:0.7,maxLife:0.7,trailPts:[]});
     }
+    showSpawn(lang==='fr'?'⬜ Annihilation — 60 blocs!':'⬜ Erasure — 60 blocks!','#CCCCCC',false);
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
   }
 }
@@ -9008,6 +9089,12 @@ function tryAbilityT2_Ocean(mx,my,mz){
     for(let i=1;i<=4;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
     spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#3388BB');
   });
+  for(let i=0;i<6;i++){
+    FX_PARTICLES.push({type:'spark',color:'#55AADD',
+      px:mx+0.5+(Math.random()-0.5)*4,py:my+0.5+(Math.random()-0.5)*2,pz:mz+0.5+(Math.random()-0.5)*4,
+      vx:(Math.random()-0.5)*6,vy:Math.random()*3+1,vz:(Math.random()-0.5)*6,
+      life:0.4,maxLife:0.4,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -9019,8 +9106,8 @@ function tryAbilityT3_Ocean(mx,my,mz){
   for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
     if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
   }
-  spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,3,'#2277AA',false);
-  spawnFX_PetalBurst(mx,my,mz,'#2277AA');
+  spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,3,'#FF6688',false);
+  spawnFX_PetalBurst(mx,my,mz,'#FF6688');
   if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
 }
 
@@ -9030,8 +9117,14 @@ function tryAbilityT4_Ocean(mx,my,mz){
   t4oC++;if(t4oC%18!==0)return;
   let hit=false;
   for(let dx=-5;dx<=5;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
-  spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',5,'#116699');
-  spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#116699');
+  spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',5,'#00AADD');
+  spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#00AADD');
+  for(let i=0;i<6;i++){
+    FX_PARTICLES.push({type:'spark',color:'#44CCFF',
+      px:mx+0.5+(Math.random()-0.5)*6,py:my+0.5+(Math.random()-0.5)*2,pz:mz+0.5+(Math.random()-0.5)*6,
+      vx:(Math.random()-0.5)*3,vy:Math.random()*2,vz:(Math.random()-0.5)*3,
+      life:0.4,maxLife:0.4,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -9044,6 +9137,12 @@ function tryAbilityT6_Ocean(mx,my,mz){
     for(let dx=-6;dx<=6;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',6,'#0055BB');
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',6,'#0055BB');
+    for(let i=0;i<4;i++){
+      FX_PARTICLES.push({type:'spark',color:'#44AAEE',
+        px:mx+0.5+(Math.random()-0.5)*7,py:my+0.5,pz:mz+0.5+(Math.random()-0.5)*7,
+        vx:(Math.random()-0.5)*2,vy:Math.random()*3+1,vz:(Math.random()-0.5)*2,
+        life:0.3,maxLife:0.3,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t6oUnderC%48===0){
@@ -9052,7 +9151,13 @@ function tryAbilityT6_Ocean(mx,my,mz){
       if(abilityMine(mx+dx,my-1,mz+dz))hit=true;
       if(abilityMine(mx+dx,my,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my-0.5,mz+0.5,4,'#4488DD',false);
+    spawnFX_RootBurst(mx+0.5,my-0.5,mz+0.5,6);
+    for(let i=0;i<8;i++){
+      FX_PARTICLES.push({type:'spark',color:'#2266AA',
+        px:mx+0.5+(Math.random()-0.5)*4,py:my-0.5,pz:mz+0.5+(Math.random()-0.5)*4,
+        vx:(Math.random()-0.5)*4,vy:-Math.random()*5-2,vz:(Math.random()-0.5)*4,
+        life:0.5,maxLife:0.5,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
 }
@@ -9066,7 +9171,9 @@ function tryAbilityT7_Ocean(mx,my,mz){
     for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(let dz=-2;dz<=2;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,5,'#004499',true);
+    spawnFX_Ring(mx+0.5,my+1.5,mz+0.5,4,'#004499',true);
+    setTimeout(()=>spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,4,'#0055AA',true),100);
+    setTimeout(()=>spawnFX_Ring(mx+0.5,my-0.5,mz+0.5,4,'#0066BB',true),200);
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
   if(t7oVortexC%60===0){
@@ -9076,6 +9183,12 @@ function tryAbilityT7_Ocean(mx,my,mz){
       if(dx*dx+dz*dz<=9&&abilityMine(mx+dx,my-1,mz+dz))hit=true;
     }
     spawnFX_Spiral(mx+0.5,my+0.5,mz+0.5,6,'#0066CC');
+    for(let i=0;i<8;i++){
+      FX_PARTICLES.push({type:'orb',color:'#3388CC',
+        px:mx+0.5+(Math.random()-0.5)*2,py:my+0.5,pz:mz+0.5+(Math.random()-0.5)*2,
+        vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,vz:(Math.random()-0.5)*4,
+        life:0.6,maxLife:0.6,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
 }
@@ -9089,8 +9202,9 @@ function tryAbilityT8_Ocean(mx,my,mz){
     let hit=false;
     dirs.forEach(([dx,dy,dz])=>{
       for(let i=1;i<=7;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
-      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#003388');
+      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#5599CC');
     });
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,4,'#3388BB',false);
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t8oAbyssC%80===0){
@@ -9098,11 +9212,12 @@ function tryAbilityT8_Ocean(mx,my,mz){
     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++)for(let dz=-3;dz<=3;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,7,'#0055AA',true);
-    for(let i=0;i<8;i++){
-      FX_PARTICLES.push({type:'spark',color:'#4488CC',
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,7,'#003366',true);
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,4,'#004488',false);
+    for(let i=0;i<10;i++){
+      FX_PARTICLES.push({type:'orb',color:'#4488CC',
         px:mx+0.5,py:my+0.5,pz:mz+0.5,
-        vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,vz:(Math.random()-0.5)*8,
+        vx:(Math.random()-0.5)*7,vy:(Math.random()-0.5)*7,vz:(Math.random()-0.5)*7,
         life:0.6,maxLife:0.6,trailPts:[]});
     }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
@@ -9118,6 +9233,12 @@ function tryAbilityT9_Ocean(mx,my,mz){
     for(let dx=-8;dx<=8;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',8,'#002277');
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',8,'#002277');
+    for(let i=0;i<6;i++){
+      FX_PARTICLES.push({type:'spark',color:'#4488CC',
+        px:mx+0.5+(Math.random()-0.5)*9,py:my+0.5,pz:mz+0.5+(Math.random()-0.5)*9,
+        vx:(Math.random()-0.5)*3,vy:Math.random()*3+1,vz:(Math.random()-0.5)*3,
+        life:0.4,maxLife:0.4,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t9oDelugeC%100===0){
@@ -9128,6 +9249,8 @@ function tryAbilityT9_Ocean(mx,my,mz){
     }
     if(count){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
     spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,8,'#2266CC',true);
+    setTimeout(()=>spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,5,'#4488EE',true),200);
+    spawnFX_PetalBurst(mx,my,mz,'#2266CC');
     showSpawn(lang==='fr'?'🌊 Déluge — 80 blocs!':'🌊 Deluge — 80 blocks!','#2266CC',false);
   }
 }
@@ -9142,6 +9265,7 @@ function tryAbilityT2_Biome(mx,my,mz){
     for(let i=1;i<=3;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
     spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#388E3C');
   });
+  spawnFX_PetalBurst(mx,my,mz,'#4CAF50');
   if(hit){markMeshDirty();markInvDirty();}
 }
 
@@ -9153,7 +9277,13 @@ function tryAbilityT3_Biome(mx,my,mz){
   for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
     if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
   }
-  spawnFX_PetalBurst(mx,my,mz,'#2E7D32');
+  spawnFX_RootBurst(mx+0.5,my+0.5,mz+0.5,8);
+  for(let i=0;i<8;i++){
+    FX_PARTICLES.push({type:'spark',color:'#66BB6A',
+      px:mx+0.5+(Math.random()-0.5)*4,py:my+0.5+(Math.random()-0.5)*4,pz:mz+0.5+(Math.random()-0.5)*4,
+      vx:(Math.random()-0.5)*7,vy:Math.random()*5+2,vz:(Math.random()-0.5)*7,
+      life:0.5,maxLife:0.5,trailPts:[]});
+  }
   if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
 }
 
@@ -9166,7 +9296,8 @@ function tryAbilityT4_Biome(mx,my,mz){
     if(abilityMine(mx+dx,my,mz+dz))hit=true;
     if(abilityMine(mx+dx,my-1,mz+dz))hit=true;
   }
-  spawnFX_RootBurst(mx+0.5,my+0.5,mz+0.5,8);
+  spawnFX_RootBurst(mx+0.5,my+0.5,mz+0.5,12);
+  spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,4,'#2E7D32',true);
   if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
 }
 
@@ -9180,7 +9311,13 @@ function tryAbilityT6_Biome(mx,my,mz){
       if(abilityMine(mx+dx,my,mz+dz))hit=true;
       if(abilityMine(mx+dx,my+1,mz+dz))hit=true;
     }
-    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,5,'#388E3C',true);
+    spawnFX_Ring(mx+0.5,my+1.5,mz+0.5,5,'#388E3C',true);
+    for(let i=0;i<6;i++){
+      FX_PARTICLES.push({type:'spark',color:'#66BB6A',
+        px:mx+0.5+(Math.random()-0.5)*4,py:my+1.5+(Math.random()-0.5)*2,pz:mz+0.5+(Math.random()-0.5)*4,
+        vx:(Math.random()-0.5)*2,vy:Math.random()*2+1,vz:(Math.random()-0.5)*2,
+        life:0.5,maxLife:0.5,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t6bBudC%50===0){
@@ -9188,7 +9325,8 @@ function tryAbilityT6_Biome(mx,my,mz){
     for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(let dz=-2;dz<=2;dz++){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
-    spawnFX_PetalBurst(mx,my,mz,'#66BB6A');
+    spawnFX_PetalBurst(mx,my,mz,'#81C784');
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,3,'#66BB6A',false);
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
   }
 }
@@ -9202,6 +9340,12 @@ function tryAbilityT7_Biome(mx,my,mz){
     for(let dx=-6;dx<=6;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',6,'#2E7D32');
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',6,'#2E7D32');
+    for(let i=0;i<4;i++){
+      FX_PARTICLES.push({type:'spark',color:'#81C784',
+        px:mx+0.5+(Math.random()-0.5)*7,py:my+0.5,pz:mz+0.5+(Math.random()-0.5)*7,
+        vx:(Math.random()-0.5)*2,vy:Math.random()*2+1,vz:(Math.random()-0.5)*2,
+        life:0.3,maxLife:0.3,trailPts:[]});
+    }
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t7bBloomC%65===0){
@@ -9210,6 +9354,7 @@ function tryAbilityT7_Biome(mx,my,mz){
       if(dx*dx+dy*dy+dz*dz<=9&&abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
     spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,6,'#4CAF50',true);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,3,'#66BB6A',false);
     spawnFX_PetalBurst(mx,my,mz,'#4CAF50');
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
   }
@@ -9224,8 +9369,9 @@ function tryAbilityT8_Biome(mx,my,mz){
     let hit=false;
     dirs.forEach(([dx,dy,dz])=>{
       for(let i=1;i<=8;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
-      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#1B5E20');
     });
+    spawnFX_RootBurst(mx+0.5,my+0.5,mz+0.5,8);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,5,'#1B5E20',true);
     if(hit){markMeshDirty();markInvDirty();}
   }
   if(t8bGenC%85===0){
@@ -9234,10 +9380,11 @@ function tryAbilityT8_Biome(mx,my,mz){
       if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
     }
     spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,7,'#388E3C',true);
+    spawnFX_RootBurst(mx+0.5,my+0.5,mz+0.5,10);
     for(let i=0;i<10;i++){
-      FX_PARTICLES.push({type:'spark',color:'#4CAF50',
-        px:mx+0.5,py:my+0.5,pz:mz+0.5,
-        vx:(Math.random()-0.5)*8,vy:Math.random()*6,vz:(Math.random()-0.5)*8,
+      FX_PARTICLES.push({type:'spark',color:'#66BB6A',
+        px:mx+0.5+(Math.random()-0.5)*6,py:my+0.5+(Math.random()-0.5)*4,pz:mz+0.5+(Math.random()-0.5)*6,
+        vx:(Math.random()-0.5)*6,vy:Math.random()*5+1,vz:(Math.random()-0.5)*6,
         life:0.6,maxLife:0.6,trailPts:[]});
     }
     if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
@@ -9251,6 +9398,7 @@ function tryAbilityT9_Biome(mx,my,mz){
   if(t9bBladeC%32===0){
     let hit=false;
     for(let dx=-9;dx<=9;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,9,'#1B5E20');
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',9,'#0D3B0D');
     spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',9,'#0D3B0D');
     if(hit){markMeshDirty();markInvDirty();}
@@ -9263,6 +9411,9 @@ function tryAbilityT9_Biome(mx,my,mz){
     }
     if(count){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
     spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,8,'#4CAF50',true);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,5,'#66BB6A',false);
+    spawnFX_PetalBurst(mx,my,mz,'#4CAF50');
+    spawnFX_PetalBurst(mx,my,mz,'#81C784');
     showSpawn(lang==='fr'?'🌿 Éden — 120 blocs!':'🌿 Eden — 120 blocks!','#4CAF50',false);
   }
 }
