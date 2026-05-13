@@ -5400,7 +5400,6 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
       const _st=getOreTag(ore);const _sl=_st?' ['+_st.label+']':'';
       showSpawn(getOreSpawnMsg(ore)+'\n'+ore.name+_sl+' — '+T.rare1+fmtExact(ore.exact),col,true,ore.rarity);
       if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:ore.name,oreRarity:ore.rarity,oreColor:col,oreExact:ore.exact,message:getOreSpawnMsg(ore)}));
-      _addRecentEvent((_wsUsername||'You'),ore.name,col,ore.exact,true);
       // Force scanner to update immediately when a qualifying ore appears
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
       // Start spatial audio for ores with spatialAudio flag
@@ -6408,6 +6407,7 @@ function doMine(){
   blocks[i]=0;mined++;
   _syncBlockWrite(x,y,z); // persist block removal to chunk
   inventory[ore.name]=(inventory[ore.name]||0)+1;
+  if(ore.spawnMsg)_addRecentEvent((_wsUsername||'You'),ore.name,RC[ore.rarity]||ore.color||'#ffffff',ore.exact,true);
   // Capture ore image source for Imaginary screen effect
   if(ore.imgSrc)_lastMinedOreImgSrc=ore.imgSrc;
   // Track rare ore finds
@@ -7713,9 +7713,15 @@ function abilityMine(wx,wy,wz){
     const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
     const combinedLuck=getTotalLuck();
     // Use Math.random() so each ability mine gets a fresh roll (not deterministic by position)
-    oreIdx[i]=currentWorld==='biome'
-      ?rollOreBiome(Math.random(),depthFrac,combinedLuck,wx,wz)
-      :rollOreNormal(Math.random(),depthFrac,combinedLuck);
+    oreIdx[i]=currentWorld==='shadow'
+      ?rollOreShadow(Math.random(),depthFrac,combinedLuck)
+      :currentWorld==='mono'
+        ?rollOreMono(Math.random(),depthFrac,combinedLuck)
+        :currentWorld==='ocean'
+          ?rollOreOcean(Math.random(),depthFrac,combinedLuck)
+          :currentWorld==='biome'
+            ?rollOreBiome(Math.random(),depthFrac,combinedLuck,wx,wz)
+            :rollOreNormal(Math.random(),depthFrac,combinedLuck);
     oreRevealed[i]=1;
     // Play sound + show message when a rare ore is revealed by an ability
     const ro=ORES[oreIdx[i]||0];
@@ -7726,7 +7732,6 @@ function abilityMine(wx,wy,wz){
       const _st=getOreTag(ro);const _sl=_st?' ['+_st.label+']':'';
       showSpawn(getOreSpawnMsg(ro)+'\n'+ro.name+_sl+' — '+T.rare1+fmtExact(ro.exact),col,true,ro.rarity);
       if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:ro.name,oreRarity:ro.rarity,oreColor:col,oreExact:ro.exact,message:getOreSpawnMsg(ro)}));
-      _addRecentEvent((_wsUsername||'You'),ro.name,col,ro.exact,true);
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
       if(ro.spatialAudio)startEpineAudio(wx,wy,wz,ro.name);
     }
@@ -7734,6 +7739,7 @@ function abilityMine(wx,wy,wz){
   const ore=ORES[oreIdx[i]||0];
   blocks[i]=0;mined++;
   inventory[ore.name]=(inventory[ore.name]||0)+1;
+  if(ore.spawnMsg)_addRecentEvent((_wsUsername||'You'),ore.name,RC[ore.rarity]||ore.color||'#ffffff',ore.exact,true);
   // Track rare ore finds
   if(ore.rarity){
     const r=ore.rarity.toLowerCase();
