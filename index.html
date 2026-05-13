@@ -294,7 +294,7 @@ canvas.free{cursor:default}
 #shop-box{background:var(--shop-bg);border:1px solid var(--shop-border);border-radius:6px;width:min(780px,96vw);max-height:90vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
 #shop-box h2{font-size:9px;color:var(--hud-accent);margin-bottom:2px;letter-spacing:3px;opacity:.8}
 .shop-sub{font-size:6px;color:rgba(200,200,200,0.25);margin-bottom:16px;font-family:sans-serif}
-#shop-tabs{display:flex;gap:4px;margin-bottom:14px}
+#shop-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
 .tab-btn{font-family:'Press Start 2P',monospace;font-size:5px;padding:6px 11px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:2px;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .12s}
 .tab-btn.on,.tab-btn:hover{border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04)}
 .pick-card{background:#080810;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:13px;margin-bottom:9px;display:grid;grid-template-columns:50px 1fr 105px;gap:11px;align-items:start}
@@ -553,6 +553,16 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 <audio id="bg-battlefield" src="Battlefield.mp3" preload="auto" loop></audio>
 <audio id="bg-relic" src="Relic.mp3" preload="auto" loop></audio>
 <audio id="bg-moog" src="Moog City.mp3" preload="auto" loop></audio>
+<audio id="sfx_main" src="Achillgoesdownyourspine.mp3" preload="auto"></audio>
+<audio id="sfx_shadow" src="Yourheartskipsabeat.mp3" preload="auto"></audio>
+<audio id="sfx_mono" src="Transcendent.mp3" preload="auto"></audio>
+<audio id="sfx_ocean" src="Enigmatic.mp3" preload="auto"></audio>
+<audio id="sfx_biome" src="Unfathomable.mp3" preload="auto"></audio>
+<audio id="sfx_main_t10" src="Otherworldly.mp3" preload="auto"></audio>
+<audio id="sfx_shadow_t10" src="Imaginary.mp3" preload="auto"></audio>
+<audio id="sfx_mono_t10" src="Zenith.mp3" preload="auto"></audio>
+<audio id="sfx_ocean_t10" src="Eternal.mp3" preload="auto"></audio>
+<audio id="sfx_biome_t10" src="Imaginary.mp3" preload="auto"></audio>
 
 <div id="hud">
   <div id="mine-top">
@@ -773,7 +783,11 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
     <h2 id="lbl-atelier">ATELIER DES PIOCHES</h2>
     <div class="shop-sub" id="lbl-craft-sub">Craftez, equipez ou desequipez vos outils</div>
     <div id="shop-tabs">
-      <button class="tab-btn on" onclick="setTab('all',this)" id="tab-all-btn">Toutes</button>
+      <button class="tab-btn on" onclick="setTab('main',this)" id="tab-main-btn">Monde Principal</button>
+      <button class="tab-btn" onclick="setTab('shadow',this)" id="tab-shadow-btn">Ombres</button>
+      <button class="tab-btn" onclick="setTab('mono',this)" id="tab-mono-btn">Monochrome</button>
+      <button class="tab-btn" onclick="setTab('ocean',this)" id="tab-ocean-btn">Océan</button>
+      <button class="tab-btn" onclick="setTab('biome',this)" id="tab-biome-btn">Biome</button>
       <button class="tab-btn" onclick="setTab('gear',this)" id="tab-gear-btn">Gear</button>
     </div>
     <div id="shop-content"></div>
@@ -911,7 +925,7 @@ function _getPlayerColor(username,id){
 const T={
   fr:{inv:'INVENTAIRE',idx:'INDEX',stats:'STATS',mined:'Blocs mines',pick:'Pioche',luck:'Luck',
       atelier:'ATELIER DES PIOCHES',craftsub:'Craftez, equipez ou desequipez vos outils',
-      all:'Toutes',mine:'Mes pioches',close:'FERMER [E]',shop:'BOUTIQUE [E]',
+      all:'Toutes',main:'Monde Principal',shadow:'Ombres',mono:'Monochrome',ocean:'Océan',biome:'Biome',mine:'Mes pioches',close:'FERMER [E]',shop:'BOUTIQUE [E]',
       hint:'WASD : avancer\nSouris : regarder\nClic G maintenu : miner\nCtrl : liberer souris\nE : boutique',
       free:'MODE LIBRE\nCtrl pour reverrouiller',placing:'Mode pose : ',
       nospace:'Materiaux insuffisants',crafted:'craftee !',equipped:'Equipee',
@@ -940,7 +954,7 @@ const T={
       recentAll:'TROUVAILLES DU SERVEUR',recentMine:'MES TROUVAILLES'},
   en:{inv:'INVENTORY',idx:'INDEX',stats:'STATS',mined:'Blocks mined',pick:'Pickaxe',luck:'Luck',
       atelier:'PICKAXE WORKSHOP',craftsub:'Craft, equip or unequip your tools',
-      all:'All',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
+      all:'All',main:'Main World',shadow:'Shadow',mono:'Monochrome',ocean:'Ocean',biome:'Biome',mine:'My pickaxes',close:'CLOSE [E]',shop:'SHOP [E]',
       hint:'ZQSD : move\nMouse : look\nHold LMB : mine\nCtrl : free mouse\nE : shop',
       free:'FREE MODE\nCtrl to re-lock',placing:'Place mode: ',
       nospace:'Not enough materials',crafted:'crafted!',equipped:'Equipped',
@@ -1001,7 +1015,11 @@ function applyI18N(){
   document.getElementById('lbl-pick').textContent=T.pick;
   document.getElementById('lbl-atelier').textContent=T.atelier;
   document.getElementById('lbl-craft-sub').textContent=T.craftsub;
-  document.getElementById('tab-all-btn').textContent=T.all;
+  const _tb=document.getElementById('tab-main-btn');if(_tb)_tb.textContent=T.main;
+  const _ts=document.getElementById('tab-shadow-btn');if(_ts)_ts.textContent=T.shadow;
+  const _tm=document.getElementById('tab-mono-btn');if(_tm)_tm.textContent=T.mono;
+  const _to=document.getElementById('tab-ocean-btn');if(_to)_to.textContent=T.ocean;
+  const _tbi=document.getElementById('tab-biome-btn');if(_tbi)_tbi.textContent=T.biome;
   const _tg=document.getElementById('tab-gear-btn');if(_tg)_tg.textContent=lang==='fr'?'Équipement':'Gear';
   document.getElementById('lbl-close').textContent=T.close;
   document.getElementById('shop-btn').textContent=T.shop;
@@ -4605,6 +4623,9 @@ function playSound(ore){
   _pauseMusicForFind();
   try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play().then(_resumeMusicAfterFind).catch(()=>{_resumeMusicAfterFind();});}}catch(e){_resumeMusicAfterFind();}
 }
+function playAbilitySfx(id){
+  try{const el=document.getElementById(id);if(el){el.currentTime=0;el.play();}}catch(e){}
+}
 
 // ═══════════ PICKAXES T0-T12 ═══════════
 // Each pick has bilingual label/desc/fx/abilities. getPick*() helpers read current lang.
@@ -4728,7 +4749,108 @@ const PICKAXES=[
    descFr:"Chaque mine crée un trou noir qui grossit et aspire tous les blocs proches. 1 seul trou noir max, réinitialisé au reset. x50 Luck.",descEn:"Each mine creates a black hole that grows and sucks in all nearby blocks. 1 max, reset on mine reset. x1000 Luck.",
    fxFr:'Trou Noir (Passif). x50 Luck.',fxEn:'Blackhole (Passive). x50 Luck.',
    recipe:{SPAFF:1,BlueTheFR:1},
-   abilities:[{nameFr:'Singularité',nameEn:'Singularity',descFr:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée',descEn:'A black hole appears at the mined block, grows for 15s and sucks in all blocks in range',chance:'Passif/Passive',color:'#ff8800'}]},
+    abilities:[{nameFr:'Singularité',nameEn:'Singularity',descFr:'Un trou noir apparaît au bloc miné, grossit pendant 15s et aspire tous les blocs à portée',descEn:'A black hole appears at the mined block, grows for 15s and sucks in all blocks in range',chance:'Passif/Passive',color:'#ff8800'}]},
+  // ── Shadow World Exclusive ──
+  {id:'t1_shadow',tier:'S1',
+   labelFr:"Dard du Vide",labelEn:"Void Sting",
+   color:'#663399',scanMin:0,owned:false,equipped:false,
+   descFr:"Lance sombre qui perce 3 blocs en ligne (1/12). x1.3 Luck.",descEn:"Dark lance piercing 3 blocks in a line (1/12). x1.3 Luck.",
+   fxFr:'Lance Sombre (1/12). x1.3 Luck.',fxEn:'Dark Lance (1/12). x1.3 Luck.',
+   recipe:{VoidDust:20,NullFleck:10,ShadowRock:30},
+   abilities:[{nameFr:'Lance Sombre',nameEn:'Dark Lance',descFr:'Perce 3 blocs en ligne droite depuis la cible',descEn:'Pierces 3 blocks in a straight line from the target',chance:'1/12',color:'#663399'}]},
+  {id:'t5_shadow',tier:'S5',
+   labelFr:"Faucheur d'Ombre",labelEn:"Shadow Reaper",
+   color:'#440044',scanMin:250000,owned:false,equipped:false,
+   descFr:"Arc d'ombre 180° (1/20), Écho du Vide (1/50). x5 Luck. Scanner.",descEn:"Shadow arc 180° (1/20), Void Echo (1/50). x5 Luck. Scanner.",
+   fxFr:'Arc d\'Ombre (1/20). Écho du Vide (1/50). x5 Luck.',fxEn:'Shadow Arc (1/20). Void Echo (1/50). x5 Luck.',
+   recipe:{NullCrystal:15,VoidShard2:10,AbyssCore:5,ShadowGiga:3},
+   abilities:[{nameFr:'Arc d\'Ombre',nameEn:'Shadow Arc',descFr:'Arc de 180° dévastateur sur 4 blocs de rayon',descEn:'180° devastating arc at 4 blocks radius',chance:'1/20',color:'#440044'},
+              {nameFr:'Écho du Vide',nameEn:'Void Echo',descFr:'Mine 2 fois le même bloc avec un délai',descEn:'Mines the same block twice with a delay',chance:'1/50',color:'#663399'}]},
+  {id:'t10_shadow',tier:'S10',
+   labelFr:"Dévoreur d'Abysses",labelEn:"Abyssal Devourer",
+   color:'#220033',scanMin:250000,owned:false,equipped:false,
+   descFr:"Effondrement du Vide 5×5 (1/10), Regard Abyssal colonne (1/30), Singularité Noire (1/150), Surge d'Ombre +5 Luck 5s/30. x15 Luck. Scanner.",descEn:"Void Collapse 5×5 (1/10), Abyss Gaze column (1/30), Dark Singularity (1/150), Shadow Surge +5 Luck 5s/30. x15 Luck. Scanner.",
+   fxFr:'Effondrement (1/10). Regard (1/30). Singularité (1/150). Surge (1/30). x15 Luck.',fxEn:'Collapse (1/10). Gaze (1/30). Singularity (1/150). Surge (1/30). x15 Luck.',
+   recipe:{AbyssPeta:2,NullPetaPlus1:1,VoidPetaPlus2:1,DarkEclipseCore:5},
+   abilities:[{nameFr:'Effondrement du Vide',nameEn:'Void Collapse',descFr:'Effondre un cube 5×5 de blocs',descEn:'Collapses a 5×5 cube of blocks',chance:'1/10',color:'#220033'},
+              {nameFr:'Regard Abyssal',nameEn:'Abyss Gaze',descFr:'Faisceau vers le bas détruisant une colonne',descEn:'Downward beam destroying a column',chance:'1/30',color:'#440066'},
+              {nameFr:'Singularité Noire',nameEn:'Dark Singularity',descFr:'Explosion 7×7 aspirant tout',descEn:'7×7 implosion sucking everything',chance:'1/150',color:'#000000'},
+              {nameFr:'Surge d\'Ombre',nameEn:'Shadow Surge',descFr:'Tous les 30 blocs, +5 Luck pendant 5s',descEn:'Every 30 blocks, +5 Luck for 5s',chance:'1/30',color:'#9933FF'}]},
+  // ── Mono World Exclusive ──
+  {id:'t1_mono',tier:'N1',
+   labelFr:"Pic Gris",labelEn:"Grey Piercer",
+   color:'#888888',scanMin:0,owned:false,equipped:false,
+   descFr:"Pic monochrome qui mine 3×3 (1/10). x1.4 Luck.",descEn:"Monochrome spike mines 3×3 (1/10). x1.4 Luck.",
+   fxFr:'Pic Gris (1/10). x1.4 Luck.',fxEn:'Grey Spike (1/10). x1.4 Luck.',
+   recipe:{GreyRock:30,AshCoal:15,WhiteIron:10},
+   abilities:[{nameFr:'Pic Gris',nameEn:'Grey Spike',descFr:'Un pic gris explose et mine 3×3',descEn:'A grey spike explodes mining 3×3',chance:'1/10',color:'#888888'}]},
+  {id:'t5_mono',tier:'N5',
+   labelFr:"Lame Achromatique",labelEn:"Achromatic Blade",
+   color:'#AAAAAA',scanMin:250000,owned:false,equipped:false,
+   descFr:"Vague Grise horizontale 5 large (1/28), Désaturation anneau 4 (1/65). x6 Luck. Scanner.",descEn:"Grey Wave 5-wide horizontal (1/28), Desaturation ring 4 (1/65). x6 Luck. Scanner.",
+   fxFr:'Vague Grise (1/28). Désaturation (1/65). x6 Luck.',fxEn:'Grey Wave (1/28). Desaturation (1/65). x6 Luck.',
+   recipe:{ChromoteShard:5,MonolithCore:2,ShadeSapphire:10,IvoryDiamond:8},
+   abilities:[{nameFr:'Vague Grise',nameEn:'Grey Wave',descFr:'Vague grise horizontale large de 5 blocs',descEn:'Horizontal grey wave 5 blocks wide',chance:'1/28',color:'#AAAAAA'},
+              {nameFr:'Désaturation',nameEn:'Desaturation',descFr:'Anneau 4×4 qui efface tout = mine tout',descEn:'4×4 ring erasing everything = mines all',chance:'1/65',color:'#CCCCCC'}]},
+  {id:'t10_mono',tier:'N10',
+   labelFr:"Pâle Néant",labelEn:"Pale Nothingness",
+   color:'#DDDDDD',scanMin:250000,owned:false,equipped:false,
+   descFr:"Champ de Nullité 7×7×7 (1/18), Faisceau Mono 12 blocs (1/50), Fin Achromatique 200 blocs (1/200). x18 Luck. Scanner.",descEn:"Null Field 7×7×7 (1/18), Mono Beam 12 blocks (1/50), Achromatic End 200 blocks (1/200). x18 Luck. Scanner.",
+   fxFr:'Champ Nullité (1/18). Faisceau (1/50). Fin Achro (1/200). x18 Luck.',fxEn:'Null Field (1/18). Beam (1/50). Achro End (1/200). x18 Luck.',
+   recipe:{GreyscaleHeart:3,PrismaNull:1,AbsoluteBlack:1,MonoZenith:1},
+   abilities:[{nameFr:'Champ de Nullité',nameEn:'Null Field',descFr:'Cube 7×7×7 de vide monochrome',descEn:'7×7×7 cube of monochrome void',chance:'1/18',color:'#DDDDDD'},
+              {nameFr:'Faisceau Mono',nameEn:'Mono Beam',descFr:'Faisceau pâle détruisant 12 blocs en ligne',descEn:'Pale beam destroying 12 blocks in a line',chance:'1/50',color:'#EEEEEE'},
+              {nameFr:'Fin Achromatique',nameEn:'Achromatic End',descFr:'Onde de 200 blocs de pure extinction',descEn:'200-block wave of pure extinction',chance:'1/200',color:'#FFFFFF'}]},
+  // ── Ocean World Exclusive ──
+  {id:'t1_ocean',tier:'O1',
+   labelFr:"Trancheur de Corail",labelEn:"Coral Slicer",
+   color:'#4488CC',scanMin:0,owned:false,equipped:false,
+   descFr:"Éclaboussure qui mine 3×3 (1/14). x1.5 Luck.",descEn:"Splash that mines 3×3 (1/14). x1.5 Luck.",
+   fxFr:'Éclaboussure (1/14). x1.5 Luck.',fxEn:'Splash (1/14). x1.5 Luck.',
+   recipe:{BlueRock:30,SeaCoal:15,BlueIron:10},
+   abilities:[{nameFr:'Éclaboussure',nameEn:'Splash Strike',descFr:'Éclaboussure d\'eau minant 3×3 autour',descEn:'Water splash mining 3×3 around',chance:'1/14',color:'#4488CC'}]},
+  {id:'t5_ocean',tier:'O5',
+   labelFr:"Fendeur de Marée",labelEn:"Tide Reaver",
+   color:'#2266CC',scanMin:250000,owned:false,equipped:false,
+   descFr:"Poussée de Marée 6 blocs en ligne (1/30), Charge Profonde cône (1/55). x7 Luck. Scanner.",descEn:"Tidal Push 6 blocks line (1/30), Depth Charge cone (1/55). x7 Luck. Scanner.",
+   fxFr:'Poussée (1/30). Charge Profonde (1/55). x7 Luck.',fxEn:'Push (1/30). Depth Charge (1/55). x7 Luck.',
+   recipe:{CoralDust:20,TrenchOre:10,PearlHeart:5,OceanDiamond:3},
+   abilities:[{nameFr:'Poussée de Marée',nameEn:'Tidal Push',descFr:'Vague d\'eau poussant 6 blocs en ligne',descEn:'Water wave pushing 6 blocks in line',chance:'1/30',color:'#2266CC'},
+              {nameFr:'Charge Profonde',nameEn:'Depth Charge',descFr:'Charge sous-marine en cône détruisant 4×4',descEn:'Underwater cone charge destroying 4×4',chance:'1/55',color:'#4488DD'}]},
+  {id:'t10_ocean',tier:'O10',
+   labelFr:"Monarque Abyssal",labelEn:"Abyssal Monarch",
+   color:'#003388',scanMin:250000,owned:false,equipped:false,
+   descFr:"Tsunami 9×3 (1/20), Tourbillon Spirale (1/55), Courroux Océanique 300 blocs (1/180). x22 Luck. Scanner.",descEn:"Tsunami 9×3 (1/20), Whirlwind Spiral (1/55), Ocean's Wrath 300 blocks (1/180). x22 Luck. Scanner.",
+   fxFr:'Tsunami (1/20). Tourbillon (1/55). Courroux (1/180). x22 Luck.',fxEn:'Tsunami (1/20). Whirlwind (1/55). Wrath (1/180). x22 Luck.',
+   recipe:{CurrentShard:5,TidalCore:2,DeepBlueHeart:1,OceanZenith:1},
+   abilities:[{nameFr:'Tsunami',nameEn:'Tsunami',descFr:'Vague 9×3 détruisant tout sur son passage',descEn:'9×3 wave destroying everything in its path',chance:'1/20',color:'#003388'},
+              {nameFr:'Tourbillon',nameEn:'Whirlwind Spiral',descFr:'Tourbillon en spirale minant tout autour',descEn:'Spiral whirlwind mining everything around',chance:'1/55',color:'#0066CC'},
+              {nameFr:'Courroux Océanique',nameEn:"Ocean's Wrath",descFr:'La fureur de l\'océan détruit 300 blocs',descEn:"The ocean's fury destroys 300 blocks",chance:'1/180',color:'#0099FF'}]},
+  // ── Biome World Exclusive ──
+  {id:'t1_biome',tier:'B1',
+   labelFr:"Frapeur Verdoyant",labelEn:"Verdant Striker",
+   color:'#4CAF50',scanMin:0,owned:false,equipped:false,
+   descFr:"Racines qui minent 5 blocs aléatoires proches (1/16). x1.6 Luck.",descEn:"Roots that mine 5 random nearby blocks (1/16). x1.6 Luck.",
+   fxFr:'Racines (1/16). x1.6 Luck.',fxEn:'Roots (1/16). x1.6 Luck.',
+   recipe:{ForestFloor:30,ForestDirt:15,OakWood:8},
+   abilities:[{nameFr:'Racines',nameEn:'Nature Roots',descFr:'5 racines minent des blocs aléatoires dans un rayon 4',descEn:'5 roots mine random blocks in radius 4',chance:'1/16',color:'#4CAF50'}]},
+  {id:'t5_biome',tier:'B5',
+   labelFr:"Bio-Maître",labelEn:"Biomaster",
+   color:'#2E7D32',scanMin:250000,owned:false,equipped:false,
+   descFr:"Changement de Biome (1/35), Flore Explosive 5×5 (1/60). x8 Luck. Scanner.",descEn:"Biome Shift (1/35), Flora Burst 5×5 (1/60). x8 Luck. Scanner.",
+   fxFr:'Biome Shift (1/35). Flore (1/60). x8 Luck.',fxEn:'Biome Shift (1/35). Flora (1/60). x8 Luck.',
+   recipe:{HeartwoodCore:5,CanopyStar:2,SandstormEye:3,SpectrumPrism:2},
+   abilities:[{nameFr:'Changement de Biome',nameEn:'Biome Shift',descFr:'Change le biome local minant des blocs bonus',descEn:'Shifts local biome mining bonus blocks',chance:'1/35',color:'#2E7D32'},
+              {nameFr:'Flore Explosive',nameEn:'Flora Burst',descFr:'Explosion de flore minant 5×5',descEn:'Flora explosion mining 5×5',chance:'1/60',color:'#66BB6A'}]},
+  {id:'t10_biome',tier:'B10',
+   labelFr:"Force Primordiale",labelEn:"Primordial Force",
+   color:'#1B5E20',scanMin:250000,owned:false,equipped:false,
+   descFr:"Furie Sauvage 9×9 (1/22), Genèse Tellurique colonne (1/60), Cataclysme Primordial 600 blocs (1/220). x60 Luck. Scanner.",descEn:"Wild Fury 9×9 (1/22), Terra Genesis column (1/60), Primal Cataclysm 600 blocks (1/220). x60 Luck. Scanner.",
+   fxFr:'Furie (1/22). Genèse (1/60). Cataclysme (1/220). x60 Luck.',fxEn:'Fury (1/22). Genesis (1/60). Cataclysm (1/220). x60 Luck.',
+   recipe:{CrystalSingularity:2,EternalWinter:1,PrimordialMuck:2,WorldTreeSapling:1},
+   abilities:[{nameFr:'Furie Sauvage',nameEn:'Wild Fury',descFr:'9×9 de pure force primordiale',descEn:'9×9 of pure primordial force',chance:'1/22',color:'#1B5E20'},
+              {nameFr:'Genèse Tellurique',nameEn:'Terra Genesis',descFr:'Colonne montante de 12 blocs',descEn:'Upward column of 12 blocks',chance:'1/60',color:'#388E3C'},
+              {nameFr:'Cataclysme Primordial',nameEn:'Primal Cataclysm',descFr:'Cataclysme dévastant 600 blocs',descEn:'Cataclysm devastating 600 blocks',chance:'1/220',color:'#00FF00'}]},
 ];
 // Helpers to read correct language fields at runtime
 function getPickLabel(p){return lang==='fr'?(p.labelFr||p.labelEn):(p.labelEn||p.labelFr);}
@@ -5281,7 +5403,12 @@ function getPickLuck(){
   const pick=PICKAXES.find(p=>p.id===currentPickId);
   if(!pick)return 1;
   // Balanced luck progression — T10 strongest
-  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:7.5,t10:11,t11:21,t12:50};
+  const luckMap={t0:1,t1:1.1,t2:1.25,t3:1.5,t4:2,t5:3,t6:4,t7:5,t8:6,t9:7.5,t10:11,t11:21,t12:50,
+    t1_main:1.2,t5_main:3.5,t10_main:8,
+    t1_shadow:1.3,t5_shadow:5,t10_shadow:15,
+    t1_mono:1.4,t5_mono:6,t10_mono:18,
+    t1_ocean:1.5,t5_ocean:7,t10_ocean:22,
+    t1_biome:1.6,t5_biome:8,t10_biome:60};
   return luckMap[pick.id]||1;
 }
 
@@ -7224,6 +7351,11 @@ function buildPickBar(){
 
 // ═══════════ SHOP ═══════════
 window.setTab=function(tab,btn){shopTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderShop();};
+function getPickWorld(id){
+  const w=id.split('_')[1];
+  if(w==='shadow'||w==='mono'||w==='ocean'||w==='biome')return w;
+  return 'main';
+}
 window.closeShop=function(){shopOpen=false;document.getElementById('shop-ov').classList.remove('open');};
 window.shopCraft=function(id){craftPick(id);};
 window.shopEquip=function(id){equipPick(id);};
@@ -7247,7 +7379,7 @@ document.getElementById('shop-btn').addEventListener('click',openShop);
 function renderShop(){
   const el=document.getElementById('shop-content');el.innerHTML='';
   if(shopTab==='gear'){renderGearShop(el);return;}
-  const list=PICKAXES;
+  const list=PICKAXES.filter(p=>getPickWorld(p.id)===shopTab);
   list.forEach(p=>{
     const hasRec=Object.keys(p.recipe).length>0;
     const canCraft=!p.owned&&(!hasRec||Object.entries(p.recipe).every(([m,q])=>(inventory[m]||0)>=q));
@@ -8076,6 +8208,322 @@ function tryAbilityT12(mx,my,mz){
     vx:0,vy:0,vz:0,life:999999,maxLife:999999,trailPts:[],age:0});
 }
 
+// ═══════════ WORLD EXCLUSIVE PICKAXE ABILITIES ═══════════
+
+// ── S1: Dark Lance ──
+let t1sC=0;
+function tryAbilityT1_Shadow(mx,my,mz){
+  t1sC++;
+  if(t1sC%12!==0)return;
+  const dirs=[[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]];
+  let hit=false;
+  dirs.forEach(([dx,dy,dz])=>{
+    for(let i=1;i<=3;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*1.5,dy*1.5,dz*1.5,'#9933FF');
+  });
+  spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,0.8,'#663399');
+  if(hit){markMeshDirty();markInvDirty();}
+}
+
+// ── S5: Shadow Arc + Void Echo ──
+let t5sArcC=0,t5sEchoC=0;
+function tryAbilityT5_Shadow(mx,my,mz){
+  t5sArcC++;t5sEchoC++;
+  if(t5sArcC%20===0){
+    let hit=false;
+    for(let dx=-4;dx<=4;dx++)for(let dz=-4;dz<=4;dz++){
+      if(dx*dx+dz*dz<=16&&abilityMine(mx+dx,my,mz+dz))hit=true;
+    }
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,4,'#440044');
+    for(let i=0;i<12;i++){
+      const a=Math.random()*Math.PI*2;
+      FX_PARTICLES.push({type:'spark',color:'#663399',
+        px:mx+0.5,py:my+0.5,pz:mz+0.5,
+        vx:Math.cos(a)*8,vy:Math.random()*4,vz:Math.sin(a)*8,
+        life:0.6,maxLife:0.6,trailPts:[]});
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+  if(t5sEchoC%50===0){
+    setTimeout(()=>{
+      if(abilityMine(mx,my,mz)){markMeshDirty();markInvDirty();}
+    },200);
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,1.5,'#663399',false);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,0.5,'#9933FF',false);
+  }
+}
+
+// ── S10: Void Collapse + Abyss Gaze + Dark Singularity + Shadow Surge ──
+let t10sCollC=0,t10sGazeC=0,t10sSingC=0,t10sSurgeC=0;
+function tryAbilityT10_Shadow(mx,my,mz){
+  t10sCollC++;t10sGazeC++;t10sSingC++;t10sSurgeC++;
+  if(t10sCollC%10===0){
+    let hit=false;
+    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(let dz=-2;dz<=2;dz++){
+      if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,5,'#220033',true);
+    for(let i=0;i<10;i++){
+      FX_PARTICLES.push({type:'spark',color:'#440066',
+        px:mx+0.5,py:my+0.5,pz:mz+0.5,
+        vx:(Math.random()-0.5)*10,vy:(Math.random()-0.5)*10,vz:(Math.random()-0.5)*10,
+        life:0.5,maxLife:0.5,trailPts:[]});
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+  }
+  if(t10sGazeC%30===0){
+    let hit=false;
+    for(let dy=-1;dy>=-8;dy--){if(abilityMine(mx,my+dy,mz))hit=true;}
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,0,-14,0,'#440066');
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+  if(t10sSingC%150===0){
+    let hit=false;
+    const r=4;
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(dx*dx+dy*dy+dz*dz<=r*r&&abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,7,'#000000',true);
+    for(let i=0;i<15;i++){
+      FX_PARTICLES.push({type:'spark',color:'#220033',
+        px:mx+0.5,py:my+0.5,pz:mz+0.5,
+        vx:(Math.random()-0.5)*12,vy:(Math.random()-0.5)*12,vz:(Math.random()-0.5)*12,
+        life:0.7,maxLife:0.7,trailPts:[]});
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+  }
+  if(t10sSurgeC%30===0){
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,2,'#9933FF',false);
+    _luckBoostMult= (_luckBoostMult||1)+5;
+    _luckBoostUntil=Date.now()+5000;
+    showSpawn(lang==='fr'?'⚡ Surge d\'Ombre +5 Luck!':'⚡ Shadow Surge +5 Luck!','#9933FF',false);
+  }
+}
+
+// ── N1: Grey Spike ──
+let t1nC=0;
+function tryAbilityT1_Mono(mx,my,mz){
+  t1nC++;
+  if(t1nC%10!==0)return;
+  const dirs6=[[1,0,0],[-1,0,0],[0,0,1],[0,0,-1],[0,-1,0],[0,1,0]];
+  let hit=false;
+  dirs6.forEach(([dx,dy,dz])=>{
+    for(let i=1;i<=3;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#CCCCCC');
+  });
+  if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+}
+
+// ── N5: Grey Wave + Desaturation ──
+let t5nWaveC=0,t5nDesatC=0;
+function tryAbilityT5_Mono(mx,my,mz){
+  t5nWaveC++;t5nDesatC++;
+  if(t5nWaveC%28===0){
+    let hit=false;
+    for(let dx=-5;dx<=5;dx++){if(abilityMine(mx+dx,my,mz))hit=true;if(abilityMine(mx,my,mz+dx))hit=true;}
+    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',5,'#AAAAAA');
+    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'z',5,'#AAAAAA');
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+  if(t5nDesatC%65===0){
+    let hit=false;
+    for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++){
+      if(abilityMine(mx+dx,my-1,mz+dz))hit=true;
+      if(abilityMine(mx+dx,my,mz+dz))hit=true;
+      if(abilityMine(mx+dx,my+1,mz+dz))hit=true;
+    }
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,2,'#CCCCCC',false);
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+}
+
+// ── N10: Null Field + Mono Beam + Achromatic End ──
+let t10nFieldC=0,t10nBeamC=0,t10nEndC=0;
+function tryAbilityT10_Mono(mx,my,mz){
+  t10nFieldC++;t10nBeamC++;t10nEndC++;
+  if(t10nFieldC%18===0){
+    let hit=false;
+    const r=3;
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+    spawnFX_Implosion(mx+0.5,my+0.5,mz+0.5,6,'#DDDDDD',true);
+    for(let i=0;i<8;i++){
+      FX_PARTICLES.push({type:'spark',color:'#EEEEEE',
+        px:mx+0.5,py:my+0.5,pz:mz+0.5,
+        vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,vz:(Math.random()-0.5)*8,
+        life:0.5,maxLife:0.5,trailPts:[]});
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+  }
+  if(t10nBeamC%50===0){
+    const dirs6=[[1,0,0],[-1,0,0],[0,0,1],[0,0,-1],[0,-1,0],[0,1,0]];
+    let hit=false;
+    dirs6.forEach(([dx,dy,dz])=>{
+      for(let i=1;i<=12;i++){if(abilityMine(mx+dx*i,my+dy*i,mz+dz*i))hit=true;}
+      spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,dx*2,dy*2,dz*2,'#EEEEEE');
+    });
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+  if(t10nEndC%200===0){
+    let count=0;
+    const r=8;
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(count>=200)break;
+      if(dx*dx+dy*dy+dz*dz<=r*r&&abilityMine(mx+dx,my+dy,mz+dz))count++;
+    }
+    if(count){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+    showSpawn(lang==='fr'?'⬜ Fin Achromatique — 200 blocs!':'⬜ Achromatic End — 200 blocks!','#FFFFFF',false);
+    spawnFX_ShadowSlash(mx+0.5,my+0.5,mz+0.5,8,'#FFFFFF');
+  }
+}
+
+// ── O1: Splash Strike ──
+let t1oC=0;
+function tryAbilityT1_Ocean(mx,my,mz){
+  t1oC++;
+  if(t1oC%14!==0)return;
+  let hit=false;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+    if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+  }
+  spawnFX_PetalBurst(mx,my,mz,'#4488CC');
+  if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+}
+
+// ── O5: Tidal Push + Depth Charge ──
+let t5oPushC=0,t5oDepthC=0;
+function tryAbilityT5_Ocean(mx,my,mz){
+  t5oPushC++;t5oDepthC++;
+  if(t5oPushC%30===0){
+    let hit=false;
+    for(let i=1;i<=6;i++){if(abilityMine(mx+i,my,mz))hit=true;if(abilityMine(mx-i,my,mz))hit=true;}
+    spawnFX_WaveLine(mx+0.5,my+0.5,mz+0.5,'x',6,'#2266CC');
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+  if(t5oDepthC%55===0){
+    let hit=false;
+    for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++){
+      if(abilityMine(mx+dx,my-1,mz+dz))hit=true;
+      if(abilityMine(mx+dx,my-2,mz+dz))hit=true;
+    }
+    spawnFX_Implosion(mx+0.5,my-1.5,mz+0.5,2,'#4488DD',false);
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+}
+
+// ── O10: Tsunami + Whirlwind + Ocean's Wrath ──
+let t10oTsunaC=0,t10oWhirlC=0,t10oWrathC=0;
+function tryAbilityT10_Ocean(mx,my,mz){
+  t10oTsunaC++;t10oWhirlC++;t10oWrathC++;
+  if(t10oTsunaC%20===0){
+    let hit=false;
+    for(let dx=-4;dx<=4;dx++)for(let dz=-1;dz<=1;dz++){
+      if(abilityMine(mx+dx,my,mz+dz))hit=true;
+      if(abilityMine(mx+dx,my+1,mz+dz))hit=true;
+    }
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,4,'#003388',true);
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+  if(t10oWhirlC%55===0){
+    let hit=false;
+    for(let a=0;a<Math.PI*2;a+=Math.PI/8){
+      const r=3+Math.sin(a*3)*1.5;
+      if(abilityMine(mx+Math.round(Math.cos(a)*r),my,mz+Math.round(Math.sin(a)*r)))hit=true;
+    }
+    spawnFX_Spiral(mx+0.5,my+0.5,mz+0.5,5,'#0066CC');
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+  if(t10oWrathC%180===0){
+    let count=0;
+    const r=10;
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(count>=300)break;
+      if(dx*dx+dy*dy+dz*dz<=r*r&&abilityMine(mx+dx,my+dy,mz+dz))count++;
+    }
+    if(count){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+    showSpawn(lang==='fr'?'🌊 Courroux Océanique — 300 blocs!':"🌊 Ocean's Wrath — 300 blocks!",'#0099FF',false);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,10,'#0099FF',true);
+  }
+}
+
+// ── B1: Nature Roots ──
+let t1bC=0;
+function tryAbilityT1_Biome(mx,my,mz){
+  t1bC++;
+  if(t1bC%16!==0)return;
+  let hit=false;
+  for(let i=0;i<5;i++){
+    const rx=mx+Math.round((Math.random()-0.5)*8);
+    const ry=my+Math.round((Math.random()-0.5)*4);
+    const rz=mz+Math.round((Math.random()-0.5)*8);
+    if(abilityMine(rx,ry,rz))hit=true;
+  }
+  spawnFX_RootBurst(mx+0.5,my+0.5,mz+0.5,6);
+  if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+}
+
+// ── B5: Biome Shift + Flora Burst ──
+let t5bShiftC=0,t5bFloraC=0;
+function tryAbilityT5_Biome(mx,my,mz){
+  t5bShiftC++;t5bFloraC++;
+  if(t5bShiftC%35===0){
+    let hit=false;
+    for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){
+      if(abilityMine(mx+dx,my,mz+dz))hit=true;
+      if(abilityMine(mx+dx,my-1,mz+dz))hit=true;
+    }
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,3,'#2E7D32',false);
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+  if(t5bFloraC%60===0){
+    let hit=false;
+    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(let dz=-2;dz<=2;dz++){
+      if(abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+    spawnFX_PetalBurst(mx,my,mz,'#66BB6A');
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();}
+  }
+}
+
+// ── B10: Wild Fury + Terra Genesis + Primal Cataclysm ──
+let t10bFuryC=0,t10bGenC=0,t10bCataC=0;
+function tryAbilityT10_Biome(mx,my,mz){
+  t10bFuryC++;t10bGenC++;t10bCataC++;
+  if(t10bFuryC%22===0){
+    let hit=false;
+    const r=4;
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(dx*dx+dy*dy+dz*dz<=r*r&&abilityMine(mx+dx,my+dy,mz+dz))hit=true;
+    }
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,6,'#1B5E20',true);
+    for(let i=0;i<10;i++){
+      FX_PARTICLES.push({type:'spark',color:'#4CAF50',
+        px:mx+0.5,py:my+0.5,pz:mz+0.5,
+        vx:(Math.random()-0.5)*8,vy:Math.random()*6,vz:(Math.random()-0.5)*8,
+        life:0.6,maxLife:0.6,trailPts:[]});
+    }
+    if(hit){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+  }
+  if(t10bGenC%60===0){
+    let hit=false;
+    for(let dy=0;dy<12;dy++){if(abilityMine(mx,my+dy,mz))hit=true;}
+    spawnFX_Bolt(mx+0.5,my+0.5,mz+0.5,0,16,0,'#388E3C');
+    if(hit){markMeshDirty();markInvDirty();}
+  }
+  if(t10bCataC%220===0){
+    let count=0;
+    const r=12;
+    for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)for(let dz=-r;dz<=r;dz++){
+      if(count>=600)break;
+      if(dx*dx+dy*dy+dz*dz<=r*r&&abilityMine(mx+dx,my+dy,mz+dz))count++;
+    }
+    if(count){markMeshDirty();markInvDirty();updateHudStatsOnly();checkAchievements();}
+    showSpawn(lang==='fr'?'🌿 Cataclysme Primordial — 600 blocs!':'🌿 Primal Cataclysm — 600 blocks!','#00FF00',false);
+    spawnFX_Ring(mx+0.5,my+0.5,mz+0.5,12,'#00FF00',true);
+  }
+}
+
 // ── FX Spawners ──
 
 function spawnFX_CubeMine(x,y,z){
@@ -8089,6 +8537,53 @@ function spawnFX_CubeMine(x,y,z){
 
 function spawnFX_Ring(wx,wy,wz,radius,color,thick){
   FX_PARTICLES.push({type:'ring3d',color,wx,wy,wz,radius,thick,life:0.7,maxLife:0.7,vx:0,vy:0,vz:0,trailPts:[]});
+}
+
+function spawnFX_Bolt(x,y,z,dx,dy,dz,color){
+  FX_PARTICLES.push({type:'crystal_shot',color:color||'#9933FF',
+    px:x,py:y,pz:z,vx:dx*22,vy:dy*22,vz:dz*22,
+    life:3,maxLife:3,trailPts:[]});
+}
+
+function spawnFX_ShadowSlash(x,y,z,radius,color){
+  FX_PARTICLES.push({type:'shadow_slash',color:color||'#663399',wx:x,wy:y,wz:z,radius:radius||4,life:0.5,maxLife:0.5,age:0,trailPts:[]});
+}
+
+function spawnFX_Implosion(x,y,z,radius,color,thick){
+  FX_PARTICLES.push({type:'implosion_ring',color:color||'#220033',wx:x,wy:y,wz:z,startRadius:radius||5,thick:thick||false,life:0.7,maxLife:0.7,trailPts:[]});
+}
+
+function spawnFX_WaveLine(x,y,z,axis,len,color){
+  FX_PARTICLES.push({type:'wave_line',color:color||'#AAAAAA',wx:x,wy:y,wz:z,axis:axis||'x',length:len||5,life:0.5,maxLife:0.5,trailPts:[]});
+}
+
+function spawnFX_Spiral(x,y,z,radius,color){
+  FX_PARTICLES.push({type:'spiral',color:color||'#0066CC',wx:x,wy:y,wz:z,radius:radius||3,life:0.9,maxLife:0.9,age:0,trailPts:[]});
+}
+
+function spawnFX_RootBurst(x,y,z,count){
+  for(let i=0;i<(count||6);i++){
+    const angle=Math.random()*Math.PI*2;
+    const dist=2+Math.random()*4;
+    const tx=x+Math.cos(angle)*dist;
+    const tz=z+Math.sin(angle)*dist;
+    const ty=y+(Math.random()-0.5)*3;
+    FX_PARTICLES.push({type:'root_beam',color:'#4CAF50',
+      px:x,py:y,pz:z,tx,ty,tz,
+      life:0.5,maxLife:0.5,age:0,trailPts:[]});
+  }
+}
+
+function spawnFX_PetalBurst(x,y,z,color){
+  const colors=color?[color]:['#4CAF50','#66BB6A','#81C784','#A5D6A7'];
+  for(let i=0;i<12;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=3+Math.random()*4;
+    FX_PARTICLES.push({type:'petal_burst',color:colors[Math.floor(Math.random()*colors.length)],
+      px:x+0.5,py:y+0.5,pz:z+0.5,
+      vx:Math.cos(angle)*speed,vy:Math.random()*4-2,vz:Math.sin(angle)*speed,
+      life:0.6,maxLife:0.6,trailPts:[]});
+  }
 }
 
 function spawnFX_CrystalGrowth(mx,my,mz){
@@ -8279,6 +8774,19 @@ function triggerPickAbility(mx,my,mz){
     case't8':tryAbilityT8(mx,my,mz);break;
     case't9':tryAbilityT9(mx,my,mz);break;
     case't10':tryAbilityT10(mx,my,mz);break;
+    // World exclusive pickaxes
+    case't1_shadow':tryAbilityT1_Shadow(mx,my,mz);break;
+    case't5_shadow':tryAbilityT5_Shadow(mx,my,mz);break;
+    case't10_shadow':tryAbilityT10_Shadow(mx,my,mz);break;
+    case't1_mono':tryAbilityT1_Mono(mx,my,mz);break;
+    case't5_mono':tryAbilityT5_Mono(mx,my,mz);break;
+    case't10_mono':tryAbilityT10_Mono(mx,my,mz);break;
+    case't1_ocean':tryAbilityT1_Ocean(mx,my,mz);break;
+    case't5_ocean':tryAbilityT5_Ocean(mx,my,mz);break;
+    case't10_ocean':tryAbilityT10_Ocean(mx,my,mz);break;
+    case't1_biome':tryAbilityT1_Biome(mx,my,mz);break;
+    case't5_biome':tryAbilityT5_Biome(mx,my,mz);break;
+    case't10_biome':tryAbilityT10_Biome(mx,my,mz);break;
   }
 }
 
@@ -8652,6 +9160,105 @@ function tickFX(dt){
         fx2d.beginPath();fx2d.arc(sf.x,sf.y,8*alpha,0,Math.PI*2);
         fx2d.fillStyle='#ffffff'+(Math.round(alpha*220).toString(16).padStart(2,'0'));
         fx2d.fill();
+        break;
+      }
+      case'shadow_slash':{
+        const ss=worldToScreen(p.wx,p.wy,p.wz);if(!ss)break;
+        const sweep=Math.PI*1.6;
+        const r=70*p.radius/4;
+        const curR=Math.max(5,r*alpha);
+        fx2d.beginPath();
+        fx2d.arc(ss.x,ss.y,curR,-sweep*0.5,sweep*0.5);
+        fx2d.strokeStyle=p.color+(Math.round(alpha*220).toString(16).padStart(2,'0'));
+        fx2d.lineWidth=7*alpha;fx2d.stroke();
+        fx2d.lineWidth=14*alpha;
+        fx2d.strokeStyle=p.color+(Math.round(alpha*70).toString(16).padStart(2,'0'));
+        fx2d.beginPath();
+        fx2d.arc(ss.x,ss.y,curR,-sweep*0.5,sweep*0.5);
+        fx2d.stroke();
+        break;
+      }
+      case'implosion_ring':{
+        const ipts=[];
+        const steps=24;
+        const icurR=p.startRadius*alpha;
+        for(let si=0;si<=steps;si++){
+          const a=(si/steps)*Math.PI*2;
+          const rx=p.wx+Math.cos(a)*icurR;
+          const rz=p.wz+Math.sin(a)*icurR;
+          const s=worldToScreen(rx,p.wy,rz);
+          if(s)ipts.push(s);else ipts.push(null);
+        }
+        fx2d.beginPath();
+        let im=false;
+        ipts.forEach(s=>{
+          if(!s){im=false;return;}
+          if(!im){fx2d.moveTo(s.x,s.y);im=true;}
+          else fx2d.lineTo(s.x,s.y);
+        });
+        fx2d.strokeStyle=p.color+(Math.round(alpha*255).toString(16).padStart(2,'0'));
+        fx2d.lineWidth=p.thick?5:3;fx2d.stroke();
+        fx2d.lineWidth=p.thick?10:6;
+        fx2d.strokeStyle=p.color+(Math.round(alpha*80).toString(16).padStart(2,'0'));
+        fx2d.beginPath();im=false;
+        ipts.forEach(s=>{if(!s){im=false;return;}if(!im){fx2d.moveTo(s.x,s.y);im=true;}else fx2d.lineTo(s.x,s.y);});
+        fx2d.stroke();
+        break;
+      }
+      case'wave_line':{
+        const wlen=p.length;
+        for(let wi=-wlen;wi<=wlen;wi++){
+          let wx,wy=p.wy,wz;
+          if(p.axis==='x'||p.axis==='X'){wx=p.wx+wi;wz=p.wz;}
+          else{wx=p.wx;wz=p.wz+wi;}
+          const ws=worldToScreen(wx,wy,wz);if(!ws)continue;
+          fx2d.fillStyle=p.color+(Math.round(alpha*200).toString(16).padStart(2,'0'));
+          fx2d.fillRect(ws.x-3,ws.y-3,6,6);
+        }
+        break;
+      }
+      case'spiral':{
+        const ssteps=30;
+        const sage=p.age||0;
+        for(let si=0;si<ssteps;si++){
+          const t=si/ssteps;
+          const a=t*Math.PI*4+sage*3;
+          const sr=p.radius*t;
+          const swx=p.wx+Math.cos(a)*sr;
+          const swz=p.wz+Math.sin(a)*sr;
+          const ss2=worldToScreen(swx,p.wy,swz);if(!ss2)continue;
+          fx2d.beginPath();fx2d.arc(ss2.x,ss2.y,3*alpha,0,Math.PI*2);
+          fx2d.fillStyle=p.color+(Math.round(alpha*200).toString(16).padStart(2,'0'));
+          fx2d.fill();
+        }
+        break;
+      }
+      case'root_beam':{
+        const rprog=1-p.life/p.maxLife;
+        const rcx=p.px+(p.tx-p.px)*rprog;
+        const rcy=p.py+(p.ty-p.py)*rprog;
+        const rcz=p.pz+(p.tz-p.pz)*rprog;
+        const rs1=worldToScreen(p.px,p.py,p.pz);if(!rs1)break;
+        const rs2=worldToScreen(rcx,rcy,rcz);if(!rs2)break;
+        fx2d.beginPath();fx2d.moveTo(rs1.x,rs1.y);fx2d.lineTo(rs2.x,rs2.y);
+        fx2d.strokeStyle=p.color+(Math.round(alpha*220).toString(16).padStart(2,'0'));
+        fx2d.lineWidth=3;fx2d.stroke();
+        fx2d.lineWidth=7;
+        fx2d.strokeStyle=p.color+(Math.round(alpha*60).toString(16).padStart(2,'0'));
+        fx2d.beginPath();fx2d.moveTo(rs1.x,rs1.y);fx2d.lineTo(rs2.x,rs2.y);fx2d.stroke();
+        fx2d.beginPath();fx2d.arc(rs2.x,rs2.y,4*alpha,0,Math.PI*2);
+        fx2d.fillStyle=p.color;fx2d.fill();
+        break;
+      }
+      case'petal_burst':{
+        const ps=worldToScreen(p.px,p.py,p.pz);if(!ps)break;
+        fx2d.beginPath();fx2d.arc(ps.x,ps.y,4*(0.3+alpha*0.7),0,Math.PI*2);
+        fx2d.fillStyle=p.color+(Math.round(alpha*200).toString(16).padStart(2,'0'));
+        fx2d.fill();
+        const pg=fx2d.createRadialGradient(ps.x,ps.y,0,ps.x,ps.y,8);
+        pg.addColorStop(0,p.color+'44');pg.addColorStop(1,p.color+'00');
+        fx2d.beginPath();fx2d.arc(ps.x,ps.y,8,0,Math.PI*2);
+        fx2d.fillStyle=pg;fx2d.fill();
         break;
       }
     }
