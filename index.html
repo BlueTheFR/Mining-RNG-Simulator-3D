@@ -231,7 +231,7 @@ canvas.free{cursor:default}
 #mine-top-cd{font-size:7px;color:#ff4444;display:none;white-space:nowrap}
 /* Mobile safe-area shifts: push some HUD below browser chrome */
 @supports(padding-top:env(safe-area-inset-top)){
-  #recent-panel{position:absolute;top:262px;right:10px;min-width:280px;max-width:360px;max-height:320px;display:flex;flex-direction:column;gap:4px;pointer-events:all;z-index:15;font-family:'Press Start 2P',monospace}
+  #recent-panel{position:absolute;top:420px;right:10px;min-width:280px;max-width:360px;max-height:320px;display:flex;flex-direction:column;gap:4px;pointer-events:all;z-index:15;font-family:'Press Start 2P',monospace}
   #recent-header{display:flex;align-items:center;gap:6px;background:rgba(4,4,8,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:4px 4px 0 0;padding:6px 10px;cursor:pointer;user-select:none}
   #lbl-recent{font-size:13px;color:#ffffff;letter-spacing:1px}
   #recent-list{background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 4px 4px;padding:8px 10px;overflow-y:auto;max-height:260px;min-height:30px;pointer-events:all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
@@ -546,6 +546,8 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 <audio id="Zenith" src="Zenith.mp3" preload="auto"></audio>
 <audio id="Eternal" src="Eternal.mp3" preload="auto"></audio>
 <audio id="EpineAudio" src="EpineAudio.mp3" preload="auto" loop></audio>
+<audio id="Zanacharium" src="Zanacharium.mp3" preload="auto" loop></audio>
+<audio id="Fish" src="Fish.mp3" preload="auto" loop></audio>
 <audio id="bg-overworld" src="Overworld.mp3" preload="auto" loop></audio>
 <audio id="bg-corruption" src="Corruption.mp3" preload="auto" loop></audio>
 <audio id="bg-battlefield" src="Battlefield.mp3" preload="auto" loop></audio>
@@ -1283,7 +1285,7 @@ const ORES=[
    {name:'Singularity',rarity:'Imaginary',  exact:2000000000,color:'#ffffff',spawnMsg:'Time stops. Space collapses. You found the impossible.', spawnMsgFr:'Le temps s\'arrête. L\'espace s\'effondre. Vous avez trouvé l\'impossible.'},
    {name:'AlterDemon',rarity:'Divine',      exact:1000000,   color:'#ffffff',spawnMsg:'Alters demon is here to catch you',                  spawnMsgFr:'Le démon d\'Alter est là pour vous attraper'},
   {name:'Veritcal',  rarity:'Imaginary',   exact:4444444444, color:'#90d5ff',spawnMsg:"You shouldn't dig straight down",                  spawnMsgFr:"Vous n'auriez pas dû creuser tout droit"},
-  {name:'Zanacharium',rarity:'Zenith',     exact:6875000000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...', spawnMsgFr:'Une force inhabituelle se matérialise à la surface de ce monde...'},
+  {name:'Zanacharium',rarity:'Zenith',     exact:6875000000,color:'#df03fc',spawnMsg:'An unusual force materializes upon the surface of this world...', spawnMsgFr:'Une force inhabituelle se matérialise à la surface de ce monde...',spatialAudio:true},
   {name:'Nucleonix', rarity:'Zenith',      exact:6000000000,color:'#00ff00',spawnMsg:'Radiation hums as Nucleonix pulses with atomic energy!', spawnMsgFr:'La radiation bourdonne alors que Nucleonix pulse d\'énergie atomique !'},
   {name:'Chronovexium',rarity:'Zenith',    exact:3250000000,color:'#00f0ff',spawnMsg:'Time fractures as Chronovexium emerges from the continuum...', spawnMsgFr:'Le temps se fracture lorsque Chronovexium surgit du continuum...'},
   {name:'Aqualith',  rarity:'Zenith',      exact:3000000000,color:'#00bfff',spawnMsg:'Ocean currents converge as Aqualith emerges from the deep!', spawnMsgFr:'Les courants océaniques convergent alors qu\'Aqualith surgit des profondeurs !'},
@@ -1400,7 +1402,7 @@ const ORES=[
    {name:'ShadowGem',        rarity:'ShadowCaveExclusive-Enigmatic',    exact:5000000,      color:'#aa66ff',spawnMsg:'ShadowGem distorts the shadows in the cavern!',                      spawnMsgFr:'ShadowGem déforme les ombres dans la caverne !'},
    {name:'VoidOrb',          rarity:'ShadowCaveExclusive-Imaginary',    exact:45000000,     color:'#ffffff',spawnMsg:'VoidOrb bends reality in the cavern!',                               spawnMsgFr:'VoidOrb courbe la réalité dans la caverne !'},
    {name:'AbyssCrystal',     rarity:'AbyssCaveExclusive-Unfathomable',  exact:20000000,     color:'#4488ff',spawnMsg:'AbyssCrystal pulses with a bottomless energy!',                      spawnMsgFr:'AbyssCrystal pulse d\'une énergie insondable !'},
-   {name:'AbyssFish',        rarity:'AbyssCaveExclusive-Zenith',        exact:69019008,     color:'#4488ff',spawnMsg:'Fish!',                                                              spawnMsgFr:'Poisson !'},
+   {name:'AbyssFish',        rarity:'AbyssCaveExclusive-Zenith',        exact:69019008,     color:'#4488ff',spawnMsg:'Fish!',                                                              spawnMsgFr:'Poisson !',spatialAudio:true},
   {name:'LavaRelic',        rarity:'LavaCaveExclusive-Otherworldly',   exact:38000000,     color:'#ff4500',spawnMsg:'LavaRelic radiates heat from molten rock!',                          spawnMsgFr:'LavaRelic irradie la chaleur de la roche en fusion !'},
   {name:'EternalCrystal',   rarity:'CaveExclusive-Eternal',            exact:100000000,    color:'#00fbff',spawnMsg:'EternalCrystal shines like the heart of creation!',                  spawnMsgFr:'EternalCrystal brille comme le cœur de la création !'},
   {name:'MonolithofOrigin', rarity:'CaveExclusive-Mythical',           exact:25000000,     color:'#ff9100',spawnMsg:'From its nascence, stars dawn and illuminate the universe...',       spawnMsgFr:'De sa naissance, les étoiles se lèvent et illuminent l\'univers...'},
@@ -4346,12 +4348,13 @@ const CAVE_RARITY_SOUNDS={
 let epineAudioCtx=null,epineSource=null,epinePanner=null,epineGain=null;
 let epineBlockPos=null; // {x,y,z} world position of placed Epinephrine block
 
-function startEpineAudio(wx,wy,wz){
+function startEpineAudio(wx,wy,wz,audioId){
+  audioId=audioId||'EpineAudio';
   stopEpineAudio();
   epineBlockPos={x:wx,y:wy,z:wz};
   try{
     if(!epineAudioCtx)epineAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    const audioEl=document.getElementById('EpineAudio');
+    const audioEl=document.getElementById(audioId);
     if(!audioEl)return;
     epineSource=epineAudioCtx.createMediaElementSource(audioEl);
     epinePanner=epineAudioCtx.createPanner();
@@ -4368,7 +4371,7 @@ function startEpineAudio(wx,wy,wz){
     audioEl.loop=true;
     audioEl.currentTime=0;
     audioEl.play().catch(()=>{});
-  }catch(e){console.warn('EpineAudio error',e);}
+  }catch(e){console.warn('SpatialAudio error',e);}
 }
 
 function stopEpineAudio(){
@@ -5400,6 +5403,8 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
       _addRecentEvent((_wsUsername||'You'),ore.name,col,ore.exact,true);
       // Force scanner to update immediately when a qualifying ore appears
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
+      // Start spatial audio for ores with spatialAudio flag
+      if(ore.spatialAudio)startEpineAudio(nx,ny,nz,ore.name);
     }
   }
 }
@@ -6391,7 +6396,7 @@ function doMine(){
     const pName=phantomBlock.name;
     if(typeof _broadcastPhantomRemove==='function')_broadcastPhantomRemove();
     phantomBlock=null;
-    if(ore.epinephrine)stopEpineAudio();
+    if(ore.epinephrine||ore.spatialAudio)stopEpineAudio();
     selectedInv=pName;
     updatePlacingInd();
     markMeshDirty();
@@ -6442,7 +6447,7 @@ function doMine(){
   const _gearExtras=applyGearMineEffect(ore);
   Object.entries(_gearExtras).forEach(([n,q])=>{inventory[n]=(inventory[n]||0)+q;});
   // luck no longer scales with mining — fixed at 1.0, pick bonus only
-  if(ore.epinephrine&&epineBlockPos&&epineBlockPos.x===x&&epineBlockPos.y===y&&epineBlockPos.z===z){
+  if((ore.epinephrine||ore.spatialAudio)&&epineBlockPos&&epineBlockPos.x===x&&epineBlockPos.y===y&&epineBlockPos.z===z){
     stopEpineAudio();
   }
   // Don't mark inv dirty on every mine — only on pickaxe equip
@@ -6680,6 +6685,7 @@ function doPlace(){
   phantomBlock={x,y,z,oi:oI,name:selectedInv};
   _scanOre=null;_scanPos=null;
   if(ORES[oI].epinephrine)startEpineAudio(x,y,z);
+  else if(ORES[oI].spatialAudio)startEpineAudio(x,y,z,selectedInv);
   if(typeof _broadcastPhantomPlace==='function')_broadcastPhantomPlace();
   markMeshDirty();updateHudStatsOnly();
   showSpawn(lang==='fr'?'Phantom pose: '+selectedInv:'Phantom placed: '+selectedInv,'#c8a030',false,null);
@@ -7722,6 +7728,7 @@ function abilityMine(wx,wy,wz){
       if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:ro.name,oreRarity:ro.rarity,oreColor:col,oreExact:ro.exact,message:getOreSpawnMsg(ro)}));
       _addRecentEvent((_wsUsername||'You'),ro.name,col,ro.exact,true);
       if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
+      if(ro.spatialAudio)startEpineAudio(wx,wy,wz,ro.name);
     }
   }
   const ore=ORES[oreIdx[i]||0];
@@ -7986,10 +7993,10 @@ function tryAbilityT11(mx,my,mz){
   }
 }
 
-// Spawn a bouncing/striking bolt
+  // Spawn a bouncing/striking bolt
 function spawnThunderBolt(sx,sy,sz,blocksToDest,explodeRadius,bouncing){
-  // Spawn bolt high above the target, fire downward + outward spread
-  const startY=Math.min(sy+H*0.4, H-2); // start from top of world above target
+  // Spawn bolt just above the player, fire downward
+  const startY=Math.min(sy+8+Math.random()*5, H-2);
   const spread=bouncing?6:0;
   const offsetX=(Math.random()-0.5)*spread;
   const offsetZ=(Math.random()-0.5)*spread;
@@ -8897,6 +8904,161 @@ const ACH_REWARDS={
   caves_main:0.5,caves_shadow:0.3,caves_mono:0.3,caves_ocean:0.2,caves_all:2.0,
 };
 
+// Per-cave 100% completion achievements
+const _cave100Names={
+  NormalCave:'Caverne Normale 100%',IceCave:'Caverne de Glace 100%',EnergyCave:"Caverne d'Énergie 100%",
+  NuclearCave:'Caverne Nucléaire 100%',ShadowCave:"Caverne d'Ombre 100%",AbyssCave:'Caverne Abyssale 100%',
+  LavaCave:'Caverne de Lave 100%',ShadowVoidCave:'Caverne du Vide 100%',ShadowFlameCave:'Caverne de Flamme 100%',
+  ShadowCrystalCave:'Caverne de Cristal 100%',ShadowCorruptionCave:'Caverne de Corruption 100%',
+  MonoVoidCave:'Caverne du Vide Gris 100%',MonoAshCave:'Caverne de Cendres 100%',
+  MonoCrystalCave:'Caverne de Cristal Gris 100%',MonoCorruptCave:'Caverne Corrompue Grise 100%',
+  OceanTrenchCave:'Caverne de la Fosse 100%',OceanCoralCave:'Caverne de Corail 100%',
+};
+for(const c of CAVE_TYPES){
+  const all=[...c.blocks,...c.commons,...c.exclusives];
+  ACHIEVEMENTS.push({
+    id:'cave_100_'+c.type,
+    name:_cave100Names[c.type]||c.type+' 100%',
+    desc:'Extrayez les '+all.length+' minerais de cette caverne',
+    category:'cave',icon:'🏆',reward:'+0.2 Luck',
+    check:()=>_isCaveFull(c.type),
+    target:all.length,
+    getProg:()=>{const c2=CAVE_TYPES.find(t=>t.type===c.type);if(!c2)return 0;return [...c2.blocks,...c2.commons,...c2.exclusives].filter(n=>(inventory[n]||0)>0).length;}
+  });
+  ACH_REWARDS['cave_100_'+c.type]=0.2;
+}
+
+// Per-world 100% completion achievements
+const _worldCaves=[
+  {id:'world_100_main',name:'Monde Principal 100%',desc:'Complétez à 100% les 7 cavernes du monde principal',icon:'🌍',rew:0.5,
+   caves:CAVE_TYPES.filter(c=>!c.shadowOnly&&!c.monoOnly&&!c.oceanOnly)},
+  {id:'world_100_shadow',name:'Monde des Ombres 100%',desc:'Complétez à 100% les 4 cavernes du monde des ombres',icon:'🌑',rew:0.3,
+   caves:CAVE_TYPES.filter(c=>!!c.shadowOnly)},
+  {id:'world_100_mono',name:'Monde Monochrome 100%',desc:'Complétez à 100% les 4 cavernes du monde monochrome',icon:'◈',rew:0.3,
+   caves:CAVE_TYPES.filter(c=>!!c.monoOnly)},
+  {id:'world_100_ocean',name:'Monde Océanique 100%',desc:'Complétez à 100% les 2 cavernes du monde océanique',icon:'🌊',rew:0.2,
+   caves:CAVE_TYPES.filter(c=>!!c.oceanOnly)},
+];
+for(const w of _worldCaves){
+  ACHIEVEMENTS.push({
+    id:w.id,name:w.name,desc:w.desc,category:'exploration',icon:w.icon,reward:'+'+w.rew.toFixed(1)+' Luck',
+    check:()=>w.caves.every(c=>_isCaveFull(c.type)),
+    target:w.caves.length,
+    getProg:()=>w.caves.filter(c=>_isCaveFull(c.type)).length,
+  });
+  ACH_REWARDS[w.id]=w.rew;
+}
+// All worlds 100%
+ACHIEVEMENTS.push({
+  id:'world_100_all',name:'Complétion Universelle 100%',desc:'Complétez à 100% les 17 cavernes de tous les mondes',
+  category:'exploration',icon:'🏆',reward:'+1.0 Luck',
+  check:()=>CAVE_TYPES.every(c=>_isCaveFull(c.type)),
+  target:CAVE_TYPES.length,
+  getProg:()=>CAVE_TYPES.filter(c=>_isCaveFull(c.type)).length,
+});
+ACH_REWARDS['world_100_all']=1.0;
+
+// Per-event 100% completion achievements
+const _event100Names={
+  space:'Événement Spatial 100%',ocean:'Événement Océanique 100%',fire:'Événement de Feu 100%',
+  nuclear:'Événement Nucléaire 100%',evolie:'Événement Évolutif 100%',computer:'Événement Informatique 100%',
+  mlp:'Événement Magique 100%',terraria:'Événement Terraria 100%',
+  void_rift:'Faille du Vide 100%',blood_moon:'Lune de Sang 100%',
+  phantom_storm:'Tempête Fantôme 100%',corruption_wave:'Vague de Corruption 100%',
+  mono_storm:'Tempête Grise 100%',mono_eclipse:'Éclipse Grise 100%',
+  tidal_surge:'Raz-de-marée 100%',coral_bloom:'Floraison de Corail 100%',
+};
+const _event100Ores={
+  space:['Starflare','NebulonPrime','EventHorizonShard','SingularityCore','AstralOblivion','CosmicParallax','HypernovaX'],
+  ocean:['TidalShard','MaelstromCore','LeviathanScale','OceanicRift','AbyssalCataclysm','TsunamiPrime'],
+  fire:['CinderSpark','InfernoShard','HellfireCore','MoltenOblivion','PhoenixEmber','SolarInfernum'],
+  computer:['Bitcrystal','GlitchShard','FirewallRelic','QuantumKernel','NeuralOverdrive','SimulatedVoid'],
+  nuclear:['Radionite','PlutonShard','ReactorCoreX','AtomicCataclysm','FusionOblivion','MeltdownPrime'],
+  evolie:['Evolite','Jolteonite','Flareonyx','Espeorite','Umbreonite','Glaceorite'],
+  mlp:['SpikeGem','ApplejackCore','PinkieCrystal','RarityPrism','RainbowDashBolt','CelestiaLight'],
+  terraria:['CobaltShard','AdamantiteCore','ChlorophyteRelic','LunarFragment','MoonlordCore'],
+  void_rift:['RiftShard','VoidRiftCore','NullTearGem','AbyssalRiftHeart','VoidSingularityX','RiftEternal'],
+  blood_moon:['CrimsonDust','MoonbloodShard','HemoCrystal','SanguinePrime','LunarHemolith','BloodMoonCore'],
+  phantom_storm:['GhostFlare','EctoplasmShard','SpectreCrystal','WailingEssence','PhantomNova','StormEternal'],
+  corruption_wave:['BlightSpark','MaligCore','ViralObsidian','CorruptHeart','AbyssalPlague','CorruptionZenith'],
+  mono_storm:['Ashflare','NullNova','VoidGrey','MonoCataclysm','GreyOblivion','MonoZenithX'],
+  mono_eclipse:['ShadowGrey','DimCrystal','PaleOblivion','GreySingularity','MonoEclipseX','MonoEclipseCore'],
+  tidal_surge:['SurgeShard','TidalCoreGem','WaveTearGem','AbyssalTideHeart','TidalSingularityX','TideEternal'],
+  coral_bloom:['CoralDust2','ReefShard','NemoCrystal','OceanicPrime','CoralHeart','BloomCore'],
+};
+for(const ev of Object.keys(_event100Ores)){
+  const ores=_event100Ores[ev];
+  ACHIEVEMENTS.push({
+    id:'event_100_'+ev,
+    name:_event100Names[ev]||ev+' 100%',
+    desc:'Extrayez les '+ores.length+' minerais de cet événement',
+    category:'events',icon:'🌟',reward:'+0.2 Luck',
+    check:()=>_hasAllOres(ores),
+    target:ores.length,
+    getProg:()=>ores.filter(n=>(inventory[n]||0)>0).length,
+  });
+  ACH_REWARDS['event_100_'+ev]=0.2;
+}
+// All events 100%
+const _allEventOres=Object.values(_event100Ores).flat();
+ACHIEVEMENTS.push({
+  id:'event_100_all',name:'Tous les Événements 100%',desc:'Extrayez tous les minerais des 16 événements',
+  category:'events',icon:'🏆',reward:'+1.0 Luck',
+  check:()=>_hasAllOres(_allEventOres),
+  target:_allEventOres.length,
+  getProg:()=>_allEventOres.filter(n=>(inventory[n]||0)>0).length,
+});
+ACH_REWARDS['event_100_all']=1.0;
+
+// Normal blocks 100%
+const _normalOres=['Stone','Coal','Iron','Emerald','Ruby','Sapphire','Topaz','Diamond','Void','Gold','Mega','UltraMega','HyperMega','VoidShard','Giga','Smiley','FrostWraith','Tera','TeraPlus','SoulGlacier','EmberPhantom','CrimsonEclipse','Peta','PetaPlus1','CelestiteNova','NovaShard','AuroriteShard','Celestium','LuminaraGem','Astralite','EclipseraCore','Luminite','EclipseCore','PetaPlus2','Nebulium','Stellarium','Lunarium','Solarium','Aetherium','Chronium','Quantumite','Hyperion','PetaPlus3','Vortexium','Ecliptium','EclipseShard','ShadowFragment','TwilightGem','PetaPlus4','OblivionStone','NightCore','SpecterGem','OblivionShard','PhantomCrystal','OblivionCore','AbyssGem','ZergHunter','FrostShard','GlacierHeart','AbyssalCore','IceboundCore','AbyssalSingularity','DarkMatter','AbyssHeart','VoidTitan','VoidPlus','Atomarion','Infernium','AstralCataclysm','VoidRequiem','VoidUltra','Abyssion','Eternium','Voidessence','Cosmosite','Singulite','CosmicRelic','EternalParadox','Lugubre','Infinity','EventideStar','QuantumCore','CosmoNova','VoidEclipse','Singularity','AlterDemon','Veritcal','Zanacharium','Nucleonix','Chronovexium','Aqualith','Aetherion','Pyrocore','Circuitium','Paradoxium','Genesis','Divinitium','Pyronis','BlueTheFR','SPAFF'];
+ACHIEVEMENTS.push({
+  id:'normal_100',name:'Blocs Normaux 100%',desc:'Extrayez les 100 minerais du monde normal',
+  category:'collection',icon:'💎',reward:'+1.0 Luck',
+  check:()=>_hasAllOres(_normalOres),
+  target:100,
+  getProg:()=>_normalOres.filter(n=>(inventory[n]||0)>0).length,
+});
+ACH_REWARDS['normal_100']=1.0;
+
+// Per-world base blocks 100% achievements
+function _getWorldBaseOres(world){
+  return ORES.filter(o=>{
+    if(o.isBarrier||o.hidden||o.isDecoration)return false;
+    if(isCaveExclusiveOre(o))return false;
+    if(world==='shadow')return !!o.shadowWorld&&!o.event;
+    if(world==='mono')return !!o.monoWorld&&!o.monoEvent;
+    if(world==='ocean')return !!o.oceanWorld&&!o.event;
+    if(world==='biome')return !!o.biomeWorld;
+    return false;
+  }).map(o=>o.name);
+}
+const _worldBaseData=[
+  {id:'blocks_100_shadow',name:'Blocs du Monde des Ombres 100%',desc:'Extrayez tous les minerais de base du monde des ombres',icon:'🌑',rew:0.5,world:'shadow'},
+  {id:'blocks_100_mono',name:'Blocs du Monde Monochrome 100%',desc:'Extrayez tous les minerais de base du monde monochrome',icon:'◈',rew:0.5,world:'mono'},
+  {id:'blocks_100_ocean',name:'Blocs du Monde Océanique 100%',desc:'Extrayez tous les minerais de base du monde océanique',icon:'🌊',rew:0.5,world:'ocean'},
+  {id:'blocks_100_biome',name:'Blocs du Monde des Biomes 100%',desc:'Extrayez tous les minerais de base du monde des biomes',icon:'🌿',rew:0.5,world:'biome'},
+];
+for(const w of _worldBaseData){
+  const wOres=_getWorldBaseOres(w.world);
+  ACHIEVEMENTS.push({
+    id:w.id,name:w.name,desc:w.desc,category:'collection',icon:w.icon,reward:'+'+w.rew.toFixed(1)+' Luck',
+    check:()=>_hasAllOres(wOres),
+    target:wOres.length,
+    getProg:()=>wOres.filter(n=>(inventory[n]||0)>0).length,
+  });
+  ACH_REWARDS[w.id]=w.rew;
+}
+// All worlds base blocks 100%
+ACHIEVEMENTS.push({
+  id:'blocks_100_all',name:'Blocs de Tous les Mondes 100%',desc:'Extrayez tous les minerais de base des 5 mondes',
+  category:'collection',icon:'🏆',reward:'+1.0 Luck',
+  check:()=>_worldBaseData.every(w=>_hasAllOres(_getWorldBaseOres(w.world))),
+  target:5,
+  getProg:()=>_worldBaseData.filter(w=>_hasAllOres(_getWorldBaseOres(w.world))).length,
+});
+ACH_REWARDS['blocks_100_all']=1.0;
+
 let _achFlags={};
 let _achUnlocked=new Set();
 let _achLuckBonus=0;
@@ -8908,6 +9070,8 @@ function _countUniqueOresFound(){
   }
   return count;
 }
+function _hasAllOres(list){return list.every(n=>(inventory[n]||0)>0);}
+function _isCaveFull(caveType){const c=CAVE_TYPES.find(t=>t.type===caveType);return c&&_hasAllOres([...c.blocks,...c.commons,...c.exclusives]);}
 let _achToastQueue=[];
 let _achToastShowing=false;
 
