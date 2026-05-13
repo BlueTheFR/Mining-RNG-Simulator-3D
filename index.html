@@ -6610,7 +6610,6 @@ function spawnCave(cx,cy,cz){
           const _ct=getOreTag(caveOre);const _cl=_ct?' ['+_ct.label+']':'';
           showSpawn(getOreSpawnMsg(caveOre)+'\n'+caveOre.name+_cl+' — '+T.rare1+fmtExact(caveOre.exact),caveCol,true,caveOre.rarity);
           if(_wsConnected)_wsSendSafe(JSON.stringify({type:'rare_find',oreName:caveOre.name,oreRarity:caveOre.rarity,oreColor:caveCol,oreExact:caveOre.exact,message:getOreSpawnMsg(caveOre)}));
-          _addRecentEvent((_wsUsername||'You'),caveOre.name,caveCol,caveOre.exact,true);
           if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
         }
         break;
