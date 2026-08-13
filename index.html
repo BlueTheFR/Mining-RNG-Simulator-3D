@@ -5904,17 +5904,6 @@ let scene,camera,renderer,raycaster,selMesh,worldMesh;
 let _BOX_GEO=null; // shared BoxGeometry for all blocks (InstancedMesh)
 const SYM_TEX_CACHE={};
 const GIF_TEX_ENTRIES=[]; // {tex,img,canvas,ctx} — mis à jour chaque frame
-function updateAnimTextures(){
-  for(let i=0;i<GIF_TEX_ENTRIES.length;i++){
-    const e=GIF_TEX_ENTRIES[i];
-    if(!e||!e.img.complete||!e.img.naturalWidth)continue;
-    try{
-      e.ctx.clearRect(0,0,128,128);
-      e.ctx.drawImage(e.img,0,0,128,128);
-      e.tex.needsUpdate=true;
-    }catch(err){}
-  }
-}
 const IMG_MESHES=[]; // separate meshes for textured blocks
 
 
@@ -6010,28 +5999,6 @@ function needsAnimCanvasPath(src){
 let TEX_CACHE = {};
 let VIDEO_CACHE = {};
 let VIDEO_ENTRIES = [];
-
-// =====================================================
-// ANIMATED IMAGE CONTAINER (webp/gif stay "alive" in DOM so their frames advance)
-// =====================================================
-let _gifContainer = null;
-
-function _getGifContainer(){
-  if(_gifContainer) return _gifContainer;
-  _gifContainer = document.createElement('div');
-  _gifContainer.id = 'gif-anim-pool';
-  _gifContainer.style.cssText = `
-    position:fixed;
-    left:-1000px;
-    top:0;
-    width:1px;
-    height:1px;
-    opacity:0.01;
-    pointer-events:none;
-  `;
-  document.body.appendChild(_gifContainer);
-  return _gifContainer;
-}
 
 // =====================================================
 // VIDEO CONTAINER (replaces GIF container)
@@ -6154,11 +6121,6 @@ function getOrCreateTexture(src, overlayOre){
     img.src = src;
 
     TEX_CACHE[cacheKey] = tex;
-    // Animated webp/gif — mount in DOM so frames keep advancing, then redraw each frame
-    if (/\.(gif|webp)(\?|#|$)/i.test(src)){
-      _getGifContainer().appendChild(img);
-      GIF_TEX_ENTRIES.push({ tex, canvas, ctx, img });
-    }
     return tex;
   }
 
@@ -7324,18 +7286,6 @@ function updateScanner(h){
               try{
                 const ctx2 = c.getContext('2d');
                 ctx2.drawImage(img,0,0,128,128);
-                // Animated webp/gif — keep drawing frames to the preview canvas
-                if(/\.(gif|webp)(\?|#|$)/i.test(pOre.imgSrc)){
-                  try{_getGifContainer().appendChild(img);}catch(e){}
-                  const draw = () => {
-                    try{
-                      ctx2.clearRect(0,0,128,128);
-                      ctx2.drawImage(img,0,0,128,128);
-                    }catch(e){}
-                    requestAnimationFrame(draw);
-                  };
-                  draw();
-                }
               }catch(e){}
             };
 
@@ -10318,7 +10268,6 @@ function loop(t=0){
   else document.getElementById('scn-overlay').style.display='none';
   updateEpineAudio();
   tickFX(dt);
-  updateAnimTextures();
 
   // ── Shadow world vignette overlay ──
   if(currentWorld==='shadow'){
