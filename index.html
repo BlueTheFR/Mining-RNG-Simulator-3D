@@ -224,6 +224,10 @@ canvas.free{cursor:default}
 #event-box.ev-mono_eclipse{color:#aaaaaa;border-color:#aaaaaa55;text-shadow:0 0 8px #aaaaaa}
 #event-box.ev-tidal_surge{color:#88ccee;border-color:#88ccee55;text-shadow:0 0 8px #4488cc}
 #event-box.ev-coral_bloom{color:#66ffdd;border-color:#66ffdd55;text-shadow:0 0 8px #22ccaa}
+#event-box.ev-verdant_burst{color:#66ff44;border-color:#66ff4455;text-shadow:0 0 8px #33cc22}
+#event-box.ev-solar_ember{color:#ffaa33;border-color:#ffaa3355;text-shadow:0 0 8px #cc7700}
+#event-box.ev-glacial_grasp{color:#88ddff;border-color:#88ddff55;text-shadow:0 0 8px #44aadd}
+#event-box.ev-monsoon_roar{color:#33ddee;border-color:#33ddee55;text-shadow:0 0 8px #22aabb}
 #mine-top{position:absolute;top:0;left:0;right:0;height:22px;background:rgba(4,4,8,0.85);display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace}
 #mine-top-track{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
 #mine-top-bar{height:100%;width:0%;border-radius:2px;transition:width 0.25s,background 0.25s}
@@ -318,6 +322,48 @@ canvas.free{cursor:default}
 .abt.r:hover:not(:disabled){background:rgba(200,80,60,0.06)}
 .shop-close{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.25);background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:7px 14px;cursor:pointer;margin-top:5px;transition:all .12s}
 .shop-close:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.25)}
+
+/* ══════════════════════════════════════════
+   CAVES & EVENTS MENUS
+   ══════════════════════════════════════════ */
+#caves-ov,#events-ov{position:absolute;inset:0;background:rgba(2,2,6,0.96);display:none;z-index:50;align-items:center;justify-content:center;pointer-events:all}
+#caves-ov.open,#events-ov.open{display:flex}
+#caves-box,#events-box{background:var(--shop-bg);border:1px solid var(--shop-border);border-radius:6px;width:min(720px,96vw);max-height:90vh;overflow-y:auto;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+#caves-box h2,#events-box h2{font-size:9px;color:var(--hud-accent);margin-bottom:2px;letter-spacing:3px;opacity:.8}
+.mn-row{background:#080810;border:1px solid rgba(255,255,255,0.07);border-radius:4px;margin-bottom:7px;overflow:hidden}
+.mn-hdr{display:flex;align-items:center;gap:9px;padding:10px 13px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.mn-hdr:hover{background:rgba(255,255,255,0.03)}
+.mn-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,0.15)}
+.mn-name{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,0.85);flex:1;letter-spacing:1px}
+.mn-rar{font-family:sans-serif;font-size:9px;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:2px 8px;white-space:nowrap}
+.mn-arrow{font-size:8px;color:rgba(255,255,255,0.3)}
+.mn-sub{font-size:9px;color:rgba(200,200,200,0.35);font-family:sans-serif;padding:0 13px 8px;line-height:1.6}
+.mn-body{display:none;border-top:1px solid rgba(255,255,255,0.06);padding:8px 13px 12px}
+.mn-body.open{display:block}
+.mn-sec{font-size:5px;color:rgba(255,255,255,0.25);letter-spacing:2px;margin:8px 0 5px;font-family:'Press Start 2P',monospace}
+.mn-ore{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px dashed rgba(255,255,255,0.04)}
+.mn-ore:last-child{border-bottom:none}
+.mn-ore-name{font-family:sans-serif;font-size:9px;color:rgba(220,220,220,0.75);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mn-ore-rar{font-family:sans-serif;font-size:8px;color:rgba(255,255,255,0.4)}
+.mn-empty{font-family:sans-serif;font-size:10px;color:rgba(200,200,200,0.4);padding:14px 4px;line-height:1.8}
+
+/* ── Mobile caves / events buttons ── */
+#mob-caves-btn,#mob-events-btn{
+  position:absolute;
+  right:14px;
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  background:rgba(4,4,8,0.9);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:4px;color:rgba(255,255,255,0.85);
+  padding:7px 10px;
+  pointer-events:all;touch-action:manipulation;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;z-index:41;
+  display:none;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,0.5);
+}
+#mob-caves-btn{bottom:calc(206px + env(safe-area-inset-bottom));}
+#mob-events-btn{bottom:calc(252px + env(safe-area-inset-bottom));}
+#mobile-controls.mob-active #mob-caves-btn{display:block}
+#mobile-controls.mob-active #mob-events-btn{display:block}
 
 /* ══════════════════════════════════════════
    MOBILE CONTROLS — clean redesign
@@ -517,7 +563,7 @@ body.mob-active #mp-players{font-size:4px}
 /* Mobile shop overlay */
 body.mob-active #shop-box{padding:12px;width:min(780px,96vw);max-height:85vh}
 body.mob-active #shop-box .shop-close{position:sticky;bottom:0;display:block;width:100%;background:var(--shop-bg);border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.8);font-size:8px;padding:12px;z-index:2}
-body.mob-active #shop-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
+body.mob-active #shop-ov,body.mob-active #caves-ov,body.mob-active #events-ov{align-items:flex-start;overflow-y:auto;padding:8px 0}
 /* Altars on mobile: full screen */
 body.mob-active #altar-ov,
 body.mob-active #shadow-altar-ov{padding:0}
@@ -714,6 +760,9 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
   <div id="jump-btn">↑<br>JUMP</div>
   <!-- Mobile shop top-right (moved to bottom area) -->
   <div id="mob-shop-btn">🏪 SHOP</div>
+  <!-- Mobile caves & events menus -->
+  <div id="mob-caves-btn">⛰ CAVES</div>
+  <div id="mob-events-btn">⚡ EVENTS</div>
   <!-- Mobile chat toggle -->
    <div id="mob-chat-btn" style="position:absolute;bottom:calc(150px + env(safe-area-inset-bottom));left:4px;font-family:'Press Start 2P',monospace;font-size:7px;background:rgba(4,4,8,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.5);padding:5px 7px;pointer-events:all;touch-action:manipulation;cursor:pointer;z-index:41;display:none">💬 CHAT</div>
   <!-- Mobile phantom place -->
@@ -796,6 +845,26 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
     <button class="shop-close" onclick="closeShop()" id="lbl-close">FERMER [E]</button>
   </div>
 </div>
+</div>
+
+<!-- Caves Menu Overlay -->
+<div id="caves-ov">
+  <div id="caves-box">
+    <h2 id="lbl-caves-title">GROTTES</h2>
+    <div class="shop-sub" id="lbl-caves-sub">Cliquez sur une grotte pour voir les minerais qui y apparaissent et leur rareté.</div>
+    <div id="caves-content"></div>
+    <button class="shop-close" onclick="closeCavesMenu()">FERMER [C]</button>
+  </div>
+</div>
+
+<!-- Events Menu Overlay -->
+<div id="events-ov">
+  <div id="events-box">
+    <h2 id="lbl-events-title">ÉVÈNEMENTS</h2>
+    <div class="shop-sub" id="lbl-events-sub">Cliquez sur un évènement pour voir les minerais qui y apparaissent.</div>
+    <div id="events-content"></div>
+    <button class="shop-close" onclick="closeEventsMenu()">FERMER [U]</button>
+  </div>
 </div>
 
 <!-- Shadow Altar Modal -->
@@ -1172,6 +1241,14 @@ const RC={
   'OceanCaveExclusive-Exotic':'#44aaff',
   'OceanCaveExclusive-Zenith':'#88ddff',
   'OceanCaveExclusive-Eternal':'#aaffff',
+  'BiomeExotic':'#66ff88',
+  'BiomeExquisite':'#ff66cc',
+  'BiomeTranscendent':'#88ff44',
+  'BiomeEnigmatic':'#44ffaa',
+  'BiomeUnfathomable':'#aa44ff',
+  'BiomeOtherworldly':'#ff44aa',
+  'BiomeZenith':'#ffdd44',
+  'BiomeEternal':'#88ccff',
 };
 
 // ═══════════ ORES ═══════════
@@ -2166,6 +2243,68 @@ OCEAN_EVENT_ORES.forEach(eo=>{
   if(!ORES.find(o=>o.name===eo.name))ORES.push(eo);
 });
 
+// ═══════════ BIOME WORLD EVENT ORES ═══════════
+const BIOME_EVENT_ORES=[
+  // ── Verdant Burst ──
+  {name:'FloraNova',       rarity:'BiomeExotic',       exact:800000,      color:'#88ff66',symbol:'FN', biomeWorld:true,biomeEvent:'verdant_burst',
+   spawnMsg:'A verdant burst blooms across the land!',spawnMsgFr:'Une explosion verdoyante fleurit sur les terres !'},
+  {name:'BloomHeart',      rarity:'BiomeTranscendent', exact:48000000,    color:'#55dd44',symbol:'BH', biomeWorld:true,biomeEvent:'verdant_burst',
+   spawnMsg:'The land\'s heart blooms wildly!',spawnMsgFr:'Le cœur des terres fleurit sauvagement !'},
+  {name:'ChloroPrism',     rarity:'BiomeEnigmatic',    exact:95000000,    color:'#33cc33',symbol:'CP', biomeWorld:true,biomeEvent:'verdant_burst',
+   spawnMsg:'Chlorophyll light refracts everywhere!',spawnMsgFr:'La lumière de chlorophylle se réfracte partout !'},
+  {name:'RootAbyss',       rarity:'BiomeUnfathomable', exact:260000000,   color:'#228822',symbol:'RA', biomeWorld:true,biomeEvent:'verdant_burst',
+   spawnMsg:'Roots reach into the abyss!',spawnMsgFr:'Des racines plongent dans l\'abîme !'},
+  {name:'GaiaOblivion',    rarity:'BiomeOtherworldly', exact:750000000,   color:'#11aa44',symbol:'GO', biomeWorld:true,biomeEvent:'verdant_burst',
+   spawnMsg:'Gaia itself forgets its bounds!',spawnMsgFr:'Gaïa elle-même oublie ses limites !'},
+  {name:'BloomZenith',     rarity:'BiomeZenith',       exact:11000000000, color:'#66ff88',symbol:'BZ', biomeWorld:true,biomeEvent:'verdant_burst',
+   spawnMsg:'THE VERDANT BURST REACHES ZENITH!',spawnMsgFr:'L\'EXPLOSION VERDOYANTE ATTEINT LE ZÉNITH !'},
+
+  // ── Solar Ember ──
+  {name:'EmberGrain',      rarity:'BiomeExotic',       exact:850000,      color:'#ffcc55',symbol:'EG', biomeWorld:true,biomeEvent:'solar_ember',
+   spawnMsg:'Solar embers scorch the biomes!',spawnMsgFr:'Des braises solaires brûlent les biomes !'},
+  {name:'DuneFlare',       rarity:'BiomeTranscendent', exact:50000000,    color:'#ffaa33',symbol:'DF', biomeWorld:true,biomeEvent:'solar_ember',
+   spawnMsg:'The dunes flare with heat!',spawnMsgFr:'Les dunes s\'embrasent de chaleur !'},
+  {name:'SolarPrism',      rarity:'BiomeEnigmatic',    exact:97000000,    color:'#ff9922',symbol:'SP2',biomeWorld:true,biomeEvent:'solar_ember',
+   spawnMsg:'Sunlight crystallises into prisms!',spawnMsgFr:'La lumière du soleil se cristallise en prismes !'},
+  {name:'PyreAbyss',       rarity:'BiomeUnfathomable', exact:280000000,   color:'#dd6600',symbol:'PA', biomeWorld:true,biomeEvent:'solar_ember',
+   spawnMsg:'A pyre burns in the abyss!',spawnMsgFr:'Un bûcher brûle dans l\'abîme !'},
+  {name:'SunEater',        rarity:'BiomeOtherworldly', exact:820000000,   color:'#cc4400',symbol:'SE', biomeWorld:true,biomeEvent:'solar_ember',
+   spawnMsg:'The ember sun devours the sky!',spawnMsgFr:'Le soleil de braise dévore le ciel !'},
+  {name:'EmberZenith',     rarity:'BiomeZenith',       exact:13000000000, color:'#ffcc33',symbol:'EZ', biomeWorld:true,biomeEvent:'solar_ember',
+   spawnMsg:'THE SOLAR EMBER REACHES ZENITH!',spawnMsgFr:'LA BRAISE SOLAIRE ATTEINT LE ZÉNITH !'},
+
+  // ── Glacial Grasp ──
+  {name:'FrostVeil',       rarity:'BiomeExotic',       exact:900000,      color:'#99eeff',symbol:'FV', biomeWorld:true,biomeEvent:'glacial_grasp',
+   spawnMsg:'A glacial grasp chills every ecosystem!',spawnMsgFr:'Une emprise glaciaire glace chaque écosystème !'},
+  {name:'PermaCrown',      rarity:'BiomeTranscendent', exact:52000000,    color:'#66ccff',symbol:'PC', biomeWorld:true,biomeEvent:'glacial_grasp',
+   spawnMsg:'Permafrost crowns the peaks!',spawnMsgFr:'Le pergélisol couronne les sommets !'},
+  {name:'CryoPrism',       rarity:'BiomeEnigmatic',    exact:99000000,    color:'#44bbff',symbol:'CP2',biomeWorld:true,biomeEvent:'glacial_grasp',
+   spawnMsg:'Ice refracts the frozen light!',spawnMsgFr:'La glace réfracte la lumière gelée !'},
+  {name:'FrozenAbyss',     rarity:'BiomeUnfathomable', exact:300000000,   color:'#2288dd',symbol:'FA', biomeWorld:true,biomeEvent:'glacial_grasp',
+   spawnMsg:'The deep freeze gazes back!',spawnMsgFr:'Le grand froid vous regarde en retour !'},
+  {name:'ArcticEater',     rarity:'BiomeOtherworldly', exact:850000000,   color:'#1166bb',symbol:'AE', biomeWorld:true,biomeEvent:'glacial_grasp',
+   spawnMsg:'The arctic consumes the warmth!',spawnMsgFr:'L\'arctique consume la chaleur !'},
+  {name:'FrostZenith',     rarity:'BiomeZenith',       exact:14000000000, color:'#88eeff',symbol:'FZ', biomeWorld:true,biomeEvent:'glacial_grasp',
+   spawnMsg:'THE GLACIAL GRASP REACHES ZENITH!',spawnMsgFr:'L\'EMPRISE GLACIAIRE ATTEINT LE ZÉNITH !'},
+
+  // ── Monsoon Roar ──
+  {name:'RainSpark',       rarity:'BiomeExotic',       exact:880000,      color:'#66eeff',symbol:'RS3',biomeWorld:true,biomeEvent:'monsoon_roar',
+   spawnMsg:'The monsoon roars across the biomes!',spawnMsgFr:'La mousson gronde à travers les biomes !'},
+  {name:'StormBloom',      rarity:'BiomeTranscendent', exact:54000000,    color:'#44ccff',symbol:'SB', biomeWorld:true,biomeEvent:'monsoon_roar',
+   spawnMsg:'Storm blossoms rise with the rain!',spawnMsgFr:'Des fleurs d\'orage s\'élèvent avec la pluie !'},
+  {name:'MistPrism',       rarity:'BiomeEnigmatic',    exact:101000000,   color:'#33bbee',symbol:'MP', biomeWorld:true,biomeEvent:'monsoon_roar',
+   spawnMsg:'Mist refracts the stormlight!',spawnMsgFr:'La brume réfracte la lumière de l\'orage !'},
+  {name:'FloodAbyss',      rarity:'BiomeUnfathomable', exact:310000000,   color:'#2299cc',symbol:'FB', biomeWorld:true,biomeEvent:'monsoon_roar',
+   spawnMsg:'The flood claims the abyss!',spawnMsgFr:'La crue s\'empare de l\'abîme !'},
+  {name:'TyphoonEater',    rarity:'BiomeOtherworldly', exact:870000000,   color:'#1177aa',symbol:'TE2',biomeWorld:true,biomeEvent:'monsoon_roar',
+   spawnMsg:'A typhoon swallows the horizon!',spawnMsgFr:'Un typhon avale l\'horizon !'},
+  {name:'MonsoonZenith',   rarity:'BiomeZenith',       exact:15000000000, color:'#55eeff',symbol:'MZ', biomeWorld:true,biomeEvent:'monsoon_roar',
+   spawnMsg:'THE MONSOON ROAR REACHES ZENITH!',spawnMsgFr:'LA MOUSSON ATTEINT LE ZÉNITH !'},
+];
+BIOME_EVENT_ORES.forEach(eo=>{
+  if(!ORES.find(o=>o.name===eo.name))ORES.push(eo);
+});
+
 // ═══════════ OCEAN WORLD CAVE ORES ═══════════
 // ── OceanTrenchCave ──
 const OCEAN_CAVE_ORES=[
@@ -2428,7 +2567,7 @@ function getOceanAltarOres(){
 }
 
 function getBiomeAltarOres(){
-  return ORES.filter(o=>o.biomeWorld&&!o.isBarrier&&!o.hidden&&!o.isDecoration&&o.rarity!=='BiomeFill'&&o.rarity!=='BiomeCommon');
+  return ORES.filter(o=>o.biomeWorld&&!o.biomeEvent&&!o.isBarrier&&!o.hidden&&!o.isDecoration&&o.rarity!=='BiomeFill'&&o.rarity!=='BiomeCommon');
 }
 
 function _buildOceanAltarStructure(){
@@ -3435,19 +3574,20 @@ function _getBiomeFillIdx(biome){
 }
 const BIOME_ROLL_TABLES={};
 function _getBiomeRollTable(biome,lk){
-  if(!BIOME_ROLL_TABLES[biome]){
+  const key=biome+'@'+(currentBiomeEvent||'none');
+  if(!BIOME_ROLL_TABLES[key]){
     let cum=0;
     const table=[];
     for(let i=0;i<ORES.length;i++){
       const o=ORES[i];
-      if(o.biome===biome&&!o.isDecoration&&!o.isBarrier){
+      if(((o.biome===biome)||(o.biomeEvent===currentBiomeEvent))&&!o.isDecoration&&!o.isBarrier){
         cum+=1/Math.max(1,o.exact);
         table.push({idx:i,cumW:cum});
       }
     }
-    BIOME_ROLL_TABLES[biome]={table,totalW:cum};
+    BIOME_ROLL_TABLES[key]={table,totalW:cum};
   }
-  return BIOME_ROLL_TABLES[biome];
+  return BIOME_ROLL_TABLES[key];
 }
 
 function _placeDecoInChunk(ch,lx,ly,lz,idx2){
@@ -4167,7 +4307,7 @@ let currentMonoEvent=null;
 let _monoEventInterval=null;
 
 function startEventSystem(){
-  if(currentWorld==='biome')return; // biome world has no events
+  // Biome event system is started on travel (travelToBiome)
   setTimeout(()=>{rotateEvent();setInterval(rotateEvent,300000);},500);
 }
 
@@ -4249,23 +4389,48 @@ function _stopOceanEventSystem(){
   if(currentEvent&&EVENT_DISPLAY[currentEvent])_applyEventBox(EVENT_DISPLAY[currentEvent]);
 }
 
-// Biome world has no events — hide the event box when inside
-function _stopBiomeEventSystem(){
-  const eb=document.getElementById('event-box');
-  if(eb)eb.style.display='none';
-  currentEvent=null;
+const BIOME_EVENT_TYPES=['verdant_burst','solar_ember','glacial_grasp','monsoon_roar'];
+const BIOME_EVENT_DISPLAY={
+  verdant_burst:{en:'A verdant burst makes the land bloom wildly', fr:'Une explosion verdoyante fait fleurir les terres',  cls:'ev-verdant_burst'},
+  solar_ember:  {en:'A scorching solar ember bakes the biomes',    fr:'Une braise solaire brûlante cuit les biomes',       cls:'ev-solar_ember'},
+  glacial_grasp:{en:'A glacial grasp chills every ecosystem',      fr:'Une emprise glaciaire glace chaque écosystème',    cls:'ev-glacial_grasp'},
+  monsoon_roar: {en:'A monsoon roars across the biomes',           fr:'Une mousson gronde à travers les biomes',          cls:'ev-monsoon_roar'},
+};
+let currentBiomeEvent=null;
+let _biomeEventInterval=null;
+
+function rotateBiomeEvent(){
+  let newEv;
+  do{newEv=BIOME_EVENT_TYPES[Math.floor(Math.random()*BIOME_EVENT_TYPES.length)];}while(newEv===currentBiomeEvent);
+  currentBiomeEvent=newEv;_achFlags.firstEvent=true;
+  // Invalidate per-biome roll tables so newly rolled blocks include event ores
+  for(const k in BIOME_ROLL_TABLES)delete BIOME_ROLL_TABLES[k];
+  _biomeRollCache=null;
+  if(currentWorld==='biome')_applyEventBox(BIOME_EVENT_DISPLAY[currentBiomeEvent]);
 }
 
 function _startBiomeEventSystem(){
-  _stopBiomeEventSystem();
+  if(_biomeEventInterval)clearInterval(_biomeEventInterval);
+  rotateBiomeEvent();
+  _biomeEventInterval=setInterval(rotateBiomeEvent,300000);
+}
+
+function _stopBiomeEventSystem(){
+  if(_biomeEventInterval){clearInterval(_biomeEventInterval);_biomeEventInterval=null;}
+  currentBiomeEvent=null;
+  for(const k in BIOME_ROLL_TABLES)delete BIOME_ROLL_TABLES[k];
+  _biomeRollCache=null;
+  // Restore main world event box
+  if(currentEvent&&EVENT_DISPLAY[currentEvent])_applyEventBox(EVENT_DISPLAY[currentEvent]);
 }
 
 // Check if an event ore should be eligible for rolling given current event
 function isEventOreActive(ore){
-  if(!ore.event)return true;
+  if(ore.biomeWorld)return ore.biomeEvent===currentBiomeEvent;
   if(ore.shadowWorld)return ore.event===currentShadowEvent;
   if(ore.monoWorld)return ore.monoEvent===currentMonoEvent;
   if(ore.oceanWorld)return ore.event===currentOceanEvent;
+  if(!ore.event)return true;
   return ore.event===currentEvent;
 }
 
@@ -4524,6 +4689,10 @@ const BIOME_RARITY_SOUNDS={
   'BiomeEpic':null,'BiomeLegendary':null,'BiomeMythic':null,
   'BiomeExotic':'Achillgoesdownyourspine',
   'BiomeExquisite':'Yourheartskipsabeat',
+  'BiomeTranscendent':'Transcendent',
+  'BiomeEnigmatic':'Enigmatic',
+  'BiomeUnfathomable':'Unfathomable',
+  'BiomeOtherworldly':'Otherworldly',
   'BiomeZenith':'Zenith',
   'BiomeEternal':'Eternal',
 };
@@ -5313,6 +5482,9 @@ let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilit
 let lastResetMined=0; // tracks when last mine reset fired
 let shopOpen=false,shopTab='main';
 let isFreeMouse=false;
+// ── Caves & events menus state ──
+let cavesOpen=false,eventsOpen=false;
+let _cavesExpanded={},_eventsExpanded={};
 // ── Portal & world state ──
 let _travelInProgress=false;
 let _shadowPortalFillZone=null;
@@ -6448,7 +6620,7 @@ function init3D(){
 
   const cv=document.getElementById('c');
    cv.addEventListener('click',()=>{
-    if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen&&!monoAltarOpen&&!oceanAltarOpen&&document.visibilityState==='visible')
+    if(!isLocked&&!isFreeMouse&&!shopOpen&&!cavesOpen&&!eventsOpen&&!altarOpen&&!shadowAltarOpen&&!monoAltarOpen&&!oceanAltarOpen&&document.visibilityState==='visible')
       cv.requestPointerLock();
   });
   document.addEventListener('pointerlockchange',()=>{
@@ -6467,7 +6639,7 @@ function init3D(){
   });
   document.addEventListener('mousedown',e=>{
     if(e.button===0){
-      if(!isLocked&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen&&!monoAltarOpen&&!oceanAltarOpen&&!biomeAltarOpen&&document.visibilityState==='visible'){cv.requestPointerLock();return;}
+      if(!isLocked&&!isFreeMouse&&!shopOpen&&!cavesOpen&&!eventsOpen&&!altarOpen&&!shadowAltarOpen&&!monoAltarOpen&&!oceanAltarOpen&&!biomeAltarOpen&&document.visibilityState==='visible'){cv.requestPointerLock();return;}
       if(_autoMine){_cancelAutoMine();return;} // tap cancels auto-mine
       miningHeld=true;
     }
@@ -6513,6 +6685,16 @@ function init3D(){
       if(e.code==='KeyE'||e.code==='Escape'){closeBiomeAltar();return;}
       return;
     }
+    if(cavesOpen){
+      if(e.code==='KeyC'||e.code==='Escape'){closeCavesMenu();return;}
+      return;
+    }
+    if(eventsOpen){
+      if(e.code==='KeyU'||e.code==='Escape'){closeEventsMenu();return;}
+      return;
+    }
+    if(e.code==='KeyC'){openCavesMenu();return;}
+    if(e.code==='KeyU'){openEventsMenu();return;}
     if(e.code==='KeyE')shopOpen?closeShop():openShop();
     if(e.code==='Escape'&&shopOpen){closeShop();return;}
     if(e.code==='ControlLeft'||e.code==='ControlRight')toggleFree();
@@ -7588,6 +7770,159 @@ window.shopEquip=function(id){equipPick(id);};
 window.shopUnequip=function(id){unequipPick(id);};
 function openShop(){shopOpen=true;if(isLocked)document.exitPointerLock();document.getElementById('shop-ov').classList.add('open');renderShop();}
 function closeShop(){window.closeShop();}
+
+// ═══════════ CAVES & EVENTS MENUS ═══════════
+function _getOreByName(n){return ORES.find(o=>o.name===n)||null;}
+
+function getWorldCaves(){
+  if(currentWorld==='shadow')return CAVE_TYPES.filter(t=>!!t.shadowOnly);
+  if(currentWorld==='mono')return CAVE_TYPES.filter(t=>!!t.monoOnly);
+  if(currentWorld==='ocean')return CAVE_TYPES.filter(t=>!!t.oceanOnly);
+  if(currentWorld==='biome')return [];
+  return CAVE_TYPES.filter(t=>!t.shadowOnly&&!t.monoOnly&&!t.oceanOnly);
+}
+
+function _caveFreqRarity(c){
+  return '1/'+Math.max(1,Math.round(1/c.freq));
+}
+
+function _oreRow(o){
+  const col=o.color||'#ffffff';
+  return `<div class="mn-ore"><span class="mn-ore-name" style="color:${col}">${o.name}</span><span class="mn-ore-rar">1/${fmtExact(o.exact)}</span></div>`;
+}
+
+function _caveBodyHtml(c){
+  const parts=[];
+  const base=c.blocks.map(n=>_getOreByName(n)).filter(Boolean);
+  if(base.length){
+    parts.push('<div class="mn-sec">BASE</div>');
+    parts.push(base.map(_oreRow).join(''));
+  }
+  const commons=c.commons.map(n=>_getOreByName(n)).filter(Boolean);
+  if(commons.length){
+    parts.push(`<div class="mn-sec">${lang==='fr'?'COMMUNS':'COMMONS'}</div>`);
+    parts.push(commons.map(_oreRow).join(''));
+  }
+  const excl=c.exclusives.map(n=>_getOreByName(n)).filter(Boolean);
+  if(excl.length){
+    parts.push(`<div class="mn-sec">${lang==='fr'?'EXCLUSIFS':'EXCLUSIVES'}</div>`);
+    parts.push(excl.map(_oreRow).join(''));
+  }
+  return parts.join('');
+}
+
+function renderCavesMenu(){
+  const el=document.getElementById('caves-content');el.innerHTML='';
+  const list=getWorldCaves();
+  if(!list.length){
+    el.innerHTML=`<div class="mn-empty">${lang==='fr'?'Aucune grotte ne se génère dans ce monde.':'No caves spawn in this world.'}</div>`;
+    return;
+  }
+  list.forEach(c=>{
+    const open=!!_cavesExpanded[c.type];
+    const row=document.createElement('div');
+    row.className='mn-row';
+    row.innerHTML=`
+      <div class="mn-hdr" onclick="toggleCave('${c.type}')">
+        <span class="mn-dot" style="background:${c.color}"></span>
+        <span class="mn-name">${c.type}</span>
+        <span class="mn-rar">${_caveFreqRarity(c)}</span>
+        <span class="mn-arrow">${open?'▾':'▸'}</span>
+      </div>
+      <div class="mn-body${open?' open':''}">${_caveBodyHtml(c)}</div>`;
+    el.appendChild(row);
+  });
+}
+
+window.toggleCave=function(type){
+  _cavesExpanded[type]=!_cavesExpanded[type];
+  renderCavesMenu();
+};
+
+function openCavesMenu(){
+  if(shopOpen)closeShop();
+  cavesOpen=true;
+  if(isLocked)document.exitPointerLock();
+  document.getElementById('caves-ov').classList.add('open');
+  renderCavesMenu();
+}
+function closeCavesMenu(){
+  cavesOpen=false;
+  const el=document.getElementById('caves-ov');
+  if(el)el.classList.remove('open');
+}
+window.closeCavesMenu=closeCavesMenu;
+
+function getWorldEvents(){
+  if(currentWorld==='shadow')return SHADOW_EVENT_TYPES;
+  if(currentWorld==='mono')return MONO_EVENT_TYPES;
+  if(currentWorld==='ocean')return OCEAN_EVENT_TYPES;
+  if(currentWorld==='biome')return BIOME_EVENT_TYPES;
+  return EVENT_TYPES;
+}
+
+function getEventOres(ev){
+  if(currentWorld==='shadow')return ORES.filter(o=>o.shadowWorld&&o.event===ev);
+  if(currentWorld==='mono')return ORES.filter(o=>o.monoEvent===ev);
+  if(currentWorld==='ocean')return ORES.filter(o=>o.oceanWorld&&o.event===ev);
+  if(currentWorld==='biome')return ORES.filter(o=>o.biomeWorld&&o.biomeEvent===ev);
+  return ORES.filter(o=>o.event===ev&&!o.shadowWorld&&!o.oceanWorld&&!o.biomeWorld);
+}
+
+function _eventDisplayFor(ev){
+  if(currentWorld==='shadow'&&SHADOW_EVENT_DISPLAY[ev])return SHADOW_EVENT_DISPLAY[ev];
+  if(currentWorld==='mono'&&MONO_EVENT_DISPLAY[ev])return MONO_EVENT_DISPLAY[ev];
+  if(currentWorld==='ocean'&&OCEAN_EVENT_DISPLAY[ev])return OCEAN_EVENT_DISPLAY[ev];
+  if(currentWorld==='biome'&&BIOME_EVENT_DISPLAY[ev])return BIOME_EVENT_DISPLAY[ev];
+  return EVENT_DISPLAY[ev]||null;
+}
+
+function renderEventsMenu(){
+  const el=document.getElementById('events-content');el.innerHTML='';
+  const list=getWorldEvents();
+  if(!list.length){
+    el.innerHTML=`<div class="mn-empty">${lang==='fr'?'Aucun évènement ne se produit dans ce monde.':'No events occur in this world.'}</div>`;
+    return;
+  }
+  list.forEach(ev=>{
+    const open=!!_eventsExpanded[ev];
+    const col=EVENT_TAG_COLORS[ev]||'#ffffff';
+    const lbl=EVENT_TAG_LABELS[ev]||ev.toUpperCase();
+    const disp=_eventDisplayFor(ev);
+    const ores=getEventOres(ev);
+    const row=document.createElement('div');
+    row.className='mn-row';
+    row.innerHTML=`
+      <div class="mn-hdr" onclick="toggleEvent('${ev}')">
+        <span class="mn-dot" style="background:${col}"></span>
+        <span class="mn-name" style="color:${col}">${lbl}</span>
+        <span class="mn-rar">${ores.length}</span>
+        <span class="mn-arrow">${open?'▾':'▸'}</span>
+      </div>
+      ${disp?`<div class="mn-sub">${lang==='fr'?disp.fr:disp.en}</div>`:''}
+      <div class="mn-body${open?' open':''}">${ores.map(_oreRow).join('')||`<div class="mn-empty" style="padding:4px 0">${lang==='fr'?'Aucun minerai associé.':'No ores associated.'}</div>`}</div>`;
+    el.appendChild(row);
+  });
+}
+
+window.toggleEvent=function(ev){
+  _eventsExpanded[ev]=!_eventsExpanded[ev];
+  renderEventsMenu();
+};
+
+function openEventsMenu(){
+  if(shopOpen)closeShop();
+  eventsOpen=true;
+  if(isLocked)document.exitPointerLock();
+  document.getElementById('events-ov').classList.add('open');
+  renderEventsMenu();
+}
+function closeEventsMenu(){
+  eventsOpen=false;
+  const el=document.getElementById('events-ov');
+  if(el)el.classList.remove('open');
+}
+window.closeEventsMenu=closeEventsMenu;
 // Mined counter compact toggle
 let _minedCompact=false;
 document.getElementById('s-mined').addEventListener('click',()=>{
@@ -7814,7 +8149,11 @@ const EVENT_TAG_COLORS={
   // Shadow events
   void_rift:'#cc44ff', blood_moon:'#ff2222', phantom_storm:'#44ddff', corruption_wave:'#aa00ff',
   // Mono events
-  mono_storm:'#aaaaaa', mono_eclipse:'#ffffff'
+  mono_storm:'#aaaaaa', mono_eclipse:'#ffffff',
+  // Ocean events
+  tidal_surge:'#88ccee', coral_bloom:'#66ffdd',
+  // Biome events
+  verdant_burst:'#66ff44', solar_ember:'#ffaa33', glacial_grasp:'#88ddff', monsoon_roar:'#33ddee'
 };
 const EVENT_TAG_LABELS={
   space:'SPACE', ocean:'OCEAN', nuclear:'NUCLEAR', fire:'FIRE',
@@ -7822,7 +8161,11 @@ const EVENT_TAG_LABELS={
   // Shadow events
   void_rift:'VOID RIFT', blood_moon:'BLOOD MOON', phantom_storm:'PHANTOM', corruption_wave:'CORRUPT',
   // Mono events
-  mono_storm:'MONO STORM', mono_eclipse:'MONO ECLIPSE'
+  mono_storm:'MONO STORM', mono_eclipse:'MONO ECLIPSE',
+  // Ocean events
+  tidal_surge:'TIDAL SURGE', coral_bloom:'CORAL BLOOM',
+  // Biome events
+  verdant_burst:'VERDANT BURST', solar_ember:'SOLAR EMBER', glacial_grasp:'GLACIAL GRASP', monsoon_roar:'MONSOON ROAR'
 };
 
 // Biome tag colors and labels
@@ -7915,6 +8258,10 @@ function getOreTag(ore){
   // Mono event tag
   if(ore.monoEvent&&EVENT_TAG_COLORS[ore.monoEvent]){
     return{label:EVENT_TAG_LABELS[ore.monoEvent],color:EVENT_TAG_COLORS[ore.monoEvent]};
+  }
+  // Biome event tag
+  if(ore.biomeEvent&&EVENT_TAG_COLORS[ore.biomeEvent]){
+    return{label:EVENT_TAG_LABELS[ore.biomeEvent],color:EVENT_TAG_COLORS[ore.biomeEvent]};
   }
   // Biome tag
   if(ore.biomeWorld&&ore.biome&&BIOME_TAG_COLORS[ore.biome]){
@@ -10743,6 +11090,22 @@ function getAchLuckBonus(){return _achLuckBonus;}
       shopOpen?closeShop():openShop();
     },{passive:false});
 
+    // ── Mobile caves / events menu buttons ──
+    const mobCaves=document.getElementById('mob-caves-btn');
+    const mobEvents=document.getElementById('mob-events-btn');
+    if(mobCaves){
+      mobCaves.addEventListener('touchstart',e=>{
+        e.preventDefault();e.stopPropagation();
+        if(cavesOpen)closeCavesMenu();else openCavesMenu();
+      },{passive:false});
+    }
+    if(mobEvents){
+      mobEvents.addEventListener('touchstart',e=>{
+        e.preventDefault();e.stopPropagation();
+        if(eventsOpen)closeEventsMenu();else openEventsMenu();
+      },{passive:false});
+    }
+
     // ── Mobile chat button ──
     if(mobChat){
       mobChat.addEventListener('touchstart',e=>{
@@ -10818,7 +11181,7 @@ function getAchLuckBonus(){return _achLuckBonus;}
     jZone.addEventListener('touchcancel',joyEnd,{passive:false});
 
     // ── Look control (window level — look-zone has pointer-events:none) ──
-    const _ignoreLookSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-achievements-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box,#recent-close-btn,#recent-toggle-btn,#mp-status-bar';
+    const _ignoreLookSelectors='#joystick-zone,#mine-btn,#jump-btn,#mob-shop-btn,#mob-caves-btn,#mob-events-btn,#mob-chat-btn,#mob-place-btn,#mob-settings-btn,#mob-achievements-btn,#mob-surface-btn,#inv-panel,#idx-panel,#stats-panel,#recent-panel,#chat-box,#recent-close-btn,#recent-toggle-btn,#mp-status-bar';
     window.addEventListener('touchstart',e=>{
       for(let i=0;i<e.changedTouches.length;i++){
         const t=e.changedTouches[i];
