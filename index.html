@@ -546,6 +546,8 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
 <audio id="Zenith" src="Zenith.mp3" preload="auto"></audio>
 <audio id="Eternal" src="Eternal.mp3" preload="auto"></audio>
 <audio id="EpineAudio" src="EpineAudio.mp3" preload="auto" loop></audio>
+<audio id="Clandestine" src="Clandestine_Realignment_New.ogg" preload="auto"></audio>
+<audio id="ClandestineLoop" src="Clandestine_Realignment_New.ogg" preload="auto" loop></audio>
 <audio id="Zanacharium" src="Zanacharium.mp3" preload="auto" loop></audio>
 <audio id="Fish" src="Fish.mp3" preload="auto" loop></audio>
 <audio id="bg-overworld" src="Overworld.mp3" preload="auto" loop></audio>
@@ -1078,6 +1080,7 @@ const RC={
   'EnergyCaveExclusive':'#a327f5',
   'EnergyCaveExclusive-Exquisite':'#00ff00',
   'EnergyCaveExclusive-Zenith':'#df03fc',
+  'EnergyCaveExclusive-Arcane':'#b06bff',
   'NuclearCaveExclusive':'#46f527',
   'NuclearCaveExclusive-Transcendent':'#2196f3',
   'ShadowCaveExclusive':'#7766aa',
@@ -1190,6 +1193,7 @@ const RARITY_FR={
   'EnergyCaveExclusive':'Exclusif Cave d\'Énergie',
   'EnergyCaveExclusive-Exquisite':'Exclusif Cave Énergie — Exquis',
   'EnergyCaveExclusive-Zenith':'Exclusif Cave Énergie — Zénith',
+  'EnergyCaveExclusive-Arcane':'Exclusif Cave Énergie — Arcanique',
   'NuclearCaveExclusive':'Exclusif Cave Nucléaire',
   'NuclearCaveExclusive-Transcendent':'Exclusif Cave Nucl. — Transcendant',
   'ShadowCaveExclusive':'Exclusif Cave des Ombres',
@@ -1416,6 +1420,9 @@ const ORES=[
   {name:'CrystalFrost',     rarity:'IceCaveExclusive-Exotic',          exact:500000,       color:'#00ffff',spawnMsg:'A shard of CrystalFrost glimmers in the icy cave!',                   spawnMsgFr:'Un éclat de CrystalFrost scintille dans la cave de glace !'},
   {name:'GlowingNova',      rarity:'EnergyCaveExclusive-Exquisite',    exact:1000000,      color:'#ff00ff',spawnMsg:'GlowingNova illuminates the cavern with a soft pulse!',               spawnMsgFr:'GlowingNova illumine la caverne d\'une douce pulsation !'},
   {name:'ZenithShard',      rarity:'EnergyCaveExclusive-Zenith',       exact:60000000,     color:'#df03fc',spawnMsg:'ZenithShard glows with impossible energy!',                           spawnMsgFr:'ZenithShard rayonne d\'une énergie impossible !'},
+  {name:'Observatorium',    rarity:'EnergyCaveExclusive-Arcane',       exact:1,     color:'#b06bff',imgSrc:'ObservatoriumRev.webp',epinephrine:true,epineAudioId:'ClandestineLoop',
+   spawnMsg:'At the heart of an arcane cluster, ruins of an enchanted observatory align to the stars...',
+   spawnMsgFr:'Au cœur d\'un amas arcanique, les ruines d\'un observatoire enchanté s\'alignent sur les étoiles...'},
   {name:'RadiantCore',      rarity:'NuclearCaveExclusive-Transcendent',exact:3000000,      color:'#ffd700',spawnMsg:'RadiantCore radiates blinding light across the cave!',                spawnMsgFr:'RadiantCore irradie une lumière aveuglante dans la cave !'},
    {name:'ShadowGem',        rarity:'ShadowCaveExclusive-Enigmatic',    exact:5000000,      color:'#aa66ff',spawnMsg:'ShadowGem distorts the shadows in the cavern!',                      spawnMsgFr:'ShadowGem déforme les ombres dans la caverne !'},
    {name:'VoidOrb',          rarity:'ShadowCaveExclusive-Imaginary',    exact:45000000,     color:'#ffffff',spawnMsg:'VoidOrb bends reality in the cavern!',                               spawnMsgFr:'VoidOrb courbe la réalité dans la caverne !'},
@@ -4273,7 +4280,7 @@ const CAVE_TYPES=[
    commons:['FrostDust','IceSliver','SnowCrystal','FrozenPebble','BlizzardShard','GlacierChip','PermafrostGem','ArcticCore','TundraEssence','HailstoneSoul'],
    rareChance:1/800, color:'#88eeff',freq:0.15},
   {type:'EnergyCave',  blocks:['Energy'],
-   exclusives:['GlowingNova','ZenithShard'],
+   exclusives:['GlowingNova','ZenithShard','Observatorium'],
    commons:['StaticFleck','SparkDust','PlasmaBit','VoltShard','ArcCrystal','PhotonGrain','IonCore','NeonEssence','PulseGem','SurgeFragment'],
    rareChance:1/12,  color:'#a327f5',freq:0.13},
   {type:'NuclearCave', blocks:['NuclearWaste'],
@@ -4342,6 +4349,7 @@ const CAVE_RARITY_SOUNDS={
   'IceCaveExclusive-Exotic':'Achillgoesdownyourspine',
   'EnergyCaveExclusive-Exquisite':'Yourheartskipsabeat',
   'EnergyCaveExclusive-Zenith':'Zenith',
+  'EnergyCaveExclusive-Arcane':'Clandestine',
   'NuclearCaveExclusive-Transcendent':'Transcendent',
   'ShadowCaveExclusive-Enigmatic':'Enigmatic',
   'ShadowCaveExclusive-Imaginary':'Imaginary',
@@ -4364,17 +4372,21 @@ const CAVE_RARITY_SOUNDS={
 
 // ── Epinephrine spatial audio ──
 let epineAudioCtx=null,epineSource=null,epinePanner=null,epineGain=null;
+let epineAudioElId='EpineAudio';
 let epineBlockPos=null; // {x,y,z} world position of placed Epinephrine block
 
 function startEpineAudio(wx,wy,wz,audioId){
   audioId=audioId||'EpineAudio';
   stopEpineAudio();
+  epineAudioElId=audioId;
   epineBlockPos={x:wx,y:wy,z:wz};
   try{
     if(!epineAudioCtx)epineAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
     const audioEl=document.getElementById(audioId);
     if(!audioEl)return;
-    epineSource=epineAudioCtx.createMediaElementSource(audioEl);
+    // createMediaElementSource can only be called once per element — reuse the node
+    if(!audioEl._srcNode)audioEl._srcNode=epineAudioCtx.createMediaElementSource(audioEl);
+    epineSource=audioEl._srcNode;
     epinePanner=epineAudioCtx.createPanner();
     epineGain=epineAudioCtx.createGain();
     epinePanner.panningModel='HRTF';
@@ -4394,12 +4406,14 @@ function startEpineAudio(wx,wy,wz,audioId){
 
 function stopEpineAudio(){
   epineBlockPos=null;
+  const stopId=epineAudioElId||'EpineAudio';
   try{
-    const audioEl=document.getElementById('EpineAudio');
-    if(audioEl){audioEl.pause();audioEl.currentTime=0;}
+    const audioEl=document.getElementById(stopId);
+    if(audioEl){audioEl.loop=false;audioEl.pause();audioEl.currentTime=0;}
     if(epineSource){try{epineSource.disconnect();}catch(e){}}
     epineSource=null;epinePanner=null;epineGain=null;
   }catch(e){}
+  epineAudioElId='EpineAudio';
 }
 
 function updateEpineAudio(){
@@ -7022,7 +7036,7 @@ function doPlace(){
   _syncBlockWrite(x,y,z); // persist to chunk
   phantomBlock={x,y,z,oi:oI,name:selectedInv};
   _scanOre=null;_scanPos=null;
-  if(ORES[oI].epinephrine)startEpineAudio(x,y,z);
+  if(ORES[oI].epinephrine)startEpineAudio(x,y,z,ORES[oI].epineAudioId||null);
   else if(ORES[oI].spatialAudio)startEpineAudio(x,y,z,selectedInv);
   if(typeof _broadcastPhantomPlace==='function')_broadcastPhantomPlace();
   markMeshDirty();updateHudStatsOnly();
