@@ -5839,11 +5839,11 @@ function getCellOreForUI(x,y,z){
 let worldSeed=(Math.random()*0x1FFFFF)|0;
 function h3(x,y,z,seed){
   seed=(seed^worldSeed)&0x1FFFFF;
-  let v=((x*374761393^y*1234567891^z*668265263^seed*2246822519)>>>0);
-  v^=v>>13;v=(v*1274126177)>>>0;v^=v>>16;
+  let v=(Math.imul(x,374761393)^Math.imul(y,1234567891)^Math.imul(z,668265263)^Math.imul(seed,2246822519))>>>0;
+  v^=v>>>13;v=Math.imul(v,1274126177)>>>0;v^=v>>>16;
   const hi=v>>>0;
-  let w=((x*2654435761^y*2246822519^z*3266489917^seed*3301679471^0x9E3779B9)>>>0);
-  w^=w>>13;w=(w*3904043)>>>0;w^=w>>16;
+  let w=(Math.imul(x,2654435761)^Math.imul(y,2246822519)^Math.imul(z,3266489917)^Math.imul(seed,3301679471)^0x9E3779B9)>>>0;
+  w^=w>>>13;w=Math.imul(w,3904043)>>>0;w^=w>>>16;
   const lo=w>>>0;
   return (hi*1048576+lo)/4503599627370496;
 }
