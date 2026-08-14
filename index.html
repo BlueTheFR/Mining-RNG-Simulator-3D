@@ -5864,11 +5864,7 @@ function getPickLuck(){
   return luckMap[pick.id]||1;
 }
 
-// ── Normal ore roll table — rebuilt when event changes ──
-// Two tiers: a background tier (1/exact over all main-world ores) keeps Stone and
-// common ores always present regardless of luck; a rare tier (sqrt-scaled weights,
-// exact>=1000) is boosted by luck so high multipliers reach top-tier ores.
-const NORMAL_BG_SHARE=0.6;
+// ── Normal ore roll table — rebuilt when event or luck changes ──
 let _normalRollCache=null;
 function _buildNormalRollTable(lk){
   let cum=0;
@@ -5882,47 +5878,22 @@ function _buildNormalRollTable(lk){
     if(o.oceanWorld)continue;
     if(o.biomeWorld)continue;
     if(o.event&&o.event!==currentEvent)continue;
-    if(o.hidden||o.noSolid)continue;
     cum+=1/o.exact;
     table.push({idx:i,cumW:cum});
   }
-  let cumR=0;
-  const rare=[];
-  for(let i=0;i<ORES.length;i++){
-    const o=ORES[i];
-    if(o.exact<1000)continue;
-    if(isCaveExclusiveOre(o))continue;
-    if(o.isBarrier)continue;
-    if(o.shadowWorld)continue;
-    if(o.monoWorld)continue;
-    if(o.oceanWorld)continue;
-    if(o.biomeWorld)continue;
-    if(o.event&&o.event!==currentEvent)continue;
-    if(o.hidden||o.noSolid)continue;
-    cumR+=1/Math.sqrt(o.exact);
-    rare.push({idx:i,cumW:cumR});
-  }
-  _normalRollCache={event:currentEvent,table,totalW:cum,rare,totalR:cumR};
-}
-function _tableLookup(table,target){
-  let lo=0,hi=table.length-1;
-  while(lo<hi){const mid=(lo+hi)>>1;if(table[mid].cumW<target)lo=mid+1;else hi=mid;}
-  return table[lo].idx;
+  _normalRollCache={event:currentEvent,table,totalW:cum};
 }
 function rollOreNormal(roll,depthFrac,lk){
-  const l=Math.max(1,lk||1);
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_normalRollCache||_normalRollCache.event!==currentEvent){
     _buildNormalRollTable(lk);
   }
-  const {table,totalW,rare,totalR}=_normalRollCache;
+  const {table,totalW}=_normalRollCache;
   if(!totalW||!table.length)return 0;
-  if(roll<NORMAL_BG_SHARE){
-    return _tableLookup(table,(roll/NORMAL_BG_SHARE)*totalW);
-  }
-  const u=(roll-NORMAL_BG_SHARE)/(1-NORMAL_BG_SHARE);
-  if(l<=1||!rare.length||!totalR)return _tableLookup(table,u*totalW);
-  const v=Math.pow(u,1/l);
-  return _tableLookup(rare,v*totalR);
+  const target=roll*totalW;
+  let lo=0,hi=table.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(table[mid].cumW<target)lo=mid+1;else hi=mid;}
+  return table[lo].idx;
 }
 
 let _monoRollCache=null;
@@ -7042,24 +7013,25 @@ function getHit(range){
   let last=-1; // last axis crossed to enter the current cell: 0=x,1=y,2=z
   for(let i=0;i<256;i++){
     if(x>=0&&x<W&&y>=0&&y<H&&z>=0&&z<D&&blocks[idx(x,y,z)]){
+      // dist = distance to the face this cell was ENTERED through
       let dist;
-      if(last===0)dist=tx;
-      else if(last===1)dist=ty;
-      else if(last===2)dist=tz;
+      if(last===0)dist=tx-tdx;
+      else if(last===1)dist=ty-tdy;
+      else if(last===2)dist=tz-tdz;
       else dist=0;
       if(dist>far)return null;
       _DDA_NORMAL.set(0,0,0);
-      if(last===0)_DDA_NORMAL.x=-sx;
-      else if(last===1)_DDA_NORMAL.y=-sy;
-      else if(last===2)_DDA_NORMAL.z=-sz;
+      // Normal points INTO the block (along the travel direction)
+      if(last===0)_DDA_NORMAL.x=sx;
+      else if(last===1)_DDA_NORMAL.y=sy;
+      else if(last===2)_DDA_NORMAL.z=sz;
       else _DDA_NORMAL.copy(_DDA_DIR).negate();
       _DDA_POINT.set(ox+dx*dist,oy+dy*dist,oz+dz*dist);
       return{point:_DDA_POINT,face:{normal:_DDA_NORMAL},object:_DDA_HIT_OBJ,distance:dist};
     }
-    if(tx<ty&&tx<tz){x+=sx;tx+=tdx;last=0;}
-    else if(ty<tz){y+=sy;ty+=tdy;last=1;}
-    else{z+=sz;tz+=tdz;last=2;}
-    if(tx>far&&ty>far&&tz>far)break;
+    if(tx<ty&&tx<tz){if(tx>far)break;x+=sx;tx+=tdx;last=0;}
+    else if(ty<tz){if(ty>far)break;y+=sy;ty+=tdy;last=1;}
+    else{if(tz>far)break;z+=sz;tz+=tdz;last=2;}
   }
   return null;
 }
@@ -7070,7 +7042,7 @@ function hitPos(h,inside){
     const normalMat=new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld);
     normalWorld.applyMatrix3(normalMat).normalize();
   }
-  const bias=inside?-0.01:0.01;
+  const bias=inside?0.01:-0.01;
   const p=h.point.clone().addScaledVector(normalWorld,bias);
   return{x:Math.floor(p.x),y:Math.floor(p.y),z:Math.floor(p.z)};
 }
@@ -7078,10 +7050,10 @@ function hitPos(h,inside){
 // ═══════════ MINING ═══════════
 function tickMine(dt){
   // Determine if the mine action should fire this tick
-  const shouldMine=(_autoMine||miningHeld)&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen;
+  const shouldMine=(_autoMine||miningHeld)&&!shopOpen&&!altarOpen&&!shadowAltarOpen;
 
   // ── Hold-to-auto-mine progress ──
-  if(miningHeld&&!_autoMine&&!isFreeMouse&&!shopOpen&&!altarOpen&&!shadowAltarOpen){
+  if(miningHeld&&!_autoMine&&!shopOpen&&!altarOpen&&!shadowAltarOpen){
     _holdMineTimer+=dt;
     _updateMineRing(_holdMineTimer/AUTO_MINE_HOLD);
     if(_holdMineTimer>=AUTO_MINE_HOLD){
