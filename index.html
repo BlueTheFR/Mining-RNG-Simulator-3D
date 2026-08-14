@@ -643,6 +643,7 @@ body.mob-active #shadow-altar-box{width:100vw;max-height:92vh;border-radius:0;ma
     <div class="stat-row" id="ocean-altar-luck-row" style="display:none"><span style="color:#44aaff;font-size:7px">⬡ Ocean</span><span class="stat-v" id="s-ocean-altar-luck" style="color:#44aaff;font-size:7px">+0.00</span></div>
     <div class="stat-row" id="biome-altar-luck-row" style="display:none"><span style="color:#aaff44;font-size:7px">⬡ Biome</span><span class="stat-v" id="s-biome-altar-luck" style="color:#aaff44;font-size:7px">+0.00</span></div>
     <div class="stat-row" id="ach-luck-row" style="display:none"><span style="color:#ffdd44;font-size:7px">🏆 Succès</span><span class="stat-v" id="s-ach-luck" style="color:#ffdd44;font-size:7px">+0.00</span></div>
+    <div class="stat-row" id="craft-luck-row" style="display:none"><span style="color:#c8a030;font-size:7px">⚒ Pioches</span><span class="stat-v" id="s-craft-luck" style="color:#c8a030;font-size:7px">+0.00</span></div>
     <div class="stat-row" id="world-row" style="display:none"><span style="font-size:7px" id="world-lbl">🌑 Shadow</span></div>
     <div class="stat-row" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
       <span id="lbl-100m" style="color:#df03fc;font-size:7px">100M+ TROUVES</span>
@@ -2865,6 +2866,7 @@ function _buildShadowRollTable(lk, excludeShadowRock){
 }
 
 function rollOreShadow(roll,depthFrac,lk){
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_shadowRollCache||_shadowRollCache.event!==currentShadowEvent){
     _shadowRollCache=_buildShadowRollTable(lk,false);
   }
@@ -2878,6 +2880,7 @@ function rollOreShadow(roll,depthFrac,lk){
 
 function rollOreShadowDeep(roll,depthFrac,lk,shadowRockIdx){
   // Deep blocks never roll ShadowRock — it's surface-only
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_shadowDeepRollCache||_shadowDeepRollCache.event!==currentShadowEvent){
     _shadowDeepRollCache=_buildShadowRollTable(lk,true);
   }
@@ -2909,6 +2912,7 @@ let currentOceanEvent=null;
 let _oceanEventInterval=null;
 
 function rollOreOcean(roll,depthFrac,lk){
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_oceanRollCache||_oceanRollCache.event!==currentOceanEvent){
     _oceanRollCache=_buildOceanRollTable(lk,false);
   }
@@ -2921,6 +2925,7 @@ function rollOreOcean(roll,depthFrac,lk){
 }
 
 function rollOreOceanDeep(roll,depthFrac,lk,blueRockIdx){
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_oceanDeepRollCache||_oceanDeepRollCache.event!==currentOceanEvent){
     _oceanDeepRollCache=_buildOceanRollTable(lk,true);
   }
@@ -3312,7 +3317,7 @@ function travelToMono(){
   _showTransition('◈',lang==='fr'?'MONDE MONOCHROME...':'MONOCHROME WORLD...','#cccccc');
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;const coords=[];
-  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedMono,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3350,7 +3355,7 @@ function travelToShadow(){
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;
   const coords=[];
-  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedShadow,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3388,7 +3393,7 @@ function travelToOcean(){
   _showTransition('🌊',lang==='fr'?'MONDE OCÉANIQUE...':'OCEAN WORLD...','#44aaff');
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;const coords=[];
-  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedOcean,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3419,7 +3424,7 @@ function travelToBiome(){
   _showTransition('🌿',lang==='fr'?'MONDE DES BIOMES...':'BIOME WORLD...','#aaff44');
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;const coords=[];
-  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGeneratedBiome,coords,()=>{
     _rebuildWindowFromChunks();
@@ -3457,7 +3462,7 @@ function travelToMain(){
   _portalCooldown=5.0;
   const side=RENDER_DIST*2+1;
   const coords=[];
-  removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+  removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
   for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++)coords.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
   _genChunksAsync(_ensureChunkGenerated,coords,()=>{
     _rebuildWindowFromChunks();
@@ -4199,6 +4204,20 @@ const GEAR_DATA={
 function getGearLuckBonus(){
   let b=0;
   equippedGears.forEach(g=>{const gd=GEAR_DATA[g];if(gd&&gd.luckBonus)b+=gd.luckBonus;});
+  return b;
+}
+function getCraftedPickLuckBonus(){
+  let b=0;
+  PICKAXES.forEach(p=>{
+    if(!p.owned)return;
+    const m=/^T(\d+)$/.exec(p.tier);
+    if(!m)return;
+    const n=parseInt(m[1],10);
+    if(n>=1&&n<=5)b+=0.5;
+    else if(n>=6&&n<=10)b+=1;
+    else if(n===11)b+=2;
+    else if(n===12)b+=5;
+  });
   return b;
 }
 function getGearSpeedMult(){
@@ -5480,7 +5499,7 @@ function getTotalLuck(){
   const pickLuck=typeof getPickLuck==='function'?getPickLuck():1;
   const boostMult=(Date.now()<_luckBoostUntil)?_luckBoostMult:1;
   const gearBonus=typeof getGearLuckBonus==='function'?getGearLuckBonus():0;
-  return luck*pickLuck*boostMult + gearBonus + (_altarLuckBonus||0) + (_shadowAltarLuckBonus||0) + (_monoAltarLuckBonus||0) + (_oceanAltarLuckBonus||0) + (_biomeAltarLuckBonus||0) + (_achLuckBonus||0);
+  return luck*pickLuck*boostMult + gearBonus + getCraftedPickLuckBonus() + (_altarLuckBonus||0) + (_shadowAltarLuckBonus||0) + (_monoAltarLuckBonus||0) + (_oceanAltarLuckBonus||0) + (_biomeAltarLuckBonus||0) + (_achLuckBonus||0);
 }
 let _luckBoostMult=1,_luckBoostUntil=0; // temporary luck multiplier from abilities
 let lastResetMined=0; // tracks when last mine reset fired
@@ -5515,9 +5534,24 @@ const MINE_INTERVAL=0.07;
 let _invDirty=true;
 let _lastHudUpdate=0;
 let _meshDirty=false;
-function markMeshDirty(){_meshDirty=true;}
+let _meshFullPending=false;
+let _meshRebuildUrgent=false;
+const _pendingBlockChanges=[];
+const _pendingBlockSet=new Set();
+let _lastMeshRebuildT=0;
+function markMeshDirty(){_meshDirty=true;_meshFullPending=true;}
+function markBlockDirty(x,y,z){
+  if(x===undefined){markMeshDirty();return;}
+  if(x<0||x>=W||y<0||y>=H||z<0||z>=D)return;
+  const k=x+'_'+y+'_'+z;
+  if(_pendingBlockSet.has(k))return;
+  if(_pendingBlockChanges.length>=384){markMeshDirty();return;}
+  _pendingBlockSet.add(k);
+  _pendingBlockChanges.push(x,y,z);
+  _meshDirty=true;
+}
 function markInvDirty(){_invDirty=true;}
-function buildWorldMesh(){_meshDirty=true;}
+function buildWorldMesh(){_meshDirty=true;_meshFullPending=true;}
 let _autoMine=false;
 let _holdMineTimer=0;
 const AUTO_MINE_HOLD=5.0;
@@ -5533,6 +5567,12 @@ function _getOrCreateScnDiv(i){
   document.getElementById('hud').appendChild(d);
   _scnDivs[i]=d;
   return d;
+}
+let _scanVideoRAF=0;
+let _scanVideoEl=null;
+function _cancelScanVideo(){
+  if(_scanVideoRAF){cancelAnimationFrame(_scanVideoRAF);_scanVideoRAF=0;}
+  if(_scanVideoEl){try{_scanVideoEl.pause();}catch(e){}_scanVideoEl=null;}
 }
 function _hideAllScnDivs(){
   for(let i=0;i<SCN_MAX;i++){
@@ -5793,10 +5833,19 @@ function getCellOreForUI(x,y,z){
   return oreRevealed[i]?ORES[oreIdx[i]||0]:ORES[0];
 }
 
+// Per-session world seed — re-rolled every time the world regenerates (load/reset/travel)
+// so each new world rolls fresh ore layouts. Capped to 21 bits so the hash products
+// stay below 2^53 and remain exact.
+let worldSeed=(Math.random()*0x1FFFFF)|0;
 function h3(x,y,z,seed){
+  seed=(seed^worldSeed)&0x1FFFFF;
   let v=((x*374761393^y*1234567891^z*668265263^seed*2246822519)>>>0);
   v^=v>>13;v=(v*1274126177)>>>0;v^=v>>16;
-  return(v&0xffff)/0x10000;
+  const hi=v>>>0;
+  let w=((x*2654435761^y*2246822519^z*3266489917^seed*3301679471^0x9E3779B9)>>>0);
+  w^=w>>13;w=(w*3904043)>>>0;w^=w>>16;
+  const lo=w>>>0;
+  return (hi*1048576+lo)/4503599627370496;
 }
 
 const N6=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
@@ -5834,6 +5883,7 @@ function _buildNormalRollTable(lk){
   _normalRollCache={event:currentEvent,table,totalW:cum};
 }
 function rollOreNormal(roll,depthFrac,lk){
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_normalRollCache||_normalRollCache.event!==currentEvent){
     _buildNormalRollTable(lk);
   }
@@ -5863,6 +5913,7 @@ function _buildMonoRollTable(lk){
   _monoRollCache={event:currentMonoEvent,table,totalW:cum};
 }
 function rollOreMono(roll,depthFrac,lk){
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   if(!_monoRollCache||_monoRollCache.event!==currentMonoEvent){
     _buildMonoRollTable(lk);
   }
@@ -5884,6 +5935,7 @@ function _getBiomeAt(wx,wz){
   return biomeNames[((regionId%biomeNames.length)+biomeNames.length)%biomeNames.length];
 }
 function rollOreBiome(roll,depthFrac,lk,wx,wz){
+  roll=Math.pow(roll,1/Math.max(1,lk||1));
   const biome=_getBiomeAt(wx,wz);
   if(!_biomeRollCache||_biomeRollCache.biome!==biome){
     _biomeRollCache={biome,..._getBiomeRollTable(biome,lk)};
@@ -5939,7 +5991,7 @@ function revealAdjacentSolid(ax,ay,az,seedSalt){
 
 function genWorld(){
   // Clear all chunk data and reset window origin to center
-  _chunks.clear();
+  worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();
   _chunkOriginCX=0; _chunkOriginCZ=0;
   // Generate all chunks in the initial window
   const side=RENDER_DIST*2+1;
@@ -5989,7 +6041,7 @@ function resetMine(){
 
   if(currentWorld==='shadow'){
     const side2=RENDER_DIST*2+1;const coords2=[];
-    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedShadow,coords2,()=>{
       _rebuildWindowFromChunks();
@@ -6001,7 +6053,7 @@ function resetMine(){
     });
   }else if(currentWorld==='mono'){
     const side2=RENDER_DIST*2+1;const coords2=[];
-    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedMono,coords2,()=>{
       _rebuildWindowFromChunks();
@@ -6013,7 +6065,7 @@ function resetMine(){
     });
   }else if(currentWorld==='ocean'){
     const side2=RENDER_DIST*2+1;const coords2=[];
-    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedOcean,coords2,()=>{
       _rebuildWindowFromChunks();
@@ -6026,7 +6078,7 @@ function resetMine(){
   }else if(currentWorld==='biome'){
     _biomeSeed=Math.floor(Math.random()*2147483647);
     const side2=RENDER_DIST*2+1;const coords2=[];
-    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     for(let ci=0;ci<side2;ci++)for(let ck=0;ck<side2;ck++)coords2.push([_chunkOriginCX+ci,_chunkOriginCZ+ck]);
     _genChunksAsync(_ensureChunkGeneratedBiome,coords2,()=>{
     _rebuildWindowFromChunks();
@@ -6081,6 +6133,14 @@ let _BOX_GEO=null; // shared BoxGeometry for all blocks (InstancedMesh)
 const SYM_TEX_CACHE={};
 const GIF_TEX_ENTRIES=[]; // {tex,img,canvas,ctx} — mis à jour chaque frame
 const IMG_MESHES=[]; // separate meshes for textured blocks
+
+// Per-key (color hex string | texture object) mesh state, used for partial updates
+let _meshKeyOf=null;        // per-block key id (0 = not meshed)
+let _meshIdxOf=null;        // per-block index into the key's positions list
+const _meshKeyList=new Map();   // key -> {positions:[x,y,z,...]}
+const _meshKeyToMesh=new Map(); // key -> InstancedMesh
+let _meshKeysById=[];       // id -> key
+const _meshKeyIds=new Map();    // key -> id
 
 
 function oreUsesTexturedCube(ore){
@@ -6509,6 +6569,12 @@ function _getTexMat(tex){
   _matPool.set(k,m);
   return m;
 }
+function _createInstancedMesh(key,count){
+  const mat=typeof key==='string'?_getColorMat(key.slice(2)):_getTexMat(key);
+  const im=new THREE.InstancedMesh(_BOX_GEO,mat,count);
+  im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  return im;
+}
 
 // _buildWorldMeshReal: rebuild only the visible Y-slab around the player (massive perf win)
 function _buildWorldMeshReal(){
@@ -6516,6 +6582,18 @@ function _buildWorldMeshReal(){
   // Remove old instanced meshes from scene but DON'T dispose materials (pooled) or geometry (shared)
   IMG_MESHES.forEach(m=>{scene.remove(m);});
   IMG_MESHES.length=0;
+  // Reset per-key partial-update state
+  _meshKeyToMesh.clear();
+  _meshKeyList.clear();
+  _meshKeyIds.clear();
+  _meshKeysById.length=0;
+  if(!_meshKeyOf||_meshKeyOf.length!==W*H*D){_meshKeyOf=new Int32Array(W*H*D);_meshIdxOf=new Int32Array(W*H*D);}
+  _meshKeyOf.fill(0);
+  _meshIdxOf.fill(0);
+  _meshFullPending=false;
+  _meshRebuildUrgent=false;
+  _pendingBlockChanges.length=0;
+  _pendingBlockSet.clear();
 
   if(!_BOX_GEO)_BOX_GEO=new THREE.BoxGeometry(1,1,1);
   const _dummy=new THREE.Object3D();
@@ -6537,9 +6615,6 @@ function _buildWorldMeshReal(){
   const NY=[0,0,1,-1,0,0];
   const NZ=[0,0,0,0,1,-1];
 
-  const colorMap={}; // hex → Float32Array-backed positions list
-  const texMap=new Map(); // tex → positions list
-
   for(let x=0;x<W;x++)for(let y=yMin;y<=yMax;y++)for(let z=0;z<D;z++){
     const ci=idx(x,y,z);
     if(!blocks[ci])continue;
@@ -6552,25 +6627,33 @@ function _buildWorldMeshReal(){
     const ore=oreRevealed[ci]?ORES[oreIdx[ci]||0]:ORES[0];
     const hasImg=!!ore.imgSrc;
     const hasSym=ore.symbol!=null&&String(ore.symbol).trim()!=='';
+    let key=null;
     if(hasImg||hasSym){
       const tex=getOreFaceTexture(ore);
-      if(!tex)continue;
-      if(!texMap.has(tex))texMap.set(tex,[]);
-      texMap.get(tex).push(x,y,z);
+      if(tex)key=tex;
     }else{
-      const key=ore.color||'#888888';
-      if(!colorMap[key])colorMap[key]=[];
-      colorMap[key].push(x,y,z);
+      key='c:'+(ore.color||'#888888');
     }
+    if(key===null)continue;
+    let id=_meshKeyIds.get(key);
+    if(id===undefined){
+      id=_meshKeysById.length;
+      _meshKeyIds.set(key,id);
+      _meshKeysById.push(key);
+      _meshKeyList.set(key,{positions:[]});
+    }
+    const lst=_meshKeyList.get(key).positions;
+    lst.push(x,y,z);
+    _meshKeyOf[ci]=id;
+    _meshIdxOf[ci]=lst.length-3;
   }
 
   // Build InstancedMeshes
-  for(const [hex,positions] of Object.entries(colorMap)){
+  for(const[key,lst0]of _meshKeyList){
+    const positions=lst0.positions;
     const count=positions.length/3;
     if(!count)continue;
-    const mat=_getColorMat(hex);
-    const im=new THREE.InstancedMesh(_BOX_GEO,mat,count);
-    im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    const im=_createInstancedMesh(key,count);
     for(let k=0;k<count;k++){
       _dummy.position.set(positions[k*3]+0.5,positions[k*3+1]+0.5,positions[k*3+2]+0.5);
       _dummy.updateMatrix();
@@ -6579,24 +6662,113 @@ function _buildWorldMeshReal(){
     im.instanceMatrix.needsUpdate=true;
     scene.add(im);
     IMG_MESHES.push(im);
-  }
-  for(const [tex,positions] of texMap){
-    const count=positions.length/3;
-    if(!count)continue;
-    const mat=_getTexMat(tex);
-    const im=new THREE.InstancedMesh(_BOX_GEO,mat,count);
-    im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    for(let k=0;k<count;k++){
-      _dummy.position.set(positions[k*3]+0.5,positions[k*3+1]+0.5,positions[k*3+2]+0.5);
-      _dummy.updateMatrix();
-      im.setMatrixAt(k,_dummy.matrix);
-    }
-    im.instanceMatrix.needsUpdate=true;
-    scene.add(im);
-    IMG_MESHES.push(im);
+    _meshKeyToMesh.set(key,im);
   }
 
   _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
+}
+
+// Partial mesh update: recompute the given blocks + their 6 neighbours and rebuild
+// only the affected InstancedMeshes instead of the whole world.
+function _applyBlockChanges(changes){
+  if(!_meshKeyOf||_meshKeyOf.length!==W*H*D||_meshKeyList.size===0){_buildWorldMeshReal();return;}
+  const rdp=RENDER_DIST_PRESETS[_renderDist]||RENDER_DIST_PRESETS.medium;
+  const camY=camera?Math.floor(camera.position.y):TOP_SOLID_Y;
+  const yMin=Math.max(0,camY-rdp.yBelow);
+  const yMax=Math.min(H-1,camY+rdp.yAbove);
+  const NX=[1,-1,0,0,0,0];
+  const NY=[0,0,1,-1,0,0];
+  const NZ=[0,0,0,0,1,-1];
+  const affected=new Set();
+  for(let i=0;i<changes.length;i+=3){
+    const x=changes[i],y=changes[i+1],z=changes[i+2];
+    affected.add(x+'_'+y+'_'+z);
+    for(let f=0;f<6;f++)affected.add((x+NX[f])+'_'+(y+NY[f])+'_'+(z+NZ[f]));
+  }
+  const dirtyIds=new Set();
+  for(const c of affected){
+    const parts=c.split('_');
+    const ax=+parts[0],ay=+parts[1],az=+parts[2];
+    if(ax<0||ax>=W||ay<0||ay>=H||az<0||az>=D)continue;
+    const ci=idx(ax,ay,az);
+    let visible=false;
+    if(blocks[ci]&&ay>=yMin&&ay<=yMax){
+      for(let f=0;f<6;f++){
+        const nx2=ax+NX[f],ny2=ay+NY[f],nz2=az+NZ[f];
+        if(nx2<0||nx2>=W||ny2<0||ny2>=H||nz2<0||nz2>=D||!blocks[idx(nx2,ny2,nz2)]){visible=true;break;}
+      }
+    }
+    let newKey=null;
+    if(visible){
+      const ore=oreRevealed[ci]?ORES[oreIdx[ci]||0]:ORES[0];
+      const hasImg=!!ore.imgSrc;
+      const hasSym=ore.symbol!=null&&String(ore.symbol).trim()!=='';
+      if(hasImg||hasSym){
+        const tex=getOreFaceTexture(ore);
+        if(tex)newKey=tex;
+      }else{
+        newKey='c:'+(ore.color||'#888888');
+      }
+    }
+    const oldId=_meshKeyOf[ci];
+    if(oldId===0&&newKey===null)continue;
+    let newId=0;
+    if(newKey!==null){
+      newId=_meshKeyIds.get(newKey);
+      if(newId===undefined){
+        newId=_meshKeysById.length;
+        _meshKeyIds.set(newKey,newId);
+        _meshKeysById.push(newKey);
+        _meshKeyList.set(newKey,{positions:[]});
+      }
+    }
+    if(oldId===newId)continue;
+    if(oldId!==0){
+      const key=_meshKeysById[oldId];
+      const lst=_meshKeyList.get(key);
+      if(lst){
+        const pos=lst.positions;
+        const iOld=_meshIdxOf[ci];
+        const last=pos.length-3;
+        if(iOld>=0&&iOld<last){
+          const lx=pos[last],ly=pos[last+1],lz=pos[last+2];
+          pos[iOld]=lx;pos[iOld+1]=ly;pos[iOld+2]=lz;
+          _meshIdxOf[idx(lx,ly,lz)]=iOld;
+        }
+        pos.length-=3;
+      }
+      _meshKeyOf[ci]=0;
+      dirtyIds.add(oldId);
+    }
+    if(newKey!==null){
+      const lst=_meshKeyList.get(newKey);
+      lst.positions.push(ax,ay,az);
+      _meshIdxOf[ci]=lst.positions.length-3;
+      _meshKeyOf[ci]=newId;
+      dirtyIds.add(newId);
+    }
+  }
+  if(dirtyIds.size===0)return;
+  const _dummy=new THREE.Object3D();
+  for(const id of dirtyIds){
+    const key=_meshKeysById[id];
+    const lst=_meshKeyList.get(key);
+    const count=lst?lst.positions.length/3:0;
+    const oldMesh=_meshKeyToMesh.get(key);
+    if(oldMesh){scene.remove(oldMesh);_meshKeyToMesh.delete(key);}
+    if(!count)continue;
+    const im=_createInstancedMesh(key,count);
+    const P=lst.positions;
+    for(let k=0;k<count;k++){
+      _dummy.position.set(P[k*3]+0.5,P[k*3+1]+0.5,P[k*3+2]+0.5);
+      _dummy.updateMatrix();
+      im.setMatrixAt(k,_dummy.matrix);
+    }
+    im.instanceMatrix.needsUpdate=true;
+    scene.add(im);
+    IMG_MESHES.push(im);
+    _meshKeyToMesh.set(key,im);
+  }
 }
 
 function init3D(){
@@ -6605,9 +6777,9 @@ function init3D(){
   scene.fog=new THREE.Fog(0x87ceeb,20,60);
   camera=new THREE.PerspectiveCamera(75,1,0.05,60);
   _isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:!_isMobile});
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:!_isMobile,powerPreference:'high-performance'});
   _renderDist=_isMobile?'low':'medium';
-  renderer.setPixelRatio(_isMobile?Math.min(devicePixelRatio,1.5):Math.min(devicePixelRatio,2));
+  renderer.setPixelRatio(_isMobile?1:Math.min(devicePixelRatio,2));
   scene.add(new THREE.AmbientLight(0xaabbcc,1.0));
   const sun=new THREE.DirectionalLight(0xffe8cc,1.1);sun.position.set(10,18,8);scene.add(sun);
   raycaster=new THREE.Raycaster();
@@ -6806,15 +6978,53 @@ function movePlayer(dt){
 }
 
 // ═══════════ RAYCASTING ═══════════
+// Voxel DDA raycast: blocks are axis-aligned unit cubes on a grid, so we walk the
+// ray cell-by-cell instead of raycasting ~60-100 InstancedMeshes every frame.
+// Returns the same shape as the old raycaster hit ({point,face.normal,object}).
+const _DDA_DIR=new THREE.Vector3();
+const _DDA_POINT=new THREE.Vector3();
+const _DDA_NORMAL=new THREE.Vector3();
+const _DDA_HIT_OBJ={matrixWorld:new THREE.Matrix4()};
+const _DDA_NX=[1,-1,0,0,0,0],_DDA_NY=[0,0,1,-1,0,0],_DDA_NZ=[0,0,0,0,1,-1];
 function getHit(range){
-  raycaster.far=range||5.5;
-  raycaster.setFromCamera({x:0,y:0},camera);
-  const targets=[];
-  if(worldMesh)targets.push(worldMesh);
-  IMG_MESHES.forEach(m=>targets.push(m));
-  if(!targets.length)return null;
-  const h=raycaster.intersectObjects(targets,false);
-  return h.length?h[0]:null;
+  camera.updateMatrixWorld();
+  camera.getWorldDirection(_DDA_DIR);
+  const ox=camera.position.x,oy=camera.position.y,oz=camera.position.z;
+  const dx=_DDA_DIR.x,dy=_DDA_DIR.y,dz=_DDA_DIR.z;
+  const far=range||5.5;
+  let x=Math.floor(ox),y=Math.floor(oy),z=Math.floor(oz);
+  const sx=dx>0?1:(dx<0?-1:0);
+  const sy=dy>0?1:(dy<0?-1:0);
+  const sz=dz>0?1:(dz<0?-1:0);
+  const tdx=sx!==0?Math.abs(1/dx):Infinity;
+  const tdy=sy!==0?Math.abs(1/dy):Infinity;
+  const tdz=sz!==0?Math.abs(1/dz):Infinity;
+  let tx=sx!==0?(sx>0?(x+1-ox):(ox-x))*tdx:Infinity;
+  let ty=sy!==0?(sy>0?(y+1-oy):(oy-y))*tdy:Infinity;
+  let tz=sz!==0?(sz>0?(z+1-oz):(oz-z))*tdz:Infinity;
+  let last=-1; // last axis crossed to enter the current cell: 0=x,1=y,2=z
+  for(let i=0;i<256;i++){
+    if(x>=0&&x<W&&y>=0&&y<H&&z>=0&&z<D&&blocks[idx(x,y,z)]){
+      let dist;
+      if(last===0)dist=tx;
+      else if(last===1)dist=ty;
+      else if(last===2)dist=tz;
+      else dist=0;
+      if(dist>far)return null;
+      _DDA_NORMAL.set(0,0,0);
+      if(last===0)_DDA_NORMAL.x=-sx;
+      else if(last===1)_DDA_NORMAL.y=-sy;
+      else if(last===2)_DDA_NORMAL.z=-sz;
+      else _DDA_NORMAL.copy(_DDA_DIR).negate();
+      _DDA_POINT.set(ox+dx*dist,oy+dy*dist,oz+dz*dist);
+      return{point:_DDA_POINT,face:{normal:_DDA_NORMAL},object:_DDA_HIT_OBJ,distance:dist};
+    }
+    if(tx<ty&&tx<tz){x+=sx;tx+=tdx;last=0;}
+    else if(ty<tz){y+=sy;ty+=tdy;last=1;}
+    else{z+=sz;tz+=tdz;last=2;}
+    if(tx>far&&ty>far&&tz>far)break;
+  }
+  return null;
 }
 function hitPos(h,inside){
   // Transform face normal to world space (handles both mesh types)
@@ -6937,7 +7147,7 @@ function doMine(){
     if(ore.epinephrine||ore.spatialAudio)stopEpineAudio();
     selectedInv=pName;
     updatePlacingInd();
-    markMeshDirty();
+    markBlockDirty(x,y,z);
     markInvDirty();
     return; // no sound, no luck, no ability, no inventory change
   }
@@ -6998,7 +7208,7 @@ function doMine(){
     // Cave spawns every 5000 blocks mined (fixed, no luck scaling)
     if(_blocksSinceCave>=5000){_blocksSinceCave=0;spawnCave(x,y,z);}
   }
-  markMeshDirty();
+  markBlockDirty(x,y,z);
   // Instant reset at cap — no countdown
   if(mined-lastResetMined>=getCurrentMineResetAt()){lastResetMined=mined;updateMineTopBar();setTimeout(()=>{resetMine();},16);return;}
   if(mined%50===0)saveGame();
@@ -7414,6 +7624,7 @@ function updateScanner(h){
         _scanPos = 'phantom';
 
         blockDiv.innerHTML = '';
+        _cancelScanVideo();
 
         // =====================================================
         // WEBM / IMAGE ORE RENDER (UPDATED)
@@ -7438,6 +7649,7 @@ function updateScanner(h){
             // =================================================
             // WEBM PATH (NO GIF LOOKUP, NO FRAME SYSTEM)
             // =================================================
+            _cancelScanVideo();
             const video = document.createElement('video');
             video.src = pOre.imgSrc;
             video.loop = true;
@@ -7447,6 +7659,7 @@ function updateScanner(h){
             video.crossOrigin = 'anonymous';
 
             video.play().catch(()=>{});
+            _scanVideoEl = video;
 
             const ctx2 = c.getContext('2d');
 
@@ -7457,7 +7670,7 @@ function updateScanner(h){
                   ctx2.drawImage(video,0,0,128,128);
                 }catch(e){}
               }
-              requestAnimationFrame(draw);
+              _scanVideoRAF = requestAnimationFrame(draw);
             };
 
             draw();
@@ -7624,7 +7837,7 @@ function updateScanner(h){
     }
   }
 
-  ov.style.display='none';_scanOre=null;_scanPos=null;
+  ov.style.display='none';_scanOre=null;_scanPos=null;_cancelScanVideo();
 
   // ── Regular scanner (pick T4+) — shows ALL qualifying ores simultaneously ──
   if(!pick||pick.scanMin===0){_hideAllScnDivs();return;}
@@ -8100,12 +8313,20 @@ function updateHUD(){
     if(_biomeAltarLuckBonus>0){bAltarRow.style.display='flex';bAltarEl.textContent='+'+_biomeAltarLuckBonus.toFixed(2);}
     else{bAltarRow.style.display='none';}
   }
-  // Achievements luck bonus row
+    // Achievements luck bonus row
     const achRow=document.getElementById('ach-luck-row');
     const achEl=document.getElementById('s-ach-luck');
     if(achRow&&achEl){
       if(_achLuckBonus>0){achRow.style.display='flex';achEl.textContent='+'+_achLuckBonus.toFixed(2);}
       else{achRow.style.display='none';}
+    }
+    // Crafted pickaxe luck bonus row
+    const craftRow=document.getElementById('craft-luck-row');
+    const craftEl=document.getElementById('s-craft-luck');
+    if(craftRow&&craftEl){
+      const craftBonus=getCraftedPickLuckBonus();
+      if(craftBonus>0){craftRow.style.display='flex';craftEl.textContent='+'+craftBonus.toFixed(2);}
+      else{craftRow.style.display='none';}
     }
     // World indicator
     const worldRow=document.getElementById('world-row');
@@ -10568,6 +10789,10 @@ function loop(t=0){
   if(_wsConnected&&t-_lastPosSend>POS_SEND_INTERVAL*1000){_lastPosSend=t;sendPosition();}
   if(_updateChunkWindow()){
     _meshDirty=true;
+    _meshFullPending=true;
+    _meshRebuildUrgent=true;
+    _pendingBlockChanges.length=0;
+    _pendingBlockSet.clear();
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
  }
 
@@ -10576,7 +10801,22 @@ function loop(t=0){
 
   if(t-lastHudTick>(_isMobile?2000:1000)){lastHudTick=t;updateHUD();checkAchievements();}
 
-  if(_meshDirty){_meshDirty=false;_buildWorldMeshReal();_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;}
+  if(_meshDirty){
+    if(!_meshFullPending&&_pendingBlockChanges.length>0){
+      // Cheap partial update (mining/placing): only affected blocks + neighbours
+      _meshDirty=false;
+      _applyBlockChanges(_pendingBlockChanges);
+      _pendingBlockChanges.length=0;
+      _pendingBlockSet.clear();
+      _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
+    }else if(_meshRebuildUrgent||t-_lastMeshRebuildT>(_isMobile?100:50)){
+      _meshDirty=false;
+      _meshRebuildUrgent=false;
+      _buildWorldMeshReal();
+      _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
+      _lastMeshRebuildT=t;
+    }
+  }
 
   if(!skipHeavy){
   const h=getHit(10);
@@ -11845,7 +12085,7 @@ startEventSystem();
 if(currentWorld==='main')_startWorldMusic('main');
 if(hasSave){
   if(currentWorld==='biome'){
-    removePrevPhantom();_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
+    removePrevPhantom();worldSeed=(Math.random()*0x1FFFFF)|0;_chunks.clear();_chunkOriginCX=0;_chunkOriginCZ=0;
     const side=RENDER_DIST*2+1;
     for(let ci=0;ci<side;ci++)for(let ck=0;ck<side;ck++){
       _ensureChunkGeneratedBiome(_chunkOriginCX+ci,_chunkOriginCZ+ck);
