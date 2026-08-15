@@ -7264,14 +7264,9 @@ function spawnCave(cx,cy,cz){
     blocks[i]=1;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
     const combinedLuck=getTotalLuck();
-    // Roll for a cave common ore first (50% chance on each wall block)
+    // Cave walls use their base block (chosen.blocks[0]) or the normal ore
+    // roll — commons are no longer sprinkled over every wall.
     let assignedIdx=-1;
-    if(chosen.commons&&chosen.commons.length>0&&Math.random()<0.5){
-      // Pick a random common ore from this cave's list
-      const cName=chosen.commons[Math.floor(Math.random()*chosen.commons.length)];
-      const ci2=ORES.findIndex(o=>o.name===cName);
-      if(ci2>=0)assignedIdx=ci2;
-    }
     if(assignedIdx<0){
       if(currentWorld==='shadow'){
         assignedIdx=rollOreShadow(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
@@ -7366,6 +7361,25 @@ function spawnCave(cx,cy,cz){
           if(typeof _scanCachedBestOre!=='undefined')_scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
         }
         break;
+      }
+    }
+  }
+
+  // Cave commons are kept findable but rare (a few per cave at most), so walls
+  // stay visually base-block while the cave collection stays completable.
+  if(chosen.commons&&chosen.commons.length){
+    for(const key of wallSet){
+      const [nx,ny,nz]=key.split('_').map(Number);
+      const ii=idx(nx,ny,nz);
+      if(!blocks[ii])continue;
+      const combinedLuck=getTotalLuck();
+      const cName=chosen.commons[Math.floor(Math.random()*chosen.commons.length)];
+      const cIdx=ORES.findIndex(o=>o.name===cName);
+      if(cIdx<0)continue;
+      const caveOre=ORES[cIdx];
+      const spawnProb=Math.min(0.02,combinedLuck/Math.max(25,caveOre.exact||1));
+      if(Math.random()<spawnProb){
+        oreIdx[ii]=cIdx;oreRevealed[ii]=1;_syncBlockWrite(nx,ny,nz);
       }
     }
   }
