@@ -5842,6 +5842,8 @@ function getPickLuck(){
 //   background tier (1/exact over main-world ores) keeps Stone & commons present;
 //   rare tier (sqrt-scaled weights, exact>=1000) is boosted by luck toward top ores.
 const NORMAL_BG_SHARE=0.6;
+const MAX_LUCK_EXP=10000;
+const MAX_CAVE_EXCLUSIVE_P=0.5;
 let _normalRollCache=null;
 function _buildNormalRollTable(lk){
   let cum=0;
@@ -5887,7 +5889,7 @@ function _rollTwoTier(roll,lk,totalW,table,rare,totalR){
   if(roll<NORMAL_BG_SHARE){
     return _tableLookup(table,(roll/NORMAL_BG_SHARE)*totalW);
   }
-  const l=Math.max(1,lk||1);
+  const l=Math.max(1,Math.min(lk||1,MAX_LUCK_EXP));
   const u=(roll-NORMAL_BG_SHARE)/(1-NORMAL_BG_SHARE);
   if(l<=1||!rare.length||!totalR)return _tableLookup(table,u*totalW);
   const v=Math.pow(u,1/l);
@@ -7354,7 +7356,7 @@ function spawnCave(cx,cy,cz){
       const exIdx=ORES.findIndex(o=>o.name===exName);
       if(exIdx<0)continue;
       const caveOre=ORES[exIdx];
-      const spawnProb=combinedLuck/Math.max(1,caveOre.exact);
+      const spawnProb=Math.min(MAX_CAVE_EXCLUSIVE_P,combinedLuck/Math.max(1,caveOre.exact));
       if(Math.random()<spawnProb){
         oreIdx[ii]=exIdx;oreRevealed[ii]=1;_syncBlockWrite(nx,ny,nz);
         if(caveOre.spawnMsg){
