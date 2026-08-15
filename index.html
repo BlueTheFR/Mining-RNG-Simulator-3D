@@ -2852,50 +2852,50 @@ let _shadowRollCache=null; // {event, lk, table:[{idx,cumW}], totalW}
 let _shadowDeepRollCache=null; // same but excludes ShadowRock (for deep blocks)
 
 function _buildShadowRollTable(lk, excludeShadowRock){
+  const lkBucket=_luckBucket(lk);
   const candidates=[];
   for(let i=0;i<ORES.length;i++){
     const o=ORES[i];
     if(!o.shadowWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))continue;
     if(o.event&&o.event!==currentShadowEvent)continue;
     if(excludeShadowRock&&o.name==='ShadowRock')continue;
-    candidates.push({idx:i,w:1/o.exact,exact:o.exact});
+    candidates.push({idx:i,w:_luckWeight(o.exact,lk),exact:o.exact});
   }
   let cum=0;
-  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w,wRare:c.w};});
-  const rare=_splitRareTier(table);
-  return {event:currentShadowEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
+  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w};});
+  return {event:currentShadowEvent,lkBucket,table,totalW:cum};
 }
 
 function rollOreShadow(roll,depthFrac,lk){
-  if(!_shadowRollCache||_shadowRollCache.event!==currentShadowEvent){
+  if(!_shadowRollCache||_shadowRollCache.event!==currentShadowEvent||_shadowRollCache.lkBucket!==_luckBucket(lk)){
     _shadowRollCache=_buildShadowRollTable(lk,false);
   }
-  const i=_rollTwoTier(roll,lk,_shadowRollCache.totalW,_shadowRollCache.table,_shadowRollCache.rare,_shadowRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_shadowRollCache.totalW,_shadowRollCache.table);
   return i<0?ORES.findIndex(o=>o.name==='ShadowRock'):i;
 }
 
 function rollOreShadowDeep(roll,depthFrac,lk,shadowRockIdx){
   // Deep blocks never roll ShadowRock — it's surface-only
-  if(!_shadowDeepRollCache||_shadowDeepRollCache.event!==currentShadowEvent){
+  if(!_shadowDeepRollCache||_shadowDeepRollCache.event!==currentShadowEvent||_shadowDeepRollCache.lkBucket!==_luckBucket(lk)){
     _shadowDeepRollCache=_buildShadowRollTable(lk,true);
   }
-  const i=_rollTwoTier(roll,lk,_shadowDeepRollCache.totalW,_shadowDeepRollCache.table,_shadowDeepRollCache.rare,_shadowDeepRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_shadowDeepRollCache.totalW,_shadowDeepRollCache.table);
   return i<0?(shadowRockIdx>=0?shadowRockIdx:0):i;
 }
 
 function _buildOceanRollTable(lk, excludeBlueRock){
+  const lkBucket=_luckBucket(lk);
   const candidates=[];
   for(let i=0;i<ORES.length;i++){
     const o=ORES[i];
     if(!o.oceanWorld||o.isBarrier||o.hidden||isCaveExclusiveOre(o))continue;
     if(o.event&&o.event!==currentOceanEvent)continue;
     if(excludeBlueRock&&o.name==='BlueRock')continue;
-    candidates.push({idx:i,w:1/o.exact,exact:o.exact});
+    candidates.push({idx:i,w:_luckWeight(o.exact,lk),exact:o.exact});
   }
   let cum=0;
-  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w,wRare:c.w};});
-  const rare=_splitRareTier(table);
-  return {event:currentOceanEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
+  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w};});
+  return {event:currentOceanEvent,lkBucket,table,totalW:cum};
 }
 
 let _oceanRollCache=null;
@@ -2904,18 +2904,18 @@ let currentOceanEvent=null;
 let _oceanEventInterval=null;
 
 function rollOreOcean(roll,depthFrac,lk){
-  if(!_oceanRollCache||_oceanRollCache.event!==currentOceanEvent){
+  if(!_oceanRollCache||_oceanRollCache.event!==currentOceanEvent||_oceanRollCache.lkBucket!==_luckBucket(lk)){
     _oceanRollCache=_buildOceanRollTable(lk,false);
   }
-  const i=_rollTwoTier(roll,lk,_oceanRollCache.totalW,_oceanRollCache.table,_oceanRollCache.rare,_oceanRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_oceanRollCache.totalW,_oceanRollCache.table);
   return i<0?ORES.findIndex(o=>o.name==='BlueRock'):i;
 }
 
 function rollOreOceanDeep(roll,depthFrac,lk,blueRockIdx){
-  if(!_oceanDeepRollCache||_oceanDeepRollCache.event!==currentOceanEvent){
+  if(!_oceanDeepRollCache||_oceanDeepRollCache.event!==currentOceanEvent||_oceanDeepRollCache.lkBucket!==_luckBucket(lk)){
     _oceanDeepRollCache=_buildOceanRollTable(lk,true);
   }
-  const i=_rollTwoTier(roll,lk,_oceanDeepRollCache.totalW,_oceanDeepRollCache.table,_oceanDeepRollCache.rare,_oceanDeepRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_oceanDeepRollCache.totalW,_oceanDeepRollCache.table);
   return i<0?(blueRockIdx>=0?blueRockIdx:0):i;
 }
 
@@ -3565,20 +3565,19 @@ function _getBiomeFillIdx(biome){
 }
 const BIOME_ROLL_TABLES={};
 function _getBiomeRollTable(biome,lk){
-  const key=biome+'@'+(currentBiomeEvent||'none');
+  const key=biome+'@'+(currentBiomeEvent||'none')+'@'+_luckBucket(lk);
   if(!BIOME_ROLL_TABLES[key]){
     let cum=0;
     const table=[];
     for(let i=0;i<ORES.length;i++){
       const o=ORES[i];
       if(((o.biome===biome)||(o.biomeEvent===currentBiomeEvent))&&!o.isDecoration&&!o.isBarrier){
-        const w=1/Math.max(1,o.exact);
+        const w=_luckWeight(Math.max(1,o.exact),lk);
         cum+=w;
-        table.push({idx:i,cumW:cum,exact:o.exact,w,wRare:w});
+        table.push({idx:i,cumW:cum,exact:o.exact,w});
       }
     }
-    const rare=_splitRareTier(table);
-    BIOME_ROLL_TABLES[key]={table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
+    BIOME_ROLL_TABLES[key]={table,totalW:cum};
   }
   return BIOME_ROLL_TABLES[key];
 }
@@ -3936,7 +3935,7 @@ function _ensureChunkGeneratedBiome(cx,cz){
 
   const lk=getTotalLuck();
   const bTable=_getBiomeRollTable(biome,lk);
-  const {table,totalW,rare,totalR}=bTable;
+  const {table,totalW}=bTable;
   const fillIdx=_getBiomeFillIdx(biome);
   const waterIdx=ORES.findIndex(o=>o.name==='WaterBlock');
 
@@ -3968,7 +3967,7 @@ function _ensureChunkGeneratedBiome(cx,cz){
           oi[li]=fillIdx;rev[li]=1;
         }else{
           const roll=h3(wx,y,wz,(cx^cz^y)&65535);
-          const oiVal=_rollTwoTier(roll,lk,totalW,table,rare,totalR);
+          const oiVal=_rollTwoTier(roll,lk,totalW,table);
           oi[li]=oiVal<0?fillIdx:oiVal;
           rev[li]=0;
         }
@@ -3986,7 +3985,7 @@ function _ensureChunkGeneratedBiome(cx,cz){
     }
 
     const roll=h3(wx,y,wz,(cx^cz^y)&65535);
-    const oiVal=_rollTwoTier(roll,lk,totalW,table,rare,totalR);
+    const oiVal=_rollTwoTier(roll,lk,totalW,table);
     oi[li]=oiVal<0?fillIdx:oiVal;
     rev[li]=0;
   }
@@ -5510,6 +5509,7 @@ let _lastHudUpdate=0;
 let _meshDirty=false;
 let _meshFullPending=false;
 let _meshRebuildUrgent=false;
+let _lastMeshBuildCamY=-1;
 const _pendingBlockChanges=[];
 const _pendingBlockSet=new Set();
 let _lastMeshRebuildT=0;
@@ -5845,7 +5845,22 @@ function getPickLuck(){
 const MAX_LUCK_EXP=4.5e15;
 const MAX_CAVE_EXCLUSIVE_P=0.5;
 let _normalRollCache=null;
+// Luck-coarsened cache key: tables are rebuilt only when luck crosses a bucket.
+function _luckBucket(lk){
+  const l=Math.max(1,Math.min(isFinite(lk)&&lk>0?lk:1,MAX_LUCK_EXP));
+  return Math.round(Math.log2(l)*8);
+}
+// Single-table weight: each ore keeps its 1/exact proportionality; luck applies a
+// bounded boost that grows with rarity, so rare ores stay rare instead of flooding.
+function _luckWeight(exact,lk){
+  if(!(lk>1))return 1/exact;
+  const l=Math.max(1,Math.min(isFinite(lk)&&lk>0?lk:1,MAX_LUCK_EXP));
+  const logL=Math.log2(l);
+  const boost=1+0.5*logL*Math.pow(exact/1e6,0.4);
+  return boost/exact;
+}
 function _buildNormalRollTable(lk){
+  const lkBucket=_luckBucket(lk);
   let cum=0;
   const table=[];
   for(let i=0;i<ORES.length;i++){
@@ -5858,68 +5873,34 @@ function _buildNormalRollTable(lk){
     if(o.biomeWorld)continue;
     if(o.event&&o.event!==currentEvent)continue;
     if(o.hidden||o.noSolid)continue;
-    const w=1/o.exact;
+    const w=_luckWeight(o.exact,lk);
     cum+=w;
-    table.push({idx:i,cumW:cum,exact:o.exact,w,wRare:w});
+    table.push({idx:i,cumW:cum,exact:o.exact,w});
   }
-  const rare=_splitRareTier(table);
-  _normalRollCache={event:currentEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
+  _normalRollCache={event:currentEvent,lkBucket,table,totalW:cum};
 }
 function _tableLookup(table,target){
   let lo=0,hi=table.length-1;
   while(lo<hi){const mid=(lo+hi)>>1;if(table[mid].cumW<target)lo=mid+1;else hi=mid;}
   return table[lo].idx;
 }
-// Shared two-tier roll used by every world:
-//   background tier (1/exact) keeps commons (exact<1000) always present;
-//   rare tier (exact rarity 1/exact) is boosted by luck toward top ores,
-//   so high luck can actually reach 500M+/1B+ ores.
-function _splitRareTier(table){
-  const entries=[];
-  for(const e of table){
-    if(e.exact<1000)continue;
-    entries.push({idx:e.idx,exact:e.exact,wR:e.wRare});
-  }
-  // Sort by exact ascending so the rare cumulative is monotonic in rarity:
-  // otherwise array order (not rarity) decides which ore the luck boost lands on.
-  entries.sort((a,b)=>a.exact-b.exact);
-  const rare=[];
-  let cumR=0;
-  for(const e of entries){
-    cumR+=e.wR;
-    rare.push({idx:e.idx,cumW:cumR});
-  }
-  return rare;
-}
-function _rollTwoTier(roll,lk,totalW,table,rare,totalR){
+// Shared single-table roll used by every world. Weights are luck-adjusted in
+// _build*RollTable via _luckWeight, so _rollTwoTier is a plain CDF lookup.
+function _rollTwoTier(roll,lk,totalW,table){
   if(!totalW||!table.length)return -1;
-  const l=Math.max(1,Math.min(isFinite(lk)&&lk>0?lk:1,MAX_LUCK_EXP));
-  // Rare-ore share grows logarithmically with luck (0% at 1x, capped at 20%),
-  // so rare ores stay rare while luck still meaningfully boosts their odds.
-  const logL=Math.log2(l);
-  const rareShare=Math.min(0.2,0.02*logL);
-  if(rareShare<=0||!rare.length||!totalR){
-    return _tableLookup(table,roll*totalW);
-  }
-  if(roll>=1-rareShare){
-    const u=(roll-(1-rareShare))/rareShare;
-    // Boost toward the top (rarest) ores. Exponent floor ~1/52 at max luck
-    // keeps every ore reachable — no single-ore collapse at 2^52 luck.
-    const v=Math.pow(u,1/Math.log2(1+l));
-    return _tableLookup(rare,v*totalR);
-  }
-  return _tableLookup(table,(roll/(1-rareShare))*totalW);
+  return _tableLookup(table,roll*totalW);
 }
 function rollOreNormal(roll,depthFrac,lk){
-  if(!_normalRollCache||_normalRollCache.event!==currentEvent){
+  if(!_normalRollCache||_normalRollCache.event!==currentEvent||_normalRollCache.lkBucket!==_luckBucket(lk)){
     _buildNormalRollTable(lk);
   }
-  const i=_rollTwoTier(roll,lk,_normalRollCache.totalW,_normalRollCache.table,_normalRollCache.rare,_normalRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_normalRollCache.totalW,_normalRollCache.table);
   return i<0?0:i;
 }
 
 let _monoRollCache=null;
 function _buildMonoRollTable(lk){
+  const lkBucket=_luckBucket(lk);
   let cum=0;
   const table=[];
   for(let i=0;i<ORES.length;i++){
@@ -5930,18 +5911,17 @@ function _buildMonoRollTable(lk){
     if(o.hidden)continue;
     if(o.name==='GreyRock'||o.name==='GreyStone')continue;
     if(o.monoEvent&&o.monoEvent!==currentMonoEvent)continue;
-    const w=1/o.exact;
+    const w=_luckWeight(o.exact,lk);
     cum+=w;
-    table.push({idx:i,cumW:cum,exact:o.exact,w,wRare:w});
+    table.push({idx:i,cumW:cum,exact:o.exact,w});
   }
-  const rare=_splitRareTier(table);
-  _monoRollCache={event:currentMonoEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
+  _monoRollCache={event:currentMonoEvent,lkBucket:_luckBucket(lk),table,totalW:cum};
 }
 function rollOreMono(roll,depthFrac,lk){
-  if(!_monoRollCache||_monoRollCache.event!==currentMonoEvent){
+  if(!_monoRollCache||_monoRollCache.event!==currentMonoEvent||_monoRollCache.lkBucket!==_luckBucket(lk)){
     _buildMonoRollTable(lk);
   }
-  const i=_rollTwoTier(roll,lk,_monoRollCache.totalW,_monoRollCache.table,_monoRollCache.rare,_monoRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_monoRollCache.totalW,_monoRollCache.table);
   return i<0?ORES.findIndex(o=>o.name==='GreyRock'):i;
 }
 
@@ -5956,10 +5936,10 @@ function _getBiomeAt(wx,wz){
 }
 function rollOreBiome(roll,depthFrac,lk,wx,wz){
   const biome=_getBiomeAt(wx,wz);
-  if(!_biomeRollCache||_biomeRollCache.biome!==biome){
-    _biomeRollCache={biome,..._getBiomeRollTable(biome,lk)};
+  if(!_biomeRollCache||_biomeRollCache.biome!==biome||_biomeRollCache.lkBucket!==_luckBucket(lk)){
+    _biomeRollCache={biome,lkBucket:_luckBucket(lk),..._getBiomeRollTable(biome,lk)};
   }
-  const i=_rollTwoTier(roll,lk,_biomeRollCache.totalW,_biomeRollCache.table,_biomeRollCache.rare,_biomeRollCache.totalR);
+  const i=_rollTwoTier(roll,lk,_biomeRollCache.totalW,_biomeRollCache.table);
   return i<0?_getBiomeFillIdx(biome):i;
 }
 
@@ -6616,6 +6596,7 @@ function _buildWorldMeshReal(){
   // ── Y-slab culling using current render distance preset ──
   const rdp=RENDER_DIST_PRESETS[_renderDist]||RENDER_DIST_PRESETS.medium;
   const camY=camera?Math.floor(camera.position.y):TOP_SOLID_Y;
+  _lastMeshBuildCamY=camY;
   const yMin=Math.max(0,camY-rdp.yBelow);
   const yMax=Math.min(H-1,camY+rdp.yAbove);
 
@@ -10818,6 +10799,17 @@ function loop(t=0){
     _pendingBlockSet.clear();
     _scanCachedBestOre=null;_scanCachedTopOres=null;_scanFrameCount=0;
  }
+
+  // Vertical camera movement shifts the Y-slab. Rebuild so blocks entering the
+  // slab get meshed and blocks leaving it get culled (fixes invisible blocks
+  // when mining down). Debounced by the mesh rebuild time gate below.
+  if(camera){
+    const curCamY=Math.floor(camera.position.y);
+    if(curCamY!==_lastMeshBuildCamY){
+      _meshDirty=true;
+      _meshFullPending=true;
+    }
+  }
 
   _frameCount++;
   const skipHeavy=_isMobile&&_frameCount%2!==0;
