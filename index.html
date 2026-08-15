@@ -7264,19 +7264,11 @@ function spawnCave(cx,cy,cz){
     blocks[i]=1;
     const depthFrac=(TOP_SOLID_Y-ny)/depthDen;
     const combinedLuck=getTotalLuck();
-    // Cave walls use their base block (chosen.blocks[0]) or the normal ore
-    // roll — commons are no longer sprinkled over every wall.
+    // Cave walls use their base block (chosen.blocks[0]); only NormalCave walls
+    // roll the normal ore table. Commons are no longer sprinkled over every wall.
     let assignedIdx=-1;
     if(assignedIdx<0){
-      if(currentWorld==='shadow'){
-        assignedIdx=rollOreShadow(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
-      }else if(currentWorld==='mono'){
-        assignedIdx=rollOreMono(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
-      }else if(currentWorld==='ocean'){
-        assignedIdx=rollOreOcean(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
-      }else if(currentWorld==='biome'){
-        assignedIdx=rollOreBiome(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck,nx,nz);
-      }else if(chosen.type==='NormalCave'){
+      if(chosen.type==='NormalCave'){
         assignedIdx=rollOreNormal(h3(nx,ny,nz,(cy^cx^cz)&65535),depthFrac,combinedLuck);
       }else{
         const baseOreIdx=ORES.findIndex(o=>o.name===chosen.blocks[0]);
@@ -8654,8 +8646,9 @@ function abilityMine(wx,wy,wz){
   if(!blocks[i])return false;
   // Never destroy phantom block via abilities — only player direct mining can pick it up
   if(phantomBlock&&phantomBlock.x===wx&&phantomBlock.y===wy&&phantomBlock.z===wz)return false;
-  // Reveal ore if not yet revealed, or if it's a raw cave base block (re-roll to normal ore)
-  if(!oreRevealed[i]||(ORES[oreIdx[i]||0]&&ORES[oreIdx[i]||0].caveBase)){
+  // Reveal ore if not yet revealed. Cave base blocks (Energy, NuclearWaste, etc.)
+  // are granted as-is when mined by abilities — no re-roll to normal ores.
+  if(!oreRevealed[i]){
     const depthDen=Math.max(1,TOP_SOLID_Y);
     const depthFrac=(TOP_SOLID_Y-wy)/depthDen;
     const combinedLuck=getTotalLuck();
