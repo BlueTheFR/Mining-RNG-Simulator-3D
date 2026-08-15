@@ -2861,7 +2861,7 @@ function _buildShadowRollTable(lk, excludeShadowRock){
     candidates.push({idx:i,w:1/o.exact,exact:o.exact});
   }
   let cum=0;
-  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w};});
+  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w,wRare:1/Math.sqrt(c.exact)};});
   const rare=_splitRareTier(table);
   return {event:currentShadowEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
 }
@@ -2893,7 +2893,7 @@ function _buildOceanRollTable(lk, excludeBlueRock){
     candidates.push({idx:i,w:1/o.exact,exact:o.exact});
   }
   let cum=0;
-  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w};});
+  const table=candidates.map(c=>{cum+=c.w;return{idx:c.idx,cumW:cum,exact:c.exact,w:c.w,wRare:1/Math.sqrt(c.exact)};});
   const rare=_splitRareTier(table);
   return {event:currentOceanEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
 }
@@ -3574,7 +3574,7 @@ function _getBiomeRollTable(biome,lk){
       if(((o.biome===biome)||(o.biomeEvent===currentBiomeEvent))&&!o.isDecoration&&!o.isBarrier){
         const w=1/Math.max(1,o.exact);
         cum+=w;
-        table.push({idx:i,cumW:cum,exact:o.exact,w});
+        table.push({idx:i,cumW:cum,exact:o.exact,w,wRare:1/Math.sqrt(Math.max(1,o.exact))});
       }
     }
     const rare=_splitRareTier(table);
@@ -5858,7 +5858,7 @@ function _buildNormalRollTable(lk){
     if(o.hidden||o.noSolid)continue;
     const w=1/o.exact;
     cum+=w;
-    table.push({idx:i,cumW:cum,exact:o.exact,w});
+    table.push({idx:i,cumW:cum,exact:o.exact,w,wRare:1/Math.sqrt(o.exact)});
   }
   const rare=_splitRareTier(table);
   _normalRollCache={event:currentEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
@@ -5869,14 +5869,15 @@ function _tableLookup(table,target){
   return table[lo].idx;
 }
 // Shared two-tier roll used by every world:
-//   background tier keeps commons (exact<1000) always present;
-//   rare tier (exact>=1000) is boosted by luck toward the top ores.
+//   background tier (1/exact) keeps commons (exact<1000) always present;
+//   rare tier (sqrt-scaled 1/sqrt(exact)) is boosted by luck toward top ores,
+//   so high luck can actually reach 500M+/1B+ ores.
 function _splitRareTier(table){
   const rare=[];
   let cumR=0;
   for(const e of table){
     if(e.exact<1000)continue;
-    cumR+=e.w;
+    cumR+=e.wRare;
     rare.push({idx:e.idx,cumW:cumR});
   }
   return rare;
@@ -5914,7 +5915,7 @@ function _buildMonoRollTable(lk){
     if(o.monoEvent&&o.monoEvent!==currentMonoEvent)continue;
     const w=1/o.exact;
     cum+=w;
-    table.push({idx:i,cumW:cum,exact:o.exact,w});
+    table.push({idx:i,cumW:cum,exact:o.exact,w,wRare:1/Math.sqrt(o.exact)});
   }
   const rare=_splitRareTier(table);
   _monoRollCache={event:currentMonoEvent,table,totalW:cum,rare,totalR:rare.length?rare[rare.length-1].cumW:0};
