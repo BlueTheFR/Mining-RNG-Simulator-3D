@@ -5840,9 +5840,9 @@ function getPickLuck(){
 // ── Normal ore roll table — rebuilt when event changes ──
 // Two tiers so commons always spawn even at huge luck:
 //   background tier (1/exact over main-world ores) keeps Stone & commons present;
-//   rare tier (sqrt-scaled weights, exact>=1000) is boosted by luck toward top ores.
-const NORMAL_BG_SHARE=0.6;
-const MAX_LUCK_EXP=10000;
+//   rare tier (exact rarity 1/exact, sorted by exact) is boosted by luck toward
+//   the top ores — logarithmically, so rare ores stay rare even at max luck.
+const MAX_LUCK_EXP=4.5e15;
 const MAX_CAVE_EXCLUSIVE_P=0.5;
 let _normalRollCache=null;
 function _buildNormalRollTable(lk){
@@ -5875,25 +5875,40 @@ function _tableLookup(table,target){
 //   rare tier (exact rarity 1/exact) is boosted by luck toward top ores,
 //   so high luck can actually reach 500M+/1B+ ores.
 function _splitRareTier(table){
-  const rare=[];
-  let cumR=0;
+  const entries=[];
   for(const e of table){
     if(e.exact<1000)continue;
-    cumR+=e.wRare;
+    entries.push({idx:e.idx,exact:e.exact,wR:e.wRare});
+  }
+  // Sort by exact ascending so the rare cumulative is monotonic in rarity:
+  // otherwise array order (not rarity) decides which ore the luck boost lands on.
+  entries.sort((a,b)=>a.exact-b.exact);
+  const rare=[];
+  let cumR=0;
+  for(const e of entries){
+    cumR+=e.wR;
     rare.push({idx:e.idx,cumW:cumR});
   }
   return rare;
 }
 function _rollTwoTier(roll,lk,totalW,table,rare,totalR){
   if(!totalW||!table.length)return -1;
-  if(roll<NORMAL_BG_SHARE){
-    return _tableLookup(table,(roll/NORMAL_BG_SHARE)*totalW);
+  const l=Math.max(1,Math.min(isFinite(lk)&&lk>0?lk:1,MAX_LUCK_EXP));
+  // Rare-ore share grows logarithmically with luck (0% at 1x, capped at 20%),
+  // so rare ores stay rare while luck still meaningfully boosts their odds.
+  const logL=Math.log2(l);
+  const rareShare=Math.min(0.2,0.02*logL);
+  if(rareShare<=0||!rare.length||!totalR){
+    return _tableLookup(table,roll*totalW);
   }
-  const l=Math.max(1,Math.min(lk||1,MAX_LUCK_EXP));
-  const u=(roll-NORMAL_BG_SHARE)/(1-NORMAL_BG_SHARE);
-  if(l<=1||!rare.length||!totalR)return _tableLookup(table,u*totalW);
-  const v=Math.pow(u,1/l);
-  return _tableLookup(rare,v*totalR);
+  if(roll>=1-rareShare){
+    const u=(roll-(1-rareShare))/rareShare;
+    // Boost toward the top (rarest) ores. Exponent floor ~1/52 at max luck
+    // keeps every ore reachable — no single-ore collapse at 2^52 luck.
+    const v=Math.pow(u,1/Math.log2(1+l));
+    return _tableLookup(rare,v*totalR);
+  }
+  return _tableLookup(table,(roll/(1-rareShare))*totalW);
 }
 function rollOreNormal(roll,depthFrac,lk){
   if(!_normalRollCache||_normalRollCache.event!==currentEvent){
